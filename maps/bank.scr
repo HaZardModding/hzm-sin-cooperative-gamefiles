@@ -1,0 +1,5522 @@
+waitforplayercinematic
+cinematic
+
+spawn clipbox type 1 mins "-2584 1336 32" maxs "-2536 1536 384"
+spawn clipbox type 1 mins "-2584 1536 32" maxs "-2536 1776 640"
+spawn clipbox type 1 mins "-2584 1776 32" maxs "-2536 2016 640"
+spawn clipbox type 1 mins "-2584 2016 32" maxs "-2536 2176 640"
+
+spawn clipbox type 1 mins "-2704 1336 32" maxs "-2712 1536 384"
+spawn clipbox type 1 mins "-2704 1536 32" maxs "-2712 1776 640"
+spawn clipbox type 1 mins "-2704 1776 32" maxs "-2712 2016 640"
+spawn clipbox type 1 mins "-2704 2016 32" maxs "-2712 2176 640"
+
+spawn clipbox type 1 mins "-2416 1336 32" maxs "-2408 1536 384"
+spawn clipbox type 1 mins "-2416 1536 32" maxs "-2408 1776 640"
+spawn clipbox type 1 mins "-2416 1776 32" maxs "-2408 2016 640"
+spawn clipbox type 1 mins "-2416 2016 32" maxs "-2408 2176 640"
+
+
+// Game Variables
+/////////////////////////////////////////////////////////////////////////////
+// game vars the bank uses
+// game.intro_ground_entrance
+// game.intro_billboard_fall
+// game.intro_roof_break1
+
+// game vars the bank creates
+game.bank_balance = 0
+game.bank_evidence_found = 0
+
+
+// Level Variables
+/////////////////////////////////////////////////////////////////////////////
+level.Skill getcvar skill
+
+//level.start_cinematic_thread
+//level.start_xfiles_thread
+//level.start_cinematic_dialog_thread
+
+level.vault_switch1_position = 1
+level.vault_switch2_position = 1
+level.VaultCombo1 = 0
+level.VaultCombo2 = 0
+level.VaultOpened = 0
+
+level.BattleThugsKilled = 0
+
+level.HostagesSaved = 0
+level.HostagesKilled = 0
+
+level.description = 0
+
+// Mission Objective States - 0 not accomplished 1 = success 2 = fail 3 = not available
+level.PObjective1 = 0 // Disable Hostile Threat
+level.PObjective2 = 0 // Locate Security Office Key
+level.PObjective3 = 3 // Gain Access To Security Room
+level.PObjective4 = 3 // Gain Access To The Vault
+level.PObjective5 = 3 // Chase Mancini
+level.SObjective1 = 0 // Unlock All Security Doors
+level.SObjective2 = 0 // Secure Hostages
+
+level.start_of_map_dialog = 0
+level.important_dialog = 0
+level.officer_dialog = 0
+
+// Script Initialization
+/////////////////////////////////////////////////////////////////////////////
+thread init_thread
+
+// General
+thread roof_break1_thread
+thread billboard_thread
+thread escalator_thread
+thread tele_thread
+thread revolvingdoor1_thread
+thread revolvingdoor2_thread
+thread clock_thread
+thread teller1_thread
+thread teller2_thread
+thread table1_thread
+thread vault_thread
+thread vault_switch1_thread
+thread vault_switch2_thread
+thread safety_deposit_drawer_thread
+thread receptacle1_thread
+thread receptacle2_thread
+thread destroys_furniture1_thread
+thread destroys_furniture2_thread
+thread destroys_furniture3_thread
+thread destroys_furniture4_thread
+thread plant_break1_thread
+thread painting1_thread
+thread painting2_thread
+thread painting3_thread
+thread painting4_thread
+thread painting5_thread
+thread painting6_thread
+thread sign1_thread
+thread sign2_thread
+thread phone1_damage_setup
+thread phone2_damage_setup
+
+// Characters
+thread init_character_items_thread
+
+$hostage01 thread hostage01_thread
+
+$hostage02 thread hostage02_thread
+$hostage03 thread hostage03_thread
+$hostage04 thread hostage04_thread
+$hostage05 thread hostage05_thread
+$hostage06 thread hostage06_thread
+$hostage07 thread hostage07_thread
+
+$battle_hc01 thread battle_hc01_thread
+$battle_hc02 thread battle_hc02_thread
+$battle_thug01 thread battle_thug01_thread
+$battle_thug02 thread battle_thug02_thread
+$battle_thug03 thread battle_thug03_thread
+
+$mancini thread mancini_thread
+$mancini_thug03 thread mancini_thug03_thread
+$mancini_thug04 thread mancini_thug04_thread
+$mancini_thug05 thread mancini_thug05_thread
+$mancini_thug06 thread mancini_thug06_thread
+
+$hostage1_thug01 thread hostage1_thug01_thread
+$hostage1_thug02 thread hostage1_thug02_thread
+$hostage1_thug03 thread hostage1_thug03_thread
+
+$hostage2_thug01 thread hostage2_thug01_thread
+$hostage2_thug02 thread hostage2_thug02_thread
+$hostage2_thug03 thread hostage2_thug03_thread
+
+$hostage3_thug01 thread hostage3_thug01_thread
+$hostage3_thug02 thread hostage3_thug02_thread
+$hostage3_thug03 thread hostage3_thug03_thread
+$hostage3_thug04 thread hostage3_thug04_thread
+
+$hostage4_thug01 thread hostage4_thug01_thread
+$hostage4_thug02 thread hostage4_thug02_thread
+
+$securityroom_boss thread securityroom_boss_thread
+
+$thug01 thread thug01_thread
+$thug02 thread thug02_thread
+$thug03 thread thug03_thread
+$thug04 thread thug04_thread
+$thug05 thread thug05_thread
+$thug06 thread thug06_thread
+
+// Consoles
+thread SecMenu_Thread
+thread ATM_Setup_Thread
+
+// [Paril-KEX] elevator
+thread Elevator_Init
+
+$hc_copter entitysound vehicle/helicopt/flyloop.wav 0.15 4.0
+
+end // Script Initialization
+
+precache:
+    setdialogscript dialog/dialog_bank.scr
+    aliasscript global/universal_script.scr universal
+end
+
+// init_thread:
+/////////////////////////////////////////////////////////////////////////////
+init_thread:
+
+// Lock security doors
+$door_security lock
+// [XA] note: two doors in particular are set up to allow monsters
+// to open them, but players to not. this is done by faking the
+// "damn, a security door" message with a trigger_use volume and
+// using respondto to make them monster-only while locked. there's
+// also a playerclip volume that prevents entering the room when
+// a monster opens the door, which gets moved out of the way at
+// the right time. this is a bit complex, but works in practice.
+$door_security_thug03 respondto 8
+$door_security_thug06 respondto 8
+$door_security_thug03_playerclip time 0.1
+$door_security_thug06_playerclip time 0.1
+
+// Setup the revolving doors
+$revolvingdoor1 jumpto $revolvingdoor1_start
+$revolvingdoor2 jumpto $revolvingdoor2_start
+
+// Setup the ATM room stuff
+$fountain_spill1 hide
+$fountain_spill2 hide
+
+// Setup the copter flying away
+$hc_copter minlight 1
+$hc_copter_roters minlight 1
+//$hc_copter lightoffset 127
+//$hc_copter_roters lightoffset 127
+
+$hc_copter_rotors bind $hc_copter_parent
+$hc_copter bind $hc_copter_parent
+wait game.FRAMETIME
+
+$hc_copter_rotors rotateY 540
+
+// Setup the ambient fighting sounds
+local.Count = 1
+
+loop_random_noise_init:
+parm.NoiseMaker = local.Count
+parm.NumNoiseMakers = 6
+thread random_noise_init_thread
+
+local.Count += 1
+local.Count ifless 7 goto loop_random_noise_init
+
+// Setup the repelers
+thread repel_init_thread
+
+// Setup the teller security gate
+$teller_securitygate time 0.1
+$teller_securitygate moveUp 144
+waitFor $teller_securitygate
+
+// Setup the vault combination
+level.VaultCombo1 randomint 8
+level.VaultCombo1 += 1
+level.VaultCombo2 randomint 8
+level.VaultCombo2 += 1
+
+// Setup cinematics
+thread init_start_cinematic_thread
+waitForThread parm.previousthread
+
+// Play the starting cinematic
+thread start_cinematic_thread
+level.start_cinematic_thread = parm.previousthread
+waitForThread level.start_cinematic_thread
+wait 1
+
+thread bank_start_misscomp_thread
+wait 2
+
+// Start intro dialog and update the mission computer
+thread jc_clear_bank_out_dialog_thread
+waitForThread parm.previousthread
+
+Waitforplayer
+
+level.intro_start2 ifequal 0 *1 give RiotHelmet 100
+level.intro_start2 ifequal 0 *1 give FlakJacket 100
+level.intro_start2 ifequal 0 *1 give FlakPants 100
+
+level.intro_start2 ifnotequal 0 *1 give RiotHelmet 50
+level.intro_start2 ifnotequal 0 *1 give FlakJacket 50
+level.intro_start2 ifnotequal 0 *1 give FlakPants 50
+
+end // init_thread
+
+
+// random_noise_init_thread:
+/////////////////////////////////////////////////////////////////////////////
+random_noise_init_thread:
+local.NoiseMaker string "$random_noise0"
+local.NoiseMaker appendint parm.NoiseMaker
+
+loop_random_noise:
+level.BattleThugsKilled ifequal 7 goto random_noise_done
+
+local.delay randomint 60
+local.delay += 30
+wait local.delay
+
+local.NoiseIndex randomint 7
+local.NoiseIndex += 1
+
+local.NoiseIndex ifequal 1 goto RandomNoisePlay1
+local.NoiseIndex ifequal 2 goto RandomNoisePlay2
+local.NoiseIndex ifequal 3 goto RandomNoisePlay3
+local.NoiseIndex ifequal 4 goto RandomNoisePlay4
+local.NoiseIndex ifequal 5 goto RandomNoisePlay5
+local.NoiseIndex ifequal 6 goto RandomNoisePlay6
+local.NoiseIndex ifequal 7 goto RandomNoisePlay7
+
+RandomNoisePlay1:
+parm.actor1 string local.NoiseMaker
+parm.actor2 string local.NoiseMaker
+thread dialog::combat_one
+waitForThread parm.previousthread
+goto loop_random_noise
+
+RandomNoisePlay2:
+parm.actor1 string local.NoiseMaker
+parm.actor2 string local.NoiseMaker
+thread dialog::combat_two
+waitForThread parm.previousthread
+goto loop_random_noise
+
+RandomNoisePlay3:
+parm.actor1 string local.NoiseMaker
+parm.actor2 string local.NoiseMaker
+thread dialog::combat_three
+waitForThread parm.previousthread
+goto loop_random_noise
+
+RandomNoisePlay4:
+parm.actor1 string local.NoiseMaker
+parm.actor2 string local.NoiseMaker
+thread dialog::combat_four
+waitForThread parm.previousthread
+goto loop_random_noise
+
+RandomNoisePlay5:
+parm.actor1 string local.NoiseMaker
+parm.actor2 string local.NoiseMaker
+thread dialog::combat_five
+waitForThread parm.previousthread
+goto loop_random_noise
+
+RandomNoisePlay6:
+parm.actor1 string local.NoiseMaker
+parm.actor2 string local.NoiseMaker
+thread dialog::combat_six
+waitForThread parm.previousthread
+goto loop_random_noise
+
+RandomNoisePlay7:
+parm.actor1 string local.NoiseMaker
+parm.actor2 string local.NoiseMaker
+thread dialog::combat_seven
+waitForThread parm.previousthread
+goto loop_random_noise
+
+random_noise_done:
+
+end // random_noise_init_thread
+
+
+// repel_init_thread:
+/////////////////////////////////////////////////////////////////////////////
+repel_init_thread:
+local.Count = 1
+
+loop_setup_repel:
+local.Rope string "$repel_thug"
+local.Rope appendint local.Count
+local.Rope append "_rope"
+
+local.Rope hide
+
+local.Count += 1
+local.Count ifless 12 goto loop_setup_repel
+
+repel_init_done:
+
+end // repel_init_thread
+
+
+//===========================================================================
+//===========================================================================
+// CINEMATICS
+//===========================================================================
+//===========================================================================
+// init_start_cinematic_thread:
+/////////////////////////////////////////////////////////////////////////////
+init_start_cinematic_thread:
+
+$mancini_thug04 ignoreall
+$mancini_thug04 hide
+$mancini_thug04 notsolid
+
+$mancini_thug05 ignoreall
+$mancini_thug05 hide
+$mancini_thug05 notsolid
+
+$start_mancini thread start_mancini_thread
+$start_thug01 thread start_thug01_thread
+$start_thug02 thread start_thug02_thread
+
+end // init_start_cinematic_thread
+
+
+// start_cinematic_thread:
+/////////////////////////////////////////////////////////////////////////////
+start_cinematic_thread:
+
+Waitforplayer
+freezeplayer
+cinematic
+cueplayer
+hud 0
+
+$start_camera jumpto $start_camera_start
+$start_camera lookat $start_mancini
+cuecamera $start_camera
+
+parm.WaitTime = 7
+parm.TimeDate string "m_329_pm_july"
+parm.Location string "m_freeport_city_bank_1"
+parm.Description string "m_robbery_in_progress"
+thread universal::XFilesScreen
+level.start_xfiles_thread = parm.previousthread
+
+fadein 8 0 0 0
+
+wait 2
+
+skipthread start_cinematic_skip_thread
+
+wait 4
+
+$start_camera follow $start_camera_start $start_mancini
+wait game.FRAMETIME
+
+thread mancini_what_get_paid_dialog_thread
+
+trigger $start_mancini
+trigger $start_thug01
+trigger $start_thug02
+wait 16
+
+// clean up the cinematic junk and enable the game characters
+fadeout 3 0 0 0
+wait 3
+
+$start_mancini remove
+$start_thug01 remove
+$start_thug02 remove
+$start_money01 remove
+$start_money02 remove
+$start_money03 remove
+$start_moneybag_target remove
+
+$mancini_thug04 respondtoall
+$mancini_thug04 show
+$mancini_thug04 solid
+
+$mancini_thug05 respondtoall
+$mancini_thug05 show
+$mancini_thug05 solid
+
+fadein 1 0 0 0
+
+thread helicopter_sound_thread
+
+hud 1
+cueplayer
+noncinematic
+releaseplayer
+
+end // start_cinematic_thread
+
+
+// start_cinematic_skip_thread:
+/////////////////////////////////////////////////////////////////////////////
+start_cinematic_skip_thread:
+
+skipthread ""
+
+terminate level.start_cinematic_thread
+terminate level.start_xfiles_thread
+terminate level.start_cinematic_dialog_thread
+
+// clean up the cinematic junk and enable the game characters
+fadeout 1 0 0 0
+wait 1
+
+$start_mancini remove
+$start_thug01 remove
+$start_thug02 remove
+$start_money01 remove
+$start_money02 remove
+$start_money03 remove
+$start_moneybag_target remove
+
+$mancini_thug04 respondtoall
+$mancini_thug04 show
+$mancini_thug04 solid
+
+$mancini_thug05 respondtoall
+$mancini_thug05 show
+$mancini_thug05 solid
+
+fadein 1 0 0 0
+
+thread helicopter_sound_thread
+
+hud 1
+cueplayer
+noncinematic
+releaseplayer
+
+end // start_cinematic_skip_thread
+
+
+// start_mancini_thread:
+/////////////////////////////////////////////////////////////////////////////
+start_mancini_thread:
+
+local.self ignoreall
+local.self definestate activate start_mancini_activate
+pause
+
+start_mancini_activate:
+local.self anim idle
+wait 2
+
+local.self anim idle_giving_orders
+waitFor local.self
+wait 1
+
+local.self anim idle
+wait 5
+
+local.self anim idle_giving_orders
+waitFor local.self
+
+local.self anim idle
+
+end // start_mancini_thread
+
+
+// start_thug01_thread:
+/////////////////////////////////////////////////////////////////////////////
+start_thug01_thread:
+
+local.self attachmodel moneybag.def gun temp_money01
+
+local.self ignoreall
+local.self respondto opendoor
+local.self definestate activate start_thug01_activate
+pause
+
+start_thug01_activate:
+local.self ignore activate
+
+local.self walkto $start_thug01_node1
+waitFor local.self
+
+$temp_money01 throw local.self 125 $start_moneybag_target 1
+wait 6
+
+local.self walkto $start_thug01_node2
+waitFor local.self
+
+end // start_thug01_thread
+
+
+// start_thug02_thread:
+/////////////////////////////////////////////////////////////////////////////
+start_thug02_thread:
+
+local.self attachmodel moneybag.def gun temp_money02
+
+local.self ignoreall
+local.self respondto opendoor
+local.self definestate activate start_thug02_activate
+pause
+
+start_thug02_activate:
+local.self ignore activate
+
+local.self walkto $start_thug01_node3
+waitFor local.self
+
+$temp_money02 throw local.self 125 $start_moneybag_target 1
+wait 4
+
+local.self walkto $start_thug01_node2
+waitFor local.self
+
+end // start_thug02_thread
+
+
+//===========================================================================
+//===========================================================================
+// GENERAL
+//===========================================================================
+//===========================================================================
+// roof_break1_thread:
+/////////////////////////////////////////////////////////////////////////////
+roof_break1_thread:
+
+game.intro_roof_break1 iflessequal 1 goto roof_break1_not_broken
+
+roof_break1_sequence:
+$ls_roof1 lightstyle "z"
+
+$roof_debris1 solid
+$roof_break1 remove
+$roof_railing1 remove
+
+goto roof_break1_end
+
+roof_break1_not_broken:
+$ls_roof1 lightstyle "a"
+//$roof_light1 lightstyle "a"
+$roof_debris1 remove
+$roof_debris2 remove
+
+wait game.FRAMETIME
+ai_calcpath debrispath_0 debrispath_1
+
+roof_break1_end:
+
+end // roof_break1_thread
+
+
+// billboard_thread:
+/////////////////////////////////////////////////////////////////////////////
+billboard_thread:
+
+$billboard2 bind $billboard
+wait game.FRAMETIME
+
+game.intro_billboard_fall ifequal 2 goto billboard_fall_sequence_left_quick
+game.intro_billboard_fall ifequal 3 goto billboard_fall_sequence_right_quick
+
+$billboard_damage ondamage billboard_fall_sequence2
+pause
+
+billboard_fall_sequence_left_quick:
+$billboard_clip remove
+
+$billboard time 0.1
+$billboard moveEast 96
+$billboard moveWest 64
+$billboard moveDown 30
+$billboard rotateXdown 56
+waitFor $billboard
+
+$billboard time 0.1
+$billboard rotateXdown 98
+$billboard rotateZup 5
+$billboard moveDown 495
+$billboard moveSouth 16
+$billboard moveWest 128
+waitFor $billboard
+
+$billboard time 0.1
+$billboard rotateXdown 85
+$billboard rotateZup 5
+$billboard moveDown 495
+$billboard moveSouth 16
+$billboard moveWest 128
+waitFor $billboard
+
+$billboard time 0.1
+$billboard rotateXdown 71
+$billboard rotateZup 5
+$billboard moveDown 520
+$billboard moveNorth 32
+$billboard moveWest 107
+waitFor $billboard
+
+$window_bar2 time 0.1
+$window_bar2 moveDown 368
+$window_bar2 rotateXup 22
+$window_bar2 rotateYup 30
+$window_bar2 moveWest 16
+waitFor $window_bar2
+
+$glass2 remove
+$glass3 remove
+
+goto billboard_fall_sequence_done
+
+
+billboard_fall_sequence_right_quick:
+
+$billboard_clip time 0.1
+$billboard_clip moveUp 64
+waitFor $billboard_clip
+
+$billboard time 0.1
+$billboard moveEast 96
+$billboard rotateXdown 56
+$billboard moveWest 64
+$billboard moveDown 30
+waitFor $billboard
+
+$billboard time 0.1
+$billboard rotateXdown 98
+$billboard rotateZup 5
+$billboard moveDown 495
+$billboard moveSouth 16
+$billboard moveWest 128
+waitFor $billboard
+
+$billboard time 0.1
+$billboard rotateXdown 85
+$billboard rotateZup 5
+$billboard moveDown 495
+$billboard moveSouth 16
+$billboard moveWest 128
+waitFor $billboard
+
+$billboard time 0.1
+$billboard rotateXdown 71
+$billboard rotateZup 5
+$billboard moveDown 490
+$billboard moveSouth 16
+$billboard moveWest 107
+waitFor $billboard
+
+$billboard time 0.1
+$billboard moveDown 356
+$billboard rotateXup 20
+$billboard rotateZdown 20
+waitFor $billboard
+
+$window_bar1 time 0.1
+$window_bar2 time 0.1
+$window_bar1 moveDown 368
+$window_bar1 rotateXup 22
+$window_bar1 rotateYdown 15
+$window_bar1 moveWest 16
+$window_bar2 moveDown 368
+$window_bar2 rotateXup 22
+$window_bar2 rotateYup 30
+$window_bar2 moveWest 16
+waitFor $window_bar2
+
+$fountain_flood time 0.1
+$fountain_flood moveUp 394
+waitFor $fountain_flood
+
+$glass2 remove
+$glass3 remove
+$fountain_break remove
+
+$fountain_spill1 show
+$fountain_spill2 show
+$fountain_flood show
+
+goto billboard_fall_sequence_done
+
+
+billboard_fall_sequence2:
+$billboard_damage nodamage
+
+$billboard_clip remove
+$billboard_right remove
+$billboard_left remove
+
+game.intro_billboard_fall = 2
+wait .3
+
+$billboard time .4
+$billboard rotateXdown 56
+$billboard moveWest 64
+$billboard moveDown 30
+waitFor $billboard
+
+$billboard time .7
+
+$billboard rotateXdown 98
+$billboard rotateZup 5
+$billboard moveDown 495
+$billboard moveSouth 16
+$billboard moveWest 96
+waitFor $billboard
+
+$billboard time .5
+
+$billboard rotateXdown 85
+$billboard rotateZup 5
+$billboard moveDown 495
+$billboard moveSouth 16
+$billboard moveWest 96
+waitFor $billboard
+
+$billboard time .4
+
+$billboard rotateXdown 71
+$billboard rotateZup 5
+$billboard moveDown 520
+$billboard moveNorth 32
+$billboard moveWest 75
+waitFor $billboard
+
+$glass2 shatter "0 0 0" 75 10 75 .25 0
+$glass3 shatter "0 0 0" 75 10 75 .25 0
+$glass2 remove
+$glass3 remove
+$billboard playsound impact/crates/crate3.wav 4
+
+$window_bar2 time .5
+$window_bar2 moveDown 368
+$window_bar2 rotateXup 22
+$window_bar2 rotateYup 30
+$window_bar2 moveWest 16
+waitFor $window_bar2
+
+thread destroys_property8_dialog_thread
+
+billboard_fall_sequence_done:
+
+end // billboard_thread
+
+
+// hc_copter_thread:
+/////////////////////////////////////////////////////////////////////////////
+hc_copter_thread:
+
+$hc_copter_parent followpath $hc_copter_path1
+waitFor $hc_copter_parent
+
+$hc_copter stopsound
+
+$hc_copter_rotors remove
+$hc_copter remove
+$hc_copter_parent remove
+
+
+end // hc_copter_thread
+
+
+// escalator_thread:
+/////////////////////////////////////////////////////////////////////////////
+escalator_thread:
+local.escalator_speed = 16
+
+escalator_sequence:
+
+$escalator_button onuse escalator_off
+pause
+
+escalator_off:
+$escalator_button nouse
+
+$escalator_button playsound environment/cabinet/glasscab/latch12.wav 1.0
+
+$escalator_button time .5
+$escalator_button moveNorth 1
+waitFor $escalator_button
+
+trigger $escalator_sound
+
+$escalator_button time .5
+$escalator_button moveSouth 1
+waitFor $escalator_button
+
+escalator_slow_down:
+local.escalator_speed -= 1
+wait .1
+
+@escalator trans_mag local.escalator_speed
+local.escalator_speed ifgreater 0 goto escalator_slow_down
+
+$escalator_button onuse escalator_on
+pause
+
+escalator_on:
+$escalator_button nouse
+
+$escalator_button playsound environment/cabinet/glasscab/latch12.wav 1.0
+
+$escalator_button time .5
+$escalator_button moveNorth 1
+waitFor $escalator_button
+
+trigger $escalator_sound
+
+$escalator_button time .5
+$escalator_button moveSouth 1
+waitFor $escalator_button
+
+escalator_speed_up:
+wait .1
+
+@escalator trans_mag local.escalator_speed
+local.escalator_speed += 1
+local.escalator_speed iflessequal 16 goto escalator_speed_up
+
+goto escalator_sequence
+
+end // escalator_thread
+
+
+// tele_thread:
+/////////////////////////////////////////////////////////////////////////////
+tele_thread:
+
+$tele1 key coin
+$tele2 key coin
+
+$tele1 onuse tele1_sequence
+$tele2 onuse tele2_sequence
+pause
+
+tele1_sequence:
+$tele1 nouse
+
+local.other take local.key
+
+thread phone_bruno_dialog_thread
+
+goto tele_thread_done
+
+tele2_sequence:
+$tele2 nouse
+
+local.other take local.key
+
+thread phone_cinema_dialog_thread
+
+goto tele_thread_done
+
+tele_thread_done:
+
+end // tele_thread
+
+tele2_damaged:
+$tele2 nouse
+end
+
+tele1_damaged:
+$tele1 nouse
+end
+
+// revolvingdoor1_thread:
+/////////////////////////////////////////////////////////////////////////////
+revolvingdoor1_thread:
+
+revolvingdoor1_start:
+$revolvingdoor1 ontouch revolvingdoor1_touched
+$revolvingdoor1 ondamage revolvingdoor1_damaged
+pause
+
+revolvingdoor1_touched:
+$revolvingdoor1 notouch
+
+$revolvingdoor1_pole playsound environment/levelsnds/bank/rvlv001.wav 2.0
+
+$revolvingdoor1 time 4
+$revolvingdoor1_pole time 4
+$revolvingdoor1 rotateYup 180
+$revolvingdoor1_pole rotateYup 180
+waitFor $revolvingdoor1_pole
+
+$revolvingdoor1_pole stopsound
+
+goto revolvingdoor1_start
+
+revolvingdoor1_damaged:
+$revolvingdoor1 playsound impact/glass/glassbrk/mix1.wav
+$revolvingdoor1 shatter "0 0 0" 50 10 25 .05 0
+$revolvingdoor1 remove
+
+end // revolvingdoor1_thread
+
+
+// revolvingdoor2_thread:
+/////////////////////////////////////////////////////////////////////////////
+revolvingdoor2_thread:
+
+revolvingdoor2_start:
+$revolvingdoor2 ontouch revolvingdoor2_touched
+$revolvingdoor2 ondamage revolvingdoor2_damaged
+pause
+
+revolvingdoor2_touched:
+$revolvingdoor2 notouch
+
+$revolvingdoor2_pole playsound environment/levelsnds/bank/rvlv001.wav 2.0
+
+$revolvingdoor2 time 4
+$revolvingdoor2_pole time 4
+$revolvingdoor2 rotateYup 180
+$revolvingdoor2_pole rotateYup 180
+waitFor $revolvingdoor2_pole
+
+$revolvingdoor2_pole stopsound
+
+goto revolvingdoor2_start
+
+revolvingdoor2_damaged:
+$revolvingdoor2 playsound impact/glass/glassbrk/mix1.wav
+$revolvingdoor2 shatter "0 0 0" 50 10 25 .05 0
+$revolvingdoor2 remove
+
+end // revolvingdoor2_thread
+
+
+// clock_thread:
+/////////////////////////////////////////////////////////////////////////////
+clock_thread:
+
+thread clock_hour_thread
+
+clock_sequence:
+wait 60
+
+$longhand time 1
+$shorthand time 1
+$shorthand rotateXdown .5
+$longhand rotateXdown 6
+waitFor $longhand
+
+goto clock_sequence
+
+end // clock_thread
+
+
+// clock_hour_thread:
+/////////////////////////////////////////////////////////////////////////////
+clock_hour_thread:
+
+clock_hour_sequence:
+wait 3600
+
+$longhand playsound misc/bell.wav
+wait 2
+
+$longhand playsound misc/bell.wav
+wait 2
+
+$longhand playsound misc/bell.wav
+wait 2
+
+$longhand playsound misc/bell.wav
+
+goto clock_hour_sequence
+
+end // clock_hour_thread
+
+
+// teller1_thread:
+/////////////////////////////////////////////////////////////////////////////
+teller1_thread:
+
+$teller1 time 1
+$teller1 moveNorth 22
+waitFor $teller1
+
+teller1_start:
+$teller1 onuse teller1_open
+pause
+
+teller1_open:
+$teller1 nouse
+
+$teller1 playsound environment/cabinet/drawer/cab11.wav
+$teller1 time 1
+$teller1 moveSouth 22
+waitFor $teller1
+
+$teller1 onuse teller1_close
+pause
+
+teller1_close:
+$teller1 nouse
+
+$teller1 playsound environment/cabinet/drawer/cab12.wav
+$teller1 moveNorth 22
+waitFor $teller1
+
+goto teller1_start
+
+end // teller1_thread
+
+
+// teller2_thread:
+/////////////////////////////////////////////////////////////////////////////
+teller2_thread:
+local.cashtaken = 0
+
+$dollar1 bind $teller2
+$teller2_use bind $teller2
+wait game.FRAMETIME
+
+$teller2 time 1
+$teller2 moveNorth 22
+waitFor $teller2
+
+teller2_start:
+$teller2 onuse teller2_open
+pause
+
+teller2_open:
+$teller2 nouse
+
+$teller2 playsound environment/cabinet/drawer/cab11.wav
+$teller2 time 1
+$teller2 moveSouth 22
+waitFor $teller2
+
+teller2_close_ready:
+local.cashtaken ifequal 0 $teller2_use onuse teller2_takecash
+local.cashtaken ifnotequal 0 $teller2 onuse teller2_close
+pause
+
+teller2_takecash:
+$teller2_use nouse
+$teller2_use remove
+
+local.cashtaken = 1
+unlockachievement "ACH_SIN_BANK"
+
+thread cash1_dialog_thread
+
+$dollar1 remove
+*1 item dollar 1
+
+goto teller2_close_ready
+
+teller2_close:
+$teller2 nouse
+
+$teller2 playsound environment/cabinet/drawer/cab12.wav
+$teller2 moveNorth 22
+waitFor $teller2
+
+goto teller2_start
+
+end // teller2_thread
+
+
+// table1_thread:
+/////////////////////////////////////////////////////////////////////////////
+table1_thread:
+
+$table1 ontrigger table1_rotate_sequence
+pause
+
+table1_rotate_sequence:
+$table1 notrigger
+
+$table1 time .3
+$table1 rotateXup 75
+waitFor $table1
+
+$table1_clip notsolid
+
+wait 1
+trigger $table1_damaged
+
+$table1 remove
+
+end // table1_thread
+
+
+// vault_thread:
+/////////////////////////////////////////////////////////////////////////////
+vault_thread:
+local.OpenedOnce = 0
+
+$vault_handle bind $vault_door
+wait game.FRAMETIME
+
+//open door for mancini's sequence
+$vault_portal open
+
+$vault_handle time 1
+$vault_handle rotateZdown 60
+waitFor $vault_handle
+
+$vault_door time 2
+$vault_door rotateYup 75
+waitFor $vault_door
+
+$vault_trigger ontrigger vault_door_close_for_mancini
+pause
+
+vault_door_close_for_mancini:
+$vault_trigger notrigger
+
+$vault_door playsound environment/levelsnds/bank/bankdoo2.wav
+$vault_door time 2
+$vault_door rotateYdown 75
+waitFor $vault_door
+$vault_door playsound impact/metal/drm2.wav
+
+$vault_handle playsound environment/doors/metal/mtldoor1.wav
+$vault_handle time 1
+$vault_handle rotateZup 60
+waitFor $vault_handle
+
+$vault_portal close
+
+$camgun1 activate
+$camgun2 activate
+
+vault_begin:
+
+$vault_handle onuse check_vault_combo
+pause
+
+check_vault_combo:
+$vault_handle nouse
+
+level.vault_switch1_position ifequal level.VaultCombo1 goto check_vault_combo2
+level.description ifequal 0 goto vault_begin
+
+$camgun1 activate
+$camgun2 activate
+
+local.jc_warn_dialog ifequal 0 thread jc_warn_dialog_thread
+local.jc_warn_dialog = 1
+wait 5
+
+$camgun1 deactivate
+$camgun2 deactivate
+
+goto vault_begin
+
+check_vault_combo2:
+level.vault_switch2_position ifequal level.VaultCombo2 goto vault_open
+level.description ifequal 0 goto vault_begin
+
+$camgun1 activate
+$camgun2 activate
+
+local.jc_warn_dialog ifequal 0 thread jc_warn_dialog_thread
+local.jc_warn_dialog = 1
+wait 5
+
+$camgun1 deactivate
+$camgun2 deactivate
+goto vault_begin
+
+
+vault_open:
+local.OpenedOnce ifequal 0 thread vault_opened_misscomp_thread
+local.OpenedOnce = 1
+level.VaultOpened = 1
+
+$vault_portal open
+
+$vault_handle playsound environment/doors/metal/mtldoor1.wav
+$vault_hanlde time 1
+$vault_handle rotateZdown 60
+waitFor $vault_handle
+
+$vault_door playsound environment/levelsnds/bank/bankdoo2.wav
+$vault_door time 2
+$vault_door rotateYup 75
+waitFor $vault_door
+$vault_door playsound impact/metal/drm2.wav
+
+$vault_handle onuse vault_closed
+pause
+
+vault_closed:
+$vault_handle nouse
+
+$vault_door playsound environment/levelsnds/bank/bankdoo2.wav
+$vault_door time 2
+$vault_door rotateYdown 75
+waitFor $vault_door
+$vault_door playsound impact/metal/drm2.wav
+
+$vault_handle playsound environment/doors/metal/mtldoor1.wav
+$vault_handle time 1
+$vault_handle rotateZup 60
+waitFor $vault_handle
+
+$vault_portal close
+
+goto vault_begin
+
+end // vault_thread
+
+
+// vault_switch1_thread:
+/////////////////////////////////////////////////////////////////////////////
+vault_switch1_thread:
+
+vault_switch1_sequence:
+$vault_switch1 onpreciseuse vault_switch1_rotate
+pause
+
+vault_switch1_rotate:
+$vault_switch1 nouse
+
+$vault_switch1 time 0.5
+$vault_switch1 rotateZdown 45
+waitFor $vault_switch1
+
+$vault_switch1 playsound environment/cabinet/glasscab/latch12.wav
+
+level.vault_switch1_position += 1
+level.vault_switch1_position ifequal 9 level.vault_switch1_position = 1
+
+goto vault_switch1_sequence
+
+end // vault_switch1_thread
+
+
+// vault_switch2_thread:
+/////////////////////////////////////////////////////////////////////////////
+vault_switch2_thread:
+
+vault_switch2_sequence:
+$vault_switch2 onpreciseuse vault_switch2_rotate
+pause
+
+vault_switch2_rotate:
+$vault_switch2 nouse
+
+$vault_switch2 time 0.5
+$vault_switch2 rotateZdown 45
+waitFor $vault_switch2
+
+$vault_switch2 playsound environment/cabinet/glasscab/latch12.wav
+
+level.vault_switch2_position += 1
+level.vault_switch2_position ifequal 9 level.vault_switch2_position = 1
+
+goto vault_switch2_sequence
+
+end // vault_switch2_thread
+
+
+// safety_deposit_drawer_thread:
+/////////////////////////////////////////////////////////////////////////////
+safety_deposit_drawer_thread:
+
+$safe_drawer time 1
+$safe_drawer moveEast 32
+waitFor $safe_drawer
+
+safe_drawer_open_ready:
+$safe_drawer onuse safe_drawer_open
+pause
+
+safe_drawer_open:
+$safe_drawer nouse
+$safe_drawer playsound environment/cabinet/drawer/cab11.wav
+$safe_drawer moveWest 32
+waitFor $safe_drawer
+
+safe_drawer_close_ready:
+$safe_drawer onuse safe_drawer_close
+pause
+
+safe_drawer_close:
+$safe_drawer nouse
+$safe_drawer playsound environment/cabinet/drawer/cab12.wav
+$safe_drawer moveEast 32
+waitFor $safe_drawer
+goto safe_drawer_open_ready
+
+end // safety_deposit_drawer_thread
+
+
+// receptacle1_thread:
+/////////////////////////////////////////////////////////////////////////////
+receptacle1_thread:
+$receptacle1_rim time .3
+$receptacle1 time .3
+
+$receptacle1 notsolid
+
+receptacle1_begin:
+	
+$receptacle1_rim onuse receptacle1_sequence
+$receptacle1_rim ondamage receptacle1_break
+pause
+
+receptacle1_sequence:
+$receptacle1_rim nouse
+$receptacle1 rotateXup 60
+waitFor $receptacle1
+$receptacle1 rotateXdown 90
+waitFor $receptacle1
+$receptacle1 rotateXup 45
+waitFor $receptacle1
+$receptacle1 rotateXdown 22
+waitFor $receptacle1
+$receptacle1 rotateXup 7
+waitFor $receptacle1
+
+goto receptacle1_begin
+
+receptacle1_break:
+trigger $g5
+$receptacle1 hide
+$receptacle1_rim notsolid
+$receptacle1_rim hide
+
+end // receptacle1_thread
+
+
+// receptacle2_thread:
+/////////////////////////////////////////////////////////////////////////////
+receptacle2_thread:
+$receptacle2_rim time .3
+$receptacle2 time .3
+$receptacle2 notsolid
+
+receptacle2_begin:
+
+$receptacle2_rim onuse receptacle2_sequence
+$receptacle2_rim ondamage receptacle2_break
+pause
+
+receptacle2_sequence:
+$receptacle2_rim nouse
+$receptacle2 rotateXdown 60
+waitFor $receptacle2
+$receptacle2 rotateXup 90
+waitFor $receptacle2
+$receptacle2 rotateXdown 45
+waitFor $receptacle2
+$receptacle2 rotateXup 22
+waitFor $receptacle2
+$receptacle2 rotateXdown 7
+waitFor $receptacle2
+goto receptacle2_begin
+
+receptacle2_break:
+trigger $g3
+$receptacle2 hide
+$receptacle2_rim notsolid
+$receptacle2_rim hide
+
+end // receptacle2_thread
+
+
+// destroys_furniture1_thread:
+/////////////////////////////////////////////////////////////////////////////
+destroys_furniture1_thread:
+
+$destroys_furniture1 ontrigger destroys_furniture1_sequence
+pause
+
+destroys_furniture1_sequence:
+$destroys_furniture1 notrigger
+wait 2
+
+thread destroys_furniture1_dialog_thread
+
+end // destroys_furniture1_thread
+
+
+// destroys_furniture2_thread:
+/////////////////////////////////////////////////////////////////////////////
+destroys_furniture2_thread:
+
+$destroys_furniture2 ontrigger destroys_furniture2_sequence
+pause
+
+destroys_furniture2_sequence:
+$destroys_furniture2 notrigger
+wait 2
+
+thread destroys_furniture2_dialog_thread
+
+end // destroys_furniture2_thread
+
+
+// destroys_furniture3_thread:
+/////////////////////////////////////////////////////////////////////////////
+destroys_furniture3_thread:
+
+$destroys_furniture3 ontrigger destroys_furniture3_sequence
+pause
+
+destroys_furniture3_sequence:
+$destroys_furniture3 notrigger
+wait 2
+
+thread destroys_furniture3_dialog_thread
+
+end // destroys_furniture3_thread
+
+
+// destroys_furniture4_thread:
+/////////////////////////////////////////////////////////////////////////////
+destroys_furniture4_thread:
+
+$destroys_furniture4 ontrigger destroys_furniture4_sequence
+pause
+
+destroys_furniture4_sequence:
+$destroys_furniture4 notrigger
+wait 2
+
+thread destroys_furniture4_dialog_thread
+
+end // destroys_furniture4_thread
+
+
+// plant_break1_thread:
+/////////////////////////////////////////////////////////////////////////////
+plant_break1_thread:
+
+$plant_break1 ontrigger plant_break1_sequence
+pause
+
+plant_break1_sequence:
+$plant_break1 notrigger
+wait 2
+
+thread destroys_plant1_dialog_thread
+
+end // plant_break1_thread
+
+
+// painting1_thread:
+/////////////////////////////////////////////////////////////////////////////
+painting1_thread:
+local.cashtaken = 0
+
+// Couldn't place $safe_use on top of the dollars or else they would fall
+// out of the world
+
+painting1_sequence_begin:
+$painting1 onuse painting1_sequence
+$safe_door onuse painting1_sequence
+pause
+
+painting1_sequence:
+$painting1 nouse
+$safe_door nouse
+
+$painting1 time 1
+$painting1 moveEast 80
+waitFor $painting1
+
+$safe_door time 1
+$safe_door rotateYdownto -90
+waitFor $safe_door
+
+trigger $safe_trigger
+
+painting1_sequence2_ready:
+$painting1 onuse painting1_sequence2
+$safe_door onuse painting1_sequence2
+pause
+
+painting1_sequence2:
+$painting1 nouse
+$safe_door nouse
+
+$safe_door time 1
+$safe_door rotateYupto 0
+waitFor $safe_door
+
+$painting1 time 1
+$painting1 moveWest 80
+waitFor $painting1
+
+goto painting1_sequence_begin
+
+end // painting1_thread
+
+
+// painting2_thread:
+/////////////////////////////////////////////////////////////////////////////
+painting2_thread:
+
+$painting2 ondamage painting2_sequence
+pause
+
+painting2_sequence:
+$painting2 nodamage
+wait .2
+
+$painting2 time .4
+$painting2 rotateZdown 20
+waitFor $painting2
+
+$painting2 time .4
+$painting2 rotateZup 8
+waitFor $painting2
+
+$painting2 time .4
+$painting2 rotateZdown 3
+waitFor $painting2
+
+end // painting2_thread
+
+
+// painting3_thread:
+/////////////////////////////////////////////////////////////////////////////
+painting3_thread:
+
+$painting3 ondamage painting3_sequence
+pause
+
+painting3_sequence:
+$painting3 nodamage
+wait .2
+
+$painting3 time .4
+$painting3 rotateZup 30
+waitFor $painting3
+
+$painting3 time .4
+$painting3 rotateZdown 8
+waitFor $painting3
+
+$painting3 time .4
+$painting3 rotateZup 3
+waitFor $painting3
+
+end // painting3_thread
+
+
+// painting4_thread:
+/////////////////////////////////////////////////////////////////////////////
+painting4_thread:
+
+$painting4 ondamage painting4_sequence
+pause
+
+painting4_sequence:
+$painting4 nodamage
+wait .2
+
+$painting4 time .4
+$painting4 rotateZdown 40
+waitFor $painting4
+
+$painting4 time .4
+$painting4 rotateZup 12
+waitFor $painting4
+
+$painting4 time .4
+$painting4 rotateZdown 5
+waitFor $painting4
+
+end // painting4_thread
+
+
+// painting5_thread:
+/////////////////////////////////////////////////////////////////////////////
+painting5_thread:
+
+$painting5 ondamage painting5_sequence
+pause
+
+painting5_sequence:
+$painting5 nodamage
+wait .2
+
+$painting5 time .4
+$painting5 rotateXdown 20
+waitFor $painting5
+
+$painting5 time .4
+$painting5 rotateXup 8
+waitFor $painting5
+
+$painting5 time .4
+$painting5 rotateXdown 4
+waitFor $painting5
+
+end // painting5_thread
+
+
+// painting6_thread:
+/////////////////////////////////////////////////////////////////////////////
+painting6_thread:
+
+$painting6 ondamage painting6_sequence
+pause
+
+painting6_sequence:
+$painting6 nodamage
+wait .2
+
+$painting6 time .4
+$painting6 rotateXdown 20
+waitFor $painting6
+
+$painting6 time .4
+$painting6 rotateXup 8
+waitFor $painting6
+
+$painting6 time .4
+$painting6 rotateXdown 4
+waitFor $painting6
+
+end // painting6_thread
+
+
+// sign1_thread:
+/////////////////////////////////////////////////////////////////////////////
+sign1_thread:
+
+$sign1 ondamage sign1_sequence
+pause
+
+sign1_sequence:
+$sign1 nodamage
+
+$sign1 time .4
+$sign1 rotateXup 20
+waitFor $sign1
+
+$sign1 time .4
+$sign1 rotateXdown 8
+waitFor $sign1
+
+$sign1 time .4
+$sign1 rotateXup 4
+waitFor $sign1
+
+end // sign1_thread
+
+
+// sign2_thread:
+/////////////////////////////////////////////////////////////////////////////
+sign2_thread:
+
+$sign2 ondamage sign2_sequence
+pause
+
+sign2_sequence:
+$sign2 nodamage
+
+$sign2 time .4
+$sign2 rotateZup 20
+waitFor $sign2
+
+$sign2 time .4
+$sign2 rotateZdown 8
+waitFor $sign2
+
+$sign2 time .4
+$sign2 rotateZup 4
+waitFor $sign2
+
+end // sign2_thread
+
+phone1_damage_setup:
+$tele1 ondamage tele1_damaged
+pause
+end
+
+phone2_damage_setup:
+$tele2 ondamage tele2_damaged
+pause
+end
+
+// helicopter_sound_thread:
+/////////////////////////////////////////////////////////////////////////////
+helicopter_sound_thread:
+
+game.intro_ground_entrance ifequal 2 goto helicopter_sound_skip
+
+$hc_copter2 entitysound vehicle/helicopt/flyloop.wav 0.15 4.0
+
+// Setup the copter flying away
+$hc_copter2 minlight 1
+$hc_copter2_roters minlight 1
+
+$hc_copter2_rotors bind $hc_copter2_parent
+$hc_copter2 bind $hc_copter2_parent
+wait game.FRAMETIME
+
+$hc_copter2_rotors rotateY 540
+
+$hc_copter2_parent followpath $hc_copter2_path
+waitFor $hc_copter2_parent
+
+$hc_copter2 stopsound
+
+$hc_copter2_rotors remove
+$hc_copter2 remove
+$hc_copter2_parent remove
+
+$helicopter_sound remove
+
+end
+
+helicopter_sound_skip:
+
+$hc_copter2 remove
+
+end // helicopter_sound_thread
+
+
+// security_key_thread:
+/////////////////////////////////////////////////////////////////////////////
+security_key_thread:
+
+trigger $spawn_hostage1_thug04
+trigger $spawn_hostage1_thug05
+trigger $spawn_hostage1_thug06
+$key2 remove
+$key2_thug04 remove
+$key2_thug05 remove
+$key2_thug06 remove
+
+thread security_key_misscomp_thread
+
+end // security_key_thread
+
+// security_key2_thread:
+/////////////////////////////////////////////////////////////////////////////
+security_key2_thread:
+
+trigger $spawn_key2_thug04
+trigger $spawn_key2_thug05
+trigger $spawn_key2_thug06
+$key1 remove
+$hostage1_thug04 remove
+$hostage1_thug05 remove
+$hostage1_thug06 remove
+
+
+thread security_key_misscomp_thread
+
+end // security_key_thread
+
+
+// keydoor_unlocked_thread:
+
+/////////////////////////////////////////////////////////////////////////////
+keydoor_unlocked_thread:
+
+$keydoor key ""
+
+end // keydoor_unlocked_thread
+
+// revolvingdoor1_remove_thread:
+/////////////////////////////////////////////////////////////////////////////
+revolvingdoor1_remove_thread:
+
+$revolvingdoor1 playsound impact/glass/glassbrk/mix1.wav
+$revolvingdoor1 shatter "0 0 0" 50 10 25 .05 0
+$revolvingdoor1 remove
+
+end // revolvingdoor1_remove_thread
+
+// [XA] new to Reloaded: move the suspense music trigger to just outside the
+// security room, so it plays for more than just a couple of seconds.
+/////////////////////////////////////////////////////////////////////////////
+trigger_security_music_on_thread:
+  music suspense
+end
+
+trigger_security_music_off_thread:
+  music normal
+end
+
+// [XA] new to Reloaded: play the mystery music in the vault room, for flavor
+/////////////////////////////////////////////////////////////////////////////
+trigger_vault_music_on_thread:
+  level.VaultOpened ifequal 1 music mystery
+end
+
+trigger_vault_music_off_thread:
+  level.VaultOpened ifequal 1 music normal
+end
+
+// [XA] new to Reloaded: fake security door use trigger
+/////////////////////////////////////////////////////////////////////////////
+fake_securitydoor_thread:
+  dialogsoundlow "player/blade/locked.wav"
+end
+
+//===========================================================================
+//===========================================================================
+// CHARACTERS
+//===========================================================================
+//===========================================================================
+// init_character_items_thread:
+/////////////////////////////////////////////////////////////////////////////
+init_character_items_thread:
+
+$thug02 item Health 20
+$hostage1_thug03 item Health 20
+$mancini_thug03 item Health 50
+$hostage4_thug01 item Health 20
+$thug06 item Health 20
+
+end // init_character_items_thread
+
+
+// hostage01_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage01_thread:
+
+local.self ignoreall
+local.self respondto pain
+local.self respondto opendoor
+local.self definestate activate hostage01_activate
+local.self definestate killed hostage01_killed
+pause
+
+hostage01_activate:
+local.self ignore activate
+
+music surprise normal
+trigger $hostage01_snd
+
+// Cause the thug to attack her
+trigger $hostage1_thug01
+
+local.self runto $hostage01_node1
+waitFor local.self
+
+local.self anim crouch_down
+
+local.self definestate use hostage01_use
+pause
+
+hostage01_use:
+local.self ignore use
+
+thread blade_saved_female_dialog_thread
+
+local.self runto $hostage_flee01
+waitFor local.self
+
+local.self runto $hostage1_flee02
+waitFor local.self
+
+local.self runto $hostage1_flee03
+waitFor local.self
+
+local.self remove
+
+level.HostagesSaved += 1
+thread hostage_thread
+
+pause
+
+hostage01_killed:
+local.self ignore killed
+
+level.HostagesKilled += 1
+thread hostage_thread
+
+end // hostage01_thread
+
+
+// hostage02_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage02_thread:
+
+local.self ignoreall
+local.self anim crouch_idle
+local.self respondto pain
+local.self respondto opendoor
+local.self definestate activate hostage02_activate
+local.self definestate use hostage02_use
+local.self definestate killed hostage02_killed
+pause
+
+hostage02_activate:
+local.self ignore activate
+
+trigger $hostage02_snd
+
+pause
+
+hostage02_use:
+local.self ignore use
+
+thread blade_saved_female_dialog_thread
+
+local.self runto $hostage_flee01
+waitFor local.self
+
+local.self runto $hostage1_flee02
+waitFor local.self
+
+local.self runto $hostage1_flee03
+waitFor local.self
+
+local.self remove
+
+level.HostagesSaved += 1
+thread hostage_thread
+
+pause
+
+hostage02_killed:
+local.self ignore killed
+
+level.HostagesKilled += 1
+thread hostage_thread
+
+end // hostage02_thread
+
+
+// hostage03_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage03_thread:
+
+local.self ignoreall
+local.self anim crouch_idle
+local.self respondto pain
+local.self respondto opendoor
+local.self definestate activate hostage03_activate
+local.self definestate use hostage03_use
+local.self definestate killed hostage03_killed
+pause
+
+hostage03_activate:
+local.self ignore activate
+
+local.self playsound misc/civmale/panic3.wav
+
+pause
+
+hostage03_use:
+local.self ignore use
+
+thread blade_saved_male_dialog_thread
+
+local.self runto $hostage3_4_flee01
+waitFor local.self
+
+local.self runto $hostage3_4_flee02
+waitFor local.self
+
+local.self runto $hostage3_4_flee03
+waitFor local.self
+
+local.self remove
+
+level.HostagesSaved += 1
+thread hostage_thread
+
+pause
+
+hostage03_killed:
+local.self ignore killed
+
+level.HostagesKilled += 1
+thread hostage_thread
+
+end // hostage03_thread
+
+
+// hostage04_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage04_thread:
+
+local.self ignoreall
+local.self anim crouch_idle
+local.self respondto pain
+local.self respondto opendoor
+local.self definestate use hostage04_use
+local.self definestate killed hostage04_killed
+pause
+
+hostage04_use:
+local.self ignore use
+
+thread blade_saved_female_dialog_thread
+
+local.self runto $hostage3_4_flee01
+waitFor local.self
+
+local.self runto $hostage3_4_flee02
+waitFor local.self
+
+local.self runto $hostage3_4_flee03
+waitFor local.self
+
+local.self remove
+
+level.HostagesSaved += 1
+thread hostage_thread
+
+pause
+
+hostage04_killed:
+local.self ignore killed
+
+level.HostagesKilled += 1
+thread hostage_thread
+
+end // hostage04_thread
+
+
+// hostage05_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage05_thread:
+
+local.self ignoreall
+local.self anim crouch_idle
+local.self respondto pain
+local.self respondto opendoor
+local.self definestate activate hostage05_activate
+local.self definestate use hostage05_use
+local.self definestate killed hostage05_killed
+pause
+
+hostage05_activate:
+local.self ignore activate
+
+local.self playsound misc/civmale/beg1.wav
+
+pause
+
+hostage05_use:
+local.self ignore use
+
+thread blade_saved_male_dialog_thread
+
+local.self runto $hostage5_flee01
+waitFor local.self
+local.self runto $hostage5_flee02
+waitFor local.self
+local.self runto $hostage5_flee03
+waitFor local.self
+
+local.self remove
+
+level.HostagesSaved += 1
+thread hostage_thread
+
+pause
+
+hostage05_killed:
+local.self ignore killed
+
+level.HostagesKilled += 1
+thread hostage_thread
+
+end // hostage05_thread
+
+
+// hostage06_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage06_thread:
+
+local.self ignoreall
+local.self anim crouch_idle
+local.self respondto pain
+local.self respondto opendoor
+local.self definestate use hostage06_use
+local.self definestate killed hostage06_killed
+pause
+
+hostage06_use:
+local.self ignore use
+
+thread blade_saved_female_dialog_thread
+
+local.self runto $hostage6_7_flee01
+waitFor local.self
+local.self runto $hostage6_7_flee02
+waitFor local.self
+local.self runto $hostage6_7_flee03
+waitFor local.self
+
+local.self remove
+
+level.HostagesSaved += 1
+thread hostage_thread
+
+pause
+
+hostage06_killed:
+local.self ignore killed
+
+level.HostagesKilled += 1
+thread hostage_thread
+
+end // hostage06_thread
+
+
+// hostage07_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage07_thread:
+
+local.self ignoreall
+local.self anim crouch_idle
+local.self respondto pain
+local.self respondto opendoor
+local.self definestate activate hostage07_activate
+local.self definestate use hostage07_use
+local.self definestate killed hostage07_killed
+pause
+
+hostage07_activate:
+local.self ignore activate
+
+trigger $hostage07_snd
+
+pause
+
+hostage07_use:
+local.self ignore use
+
+thread blade_saved_male_dialog_thread
+
+local.self runto $hostage6_7_flee01
+waitFor local.self
+local.self runto $hostage6_7_flee02
+waitFor local.self
+local.self runto $hostage6_7_flee03
+waitFor local.self
+
+local.self remove
+
+level.HostagesSaved += 1
+thread hostage_thread
+
+pause
+
+hostage07_killed:
+local.self ignore killed
+
+level.HostagesKilled += 1
+thread hostage_thread
+
+end // hostage07_thread
+
+
+// hostage_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage_thread:
+
+local.MustSave = level.Skill
+local.MustSave += 4
+
+local.AllowKilled = 3
+local.AllowKilled -= level.Skill
+
+level.SObjective2 ifnotequal 0 goto hostage_done
+level.HostagesSaved ifgreaterequal local.MustSave goto hostage_enoughsaved
+level.HostagesKilled ifgreater local.AllowKilled goto hostage_toomanykilled
+goto hostage_done
+
+hostage_enoughsaved:
+thread hostages_saved_misscomp_thread
+goto hostage_done
+
+hostage_toomanykilled:
+thread hostages_killed_misscomp_thread
+goto hostage_done
+
+hostage_done:
+
+end // hostage_thread
+
+SpawnRealRope:
+
+ropedrop parm.Origin parm.Rope 8
+
+end
+
+// repel_thug_thread:
+/////////////////////////////////////////////////////////////////////////////
+repel_thug_thread:
+local.Thug string parm.Thug
+local.ThugNoDollar string parm.ThugNoDollar
+local.Node1 string local.Thug
+local.Node1 append "_node1"
+local.Node2 string local.Thug
+local.Node2 append "_node2"
+local.Rope string local.Thug
+local.Rope append "_rope"
+local.Glass string local.Thug
+local.Glass append "_glass"
+
+local.self ignoreall
+local.self respondto opendoor
+
+local.self definestate killed repel_thug_killed_thread
+
+trigger local.Glass
+
+local.self runto local.Node1
+waitFor local.self
+
+local.Rope show
+
+local.RealRope string local.Thug
+local.RealRope append "_realrope"
+
+parm.Rope string local.ThugNoDollar
+parm.Rope append "_realrope"
+local.RopePos string local.Thug
+local.RopePos append "_ropepos"
+
+parm.Origin vector "(0 0 0)"
+parm.Origin getorigin local.RopePos
+thread SpawnRealRope
+
+local.RealRope doActivate
+
+local.self playsound misc/rappel.wav 1
+
+local.self behavior Repel "repel1" local.Node2 48
+waitFor local.self
+wait game.FRAMETIME
+
+local.Rope remove
+local.RealRope ropebase_drop
+local.RealRope fade 0.1
+
+local.self respondtoall
+local.attackmode = 2
+local.self attackplayer
+
+end repel_thug_thread // repel_thug_thread
+
+repel_thug_killed_thread:
+local.Rope remove
+
+end repel_thug_killed_thread // repel_thug_killed_thread
+
+// repel_thug1_thread:
+/////////////////////////////////////////////////////////////////////////////
+repel_thug1_thread:
+
+trigger $spawn_repel_thug1
+wait game.FRAMETIME
+
+parm.Thug string "$repel_thug1"
+parm.ThugNoDollar string "repel_thug1"
+$repel_thug1 thread repel_thug_thread
+
+end // repel_thug1_thread
+
+
+// repel_thug2_thread:
+/////////////////////////////////////////////////////////////////////////////
+repel_thug2_thread:
+
+trigger $spawn_repel_thug2
+wait game.FRAMETIME
+
+parm.Thug string "$repel_thug2"
+parm.ThugNoDollar string "repel_thug2"
+$repel_thug2 thread repel_thug_thread
+
+end // repel_thug2_thread
+
+
+// repel_thug3_thread:
+/////////////////////////////////////////////////////////////////////////////
+repel_thug3_thread:
+
+trigger $spawn_repel_thug3
+wait game.FRAMETIME
+
+parm.Thug string "$repel_thug3"
+parm.ThugNoDollar string "repel_thug3"
+$repel_thug3 thread repel_thug_thread
+
+end // repel_thug3_thread
+
+
+// repel_thug4_thread:
+/////////////////////////////////////////////////////////////////////////////
+repel_thug4_thread:
+
+trigger $spawn_repel_thug4
+wait game.FRAMETIME
+
+parm.Thug string "$repel_thug4"
+parm.ThugNoDollar string "repel_thug4"
+$repel_thug4 thread repel_thug_thread
+
+end // repel_thug4_thread
+
+
+// repel_thug5_thread:
+/////////////////////////////////////////////////////////////////////////////
+repel_thug5_thread:
+
+trigger $spawn_repel_thug5
+wait game.FRAMETIME
+
+parm.Thug string "$repel_thug5"
+parm.ThugNoDollar string "repel_thug5"
+$repel_thug5 thread repel_thug_thread
+
+end // repel_thug5_thread
+
+
+// repel_thug6_thread:
+/////////////////////////////////////////////////////////////////////////////
+repel_thug6_thread:
+
+trigger $spawn_repel_thug6
+wait game.FRAMETIME
+
+parm.Thug string "$repel_thug6"
+parm.ThugNoDollar string "repel_thug6"
+$repel_thug6 thread repel_thug_thread
+
+end // repel_thug6_thread
+
+
+// repel_thug7_thread:
+/////////////////////////////////////////////////////////////////////////////
+repel_thug7_thread:
+
+trigger $spawn_repel_thug7
+wait game.FRAMETIME
+
+parm.Thug string "$repel_thug7"
+parm.ThugNoDollar string "repel_thug7"
+$repel_thug7 thread repel_thug_thread
+
+end // repel_thug7_thread
+
+
+// repel_thug8_thread:
+/////////////////////////////////////////////////////////////////////////////
+repel_thug8_thread:
+
+trigger $spawn_repel_thug8
+wait game.FRAMETIME
+
+parm.Thug string "$repel_thug8"
+parm.ThugNoDollar string "repel_thug8"
+$repel_thug8 thread repel_thug_thread
+
+end // repel_thug8_thread
+
+
+// repel_thug9_thread:
+/////////////////////////////////////////////////////////////////////////////
+repel_thug9_thread:
+
+trigger $spawn_repel_thug9
+wait game.FRAMETIME
+
+parm.Thug string "$repel_thug9"
+parm.ThugNoDollar string "repel_thug9"
+$repel_thug9 thread repel_thug_thread
+
+end // repel_thug9_thread
+
+
+// repel_thug10_thread:
+/////////////////////////////////////////////////////////////////////////////
+repel_thug10_thread:
+
+trigger $spawn_repel_thug10
+wait game.FRAMETIME
+
+parm.Thug string "$repel_thug10"
+parm.ThugNoDollar string "repel_thug10"
+$repel_thug10 thread repel_thug_thread
+
+end // repel_thug10_thread
+
+
+// repel_thug11_thread:
+/////////////////////////////////////////////////////////////////////////////
+repel_thug11_thread:
+
+trigger $spawn_repel_thug11
+wait game.FRAMETIME
+
+parm.Thug string "$repel_thug11"
+parm.ThugNoDollar string "repel_thug11"
+$repel_thug11 thread repel_thug_thread
+
+end // repel_thug11_thread
+
+
+// battle_hc01_thread:
+/////////////////////////////////////////////////////////////////////////////
+battle_hc01_thread:
+
+local.self ignoreall
+local.self respondto opendoor
+local.self definestate activate battle_hc01_activate
+pause
+
+battle_hc01_activate:
+local.self definestate activate battle_hc01_activate2
+
+thread hc_heavy_resistance_dialog_thread
+
+trigger $battle_hc02
+trigger $battle_thug01
+trigger $battle_thug02
+trigger $battle_thug03
+
+$revolvingdoor2 playsound impact/glass/glassbrk/mix1.wav
+$revolvingdoor2 shatter "0 0 0" 50 10 25 .05 0
+$revolvingdoor2 remove
+
+local.self respondtoall
+local.attackmode = 2
+
+local.self attack $battle_thug02
+
+pause
+
+battle_hc01_activate2:
+local.self ignore activate
+local.self ignoreall
+
+thread hc_alpha_team_dialog_thread
+
+local.self runto $battle_hc_flee
+waitFor local.self
+
+local.self remove
+
+end // battle_hc01_thread
+
+
+// battle_hc02_thread:
+/////////////////////////////////////////////////////////////////////////////
+battle_hc02_thread:
+
+local.self ignoreall
+local.self respondto opendoor
+local.self definestate activate battle_hc02_activate
+pause
+
+battle_hc02_activate:
+local.self definestate activate battle_hc02_activate2
+
+local.self respondtoall
+local.attackmode = 2
+
+local.self attack $battle_thug01
+
+pause
+
+battle_hc02_activate2:
+local.self ignore activate
+local.self ignoreall
+
+wait game.FRAMETIME
+thread hc_alpha_team_dialog_thread
+
+local.self runto $battle_hc_flee
+waitFor local.self
+
+local.self remove
+
+
+end // battle_hc02_thread
+
+
+// spawn_battle_thug_thread:
+/////////////////////////////////////////////////////////////////////////////
+spawn_battle_thug_thread:
+
+level.BattleThugsKilled += 1
+
+// All the thugs are gone, have the HC guys take off
+level.BattleThugsKilled ifequal 7 trigger $battle_hc01
+level.BattleThugsKilled ifequal 7 trigger $battle_hc02
+
+level.BattleThugsKilled ifequal 1 goto spawn_battle_thug1
+level.BattleThugsKilled ifequal 2 goto spawn_battle_thug2
+level.BattleThugsKilled ifequal 3 goto spawn_battle_thug3
+level.BattleThugsKilled ifequal 4 goto spawn_battle_thug4
+goto spawn_battle_thug_done
+
+spawn_battle_thug1:
+trigger $spawn_battle_thug04
+wait game.FRAMETIME
+$battle_thug04 thread battle_thug04_thread
+
+goto spawn_battle_thug_done
+
+spawn_battle_thug2:
+trigger $spawn_battle_thug05
+wait game.FRAMETIME
+$battle_thug05 thread battle_thug05_thread
+
+goto spawn_battle_thug_done
+
+spawn_battle_thug3:
+trigger $spawn_battle_thug06
+wait game.FRAMETIME
+$battle_thug06 thread battle_thug06_thread
+
+goto spawn_battle_thug_done
+
+spawn_battle_thug4:
+trigger $spawn_battle_thug07
+wait game.FRAMETIME
+$battle_thug07 thread battle_thug07_thread
+
+goto spawn_battle_thug_done
+
+spawn_battle_thug_done:
+
+end // spawn_battle_thug_thread
+
+
+// battle_thug01_thread:
+/////////////////////////////////////////////////////////////////////////////
+battle_thug01_thread:
+
+local.self ignoreall
+local.self respondto opendoor
+local.self definestate activate battle_thug01_activate
+local.self definestate killed battle_thug01_killed
+pause
+
+battle_thug01_activate:
+local.self ignore activate
+local.self respondtoall
+
+pause
+
+battle_thug01_killed:
+local.self ignore killed
+
+thread spawn_battle_thug_thread
+
+end // battle_thug01_thread
+
+
+// battle_thug02_thread:
+/////////////////////////////////////////////////////////////////////////////
+battle_thug02_thread:
+
+local.self ignoreall
+local.self respondto opendoor
+local.self definestate activate battle_thug02_activate
+local.self definestate killed battle_thug02_killed
+pause
+
+battle_thug02_activate:
+local.self ignore activate
+local.self respondtoall
+
+pause
+
+battle_thug02_killed:
+local.self ignore killed
+
+thread spawn_battle_thug_thread
+
+end // battle_thug02_thread
+
+
+// battle_thug03_thread:
+/////////////////////////////////////////////////////////////////////////////
+battle_thug03_thread:
+
+local.self ignoreall
+local.self respondto opendoor
+local.self definestate activate battle_thug03_activate
+local.self definestate killed battle_thug03_killed
+pause
+
+battle_thug03_activate:
+local.self ignore activate
+
+local.self respondtoall
+
+pause
+
+battle_thug03_killed:
+local.self ignore killed
+
+thread spawn_battle_thug_thread
+
+end // battle_thug03_thread
+
+
+// battle_thug04_thread:
+/////////////////////////////////////////////////////////////////////////////
+battle_thug04_thread:
+
+local.attackmode = 2
+local.self definestate killed battle_thug04_killed
+local.self attackplayer
+pause
+
+battle_thug04_killed:
+local.self ignore killed
+
+thread spawn_battle_thug_thread
+
+end // battle_thug04_thread
+
+
+// battle_thug05_thread:
+/////////////////////////////////////////////////////////////////////////////
+battle_thug05_thread:
+
+local.attackmode = 2
+local.self definestate killed battle_thug05_killed
+local.self attackplayer
+pause
+
+battle_thug05_killed:
+local.self ignore killed
+
+thread spawn_battle_thug_thread
+
+end // battle_thug05_thread
+
+
+// battle_thug06_thread:
+/////////////////////////////////////////////////////////////////////////////
+battle_thug06_thread:
+
+local.attackmode = 2
+
+local.self definestate killed battle_thug06_killed
+local.self attackplayer
+pause
+
+battle_thug06_killed:
+local.self ignore killed
+
+thread spawn_battle_thug_thread
+
+end // battle_thug06_thread
+
+
+// battle_thug07_thread:
+/////////////////////////////////////////////////////////////////////////////
+battle_thug07_thread:
+
+local.attackmode = 2
+
+local.self definestate killed battle_thug07_killed
+local.self attackplayer
+pause
+
+battle_thug07_killed:
+local.self ignore killed
+
+thread spawn_battle_thug_thread
+
+end // battle_thug07_thread
+
+
+// mancini_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancini_thread:
+
+local.self nodamage
+local.self anim idle_giving_orders
+
+local.self ignoreall
+local.self respondto opendoor
+local.self definestate activate mancini_activate1
+pause
+
+// Mancini seen the first time
+mancini_activate1:
+local.self ignore activate
+
+// [XA] temporarily make the quarter unable to be picked up
+// until the scene finishes, otherwise the dialogue collides.
+// this feels cleaner than delaying the dialogue script, IMO.
+$fountain_quarter notsolid
+
+music surprise normal
+$teller_securitygate playsound environment/doors/door1cls.wav
+$teller_securitygate time 1
+$teller_securitygate moveDown 144
+waitFor $teller_securitygate
+
+thread mancini_seen1_dialog_thread
+wait 4
+
+trigger $spawn_mancini_thug01
+trigger $spawn_mancini_thug02
+trigger $spawn_mancini_thug03
+wait game.FRAMETIME
+
+$mancini_thug01 thread mancini_thug01_thread
+$mancini_thug02 thread mancini_thug02_thread
+$mancini_thug03 thread mancini_thug03_thread
+
+// have mancini_thug06 follow mancini
+trigger $mancini_thug06
+
+local.self runto $mancini_node1
+waitFor local.self
+
+thread capture_mancini_misscomp_thread
+
+local.self runto $mancini_node2
+waitFor local.self
+
+local.self turnto 0
+waitFor local.self
+
+local.self anim idle_tantrum
+
+$teller_securitygate playsound environment/doors/door1opn.wav
+$teller_securitygate time 1
+$teller_securitygate moveUp 144
+waitFor $teller_securitygate
+
+$teller_securitygate remove
+
+thread jc_opened_tellers
+
+local.self definestate activate mancini_activate2
+pause
+
+// Mancini seen the second time
+mancini_activate2:
+local.self ignore activate
+
+thread mancini_seen2_dialog_thread
+//wait 1
+
+local.self runto $mancini_node3
+waitFor local.self
+
+trigger $vault_trigger
+
+local.self runto $mancini_node4
+waitFor local.self
+
+local.self runto $mancini_node5
+waitFor local.self
+
+local.self anim idle_giving_orders
+
+// Set mancini_thug04 and mancini_thug05 to respond to sounds
+trigger $mancini_thug04
+trigger $mancini_thug05
+
+local.self definestate activate mancini_activate3
+pause
+
+// Mancini seen the third time
+mancini_activate3:
+local.self ignore activate
+
+thread mancini_seen3_dialog_thread
+waitForThread parm.previousthread
+
+local.self	jumpto	$node32a	400
+waitFor local.self
+
+//local.self jumpto $node32
+//waitFor local.self
+
+$mancini remove
+
+end // mancini_thread
+
+
+// mancini_thug01_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancini_thug01_thread:
+
+local.self definestate killed mancini_thug01_killed
+local.attackmode = 2
+local.self attackplayer
+pause
+
+mancini_thug01_killed:
+local.self ignore killed
+
+thread repel_thug6_thread
+
+end // mancini_thug01_thread
+
+
+// mancini_thug02_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancini_thug02_thread:
+
+local.self definestate killed mancini_thug02_killed
+local.attackmode = 2
+local.self attackplayer
+pause
+
+mancini_thug02_killed:
+local.self ignore killed
+
+thread repel_thug7_thread
+
+end // mancini_thug02_thread
+
+
+// mancini_thug03_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancini_thug03_thread:
+
+local.attackmode = 2
+
+local.self attackplayer
+
+end // mancini_thug03_thread
+
+
+// mancini_thug04_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancini_thug04_thread:
+
+local.attackmode = 2
+local.self ignoresounds
+local.self definestate activate mancini_thug04_activate
+pause
+
+mancini_thug04_activate:
+local.self respondtosounds
+
+end // mancini_thug04_thread
+
+
+// mancini_thug05_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancini_thug05_thread:
+
+local.attackmode = 2
+local.self ignoresounds
+local.self definestate activate mancini_thug05_activate
+pause
+
+mancini_thug05_activate:
+local.self respondtosounds
+
+end // mancini_thug05_thread
+
+
+// mancini_thug06_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancini_thug06_thread:
+
+local.self ignoreall
+local.self respondto opendoor
+local.self definestate activate mancini_thug06_activate
+pause
+
+mancini_thug06_activate:
+local.self ignore activate
+
+// Wait for mancini to get through the door
+wait 2
+
+local.self runto $mancini_node1
+waitFor local.self
+
+local.self runto $mancini_thug06_node1
+waitFor local.self
+
+local.self runto $mancini_thug06_node2
+waitFor local.self
+
+local.self turnto 315
+waitFor local.self
+
+local.self remove
+wait game.FRAMETIME
+
+trigger $spawn_mancini_thug07
+
+end // mancini_thug06_thread
+
+
+// spawn_mancini_thug07_thread:
+/////////////////////////////////////////////////////////////////////////////
+spawn_mancini_thug07_thread:
+
+trigger $spawn_mancini_thug07
+wait game.FRAMETIME
+
+$mancini_thug07 thread mancini_thug07_thread
+
+end // spawn_mancini_thug07_thread
+
+
+// mancini_thug07_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancini_thug07_thread:
+
+thread thug_trouble_dialog_thread
+wait 2
+
+local.attackmode = 2
+local.self attackplayer
+
+end // mancini_thug07_thread
+
+
+// hostage1_thug01_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage1_thug01_thread:
+
+local.self ignoresounds
+local.self definestate activate hostage_thug01_activate
+pause
+
+hostage_thug01_activate:
+local.self ignore activate
+local.self respondtosounds
+
+local.self attack $hostage01
+waitFor local.self
+
+local.attackmode = 2
+local.self attackplayer
+
+end // hostage1_thug01_thread
+
+
+// hostage1_thug02_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage1_thug02_thread:
+
+end // hostage1_thug02_thread
+
+
+// hostage1_thug03_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage1_thug03_thread:
+
+end // hostage1_thug03_thread
+
+
+// hostage2_thug01_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage2_thug01_thread:
+
+local.self definestate killed hostage2_thug01_killed
+pause
+
+hostage2_thug01_killed:
+local.self ignore killed
+
+thread repel_thug8_thread
+
+end // hostage2_thug01_thread
+
+
+// hostage2_thug02_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage2_thug02_thread:
+
+local.self definestate killed hostage2_thug02_killed
+pause
+
+hostage2_thug02_killed:
+local.self ignore killed
+
+thread repel_thug9_thread
+
+end // hostage2_thug02_thread
+
+
+// hostage2_thug03_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage2_thug03_thread:
+
+local.self definestate activate hostage2_thug03_activate
+pause
+
+hostage2_thug03_activate:
+local.self ignore activate
+
+local.self attackplayer
+
+end // hostage2_thug03_thread
+
+
+// hostage3_thug01_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage3_thug01_thread:
+
+local.attackmode = 2
+
+end // hostage3_thug01_thread
+
+
+// hostage3_thug02_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage3_thug02_thread:
+
+local.attackmode = 2
+
+end // hostage3_thug02_thread
+
+
+// hostage3_thug03_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage3_thug03_thread:
+
+local.attackmode = 2
+
+end // hostage3_thug03_thread
+
+
+// hostage3_thug04_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage3_thug04_thread:
+
+local.attackmode = 2
+
+end // hostage3_thug04_thread
+
+
+// hostage4_thug01_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage4_thug01_thread:
+
+local.self definestate sightenemy hostage4_thug01_sightenemy
+pause
+
+hostage4_thug01_sightenemy:
+trigger $table1
+trigger $hostage4_thug02
+
+local.self copystate sightenemy default_sightenemy
+local.attackmode = 0
+local.self attackplayer
+
+end // hostage4_thug01_thread
+
+
+// hostage4_thug02_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostage4_thug02_thread:
+
+local.attackmode = 0
+local.self definestate activate hostage4_thug02_activate
+pause
+
+hostage4_thug02_activate:
+local.self ignore activate
+
+local.self attackplayer
+
+end // hostage4_thug02_thread
+
+
+// securityroom_boss_thread:
+/////////////////////////////////////////////////////////////////////////////
+securityroom_boss_thread:
+
+local.self definestate activate securityroom_boss_activate
+pause
+
+securityroom_boss_activate:
+local.self ignore activate
+
+// [XA] suspense music is triggered elsewhere now
+//music suspense normal
+
+local.self attackplayer
+
+end // securityroom_boss_thread
+
+
+// thug01_thread:
+/////////////////////////////////////////////////////////////////////////////
+thug01_thread:
+
+local.self definestate idle thug01_patrol
+local.self definestate killed thug01_killed
+local.self state idle
+pause
+
+thug01_patrol:
+local.self ignore activate
+
+local.self walkto $thug01_node1
+waitFor local.self
+
+local.self walkto $thug01_node2
+waitFor local.self
+
+local.self anim guerilla_talk
+wait 5
+
+local.self walkto $thug01_node1
+waitFor local.self
+
+goto thug01_patrol
+
+thug01_killed:
+
+trigger $spawn_thug01_killed01a
+wait game.FRAMETIME
+$thug01_killed01 thread thug01_killed01_thread
+
+trigger $thug03
+
+end // thug01_thread
+
+
+// thug01_killed01_thread:
+/////////////////////////////////////////////////////////////////////////////
+thug01_killed01_thread:
+
+local.attackmode = 2
+local.self attackplayer
+
+end // thug01_killed01_thread
+
+
+// thug02_thread:
+/////////////////////////////////////////////////////////////////////////////
+thug02_thread:
+
+local.self definestate idle thug02_patrol
+local.self definestate killed thug02_killed
+local.self state idle
+pause
+
+thug02_patrol:
+local.self walkto $thug02_node1
+waitFor local.self
+
+local.self walkto $thug02_node2
+waitFor local.self
+
+goto thug02_patrol
+
+thug02_killed:
+
+trigger $spawn_thug02_killed01a
+wait game.FRAMETIME
+$thug02_killed01 thread thug02_killed01_thread
+
+end // thug02_thread
+
+
+// thug02_killed01_thread:
+/////////////////////////////////////////////////////////////////////////////
+thug02_killed01_thread:
+
+local.attackmode = 2
+local.self attackplayer
+
+end // thug02_killed01_thread
+
+
+// thug03_thread:
+/////////////////////////////////////////////////////////////////////////////
+thug03_thread:
+
+local.self ignoresounds
+local.self definestate activate thug03_activate
+pause
+
+thug03_activate:
+local.self ignore activate
+local.self respondtosounds
+
+local.self attackplayer
+
+end // thug03_thread
+
+
+// thug04_thread:
+/////////////////////////////////////////////////////////////////////////////
+thug04_thread:
+
+local.self definestate idle thug04_patrol
+local.self definestate activate thug04_activate
+local.self definestate sightenemy thug04_sightenemy
+local.self definestate killed thug04_killed
+local.self state idle
+pause
+
+thug04_patrol:
+local.self walkto $thug04_node1
+waitFor local.self
+
+local.self walkto $thug04_node2
+waitFor local.self
+
+goto thug04_patrol
+
+thug04_activate:
+local.self ignore activate
+
+trigger $thug05
+thread revolvingdoor1_remove_thread
+
+local.self attackplayer
+
+end // thug04_thread
+
+thug04_sightenemy:
+trigger $thug05
+thread revolvingdoor1_remove_thread
+
+local.self copystate sightenemy default_sightenemy
+local.self attackplayer
+
+end // thug04_thread
+
+thug04_killed:
+thread repel_thug10_thread
+
+end // thug04_thread
+
+
+// thug05_thread:
+/////////////////////////////////////////////////////////////////////////////
+thug05_thread:
+
+local.self definestate idle thug05_patrol
+local.self definestate activate thug05_activate
+local.self definestate sightenemy thug05_sightenemy
+local.self definestate killed thug05_killed
+local.self state idle
+pause
+
+thug05_patrol:
+local.self walkto $thug05_node1
+waitFor local.self
+
+local.self walkto $thug05_node2
+waitFor local.self
+
+goto thug05_patrol
+
+thug05_activate:
+local.self ignore activate
+
+thread revolvingdoor1_remove_thread
+
+local.self attackplayer
+
+end // thug05_thread
+
+thug05_sightenemy:
+trigger $thug04
+thread revolvingdoor1_remove_thread
+
+local.self copystate sightenemy default_sightenemy
+local.self attackplayer
+
+end // thug05_thread
+
+thug05_killed:
+thread repel_thug11_thread
+
+end // thug05_thread
+
+
+// thug06_thread:
+/////////////////////////////////////////////////////////////////////////////
+thug06_thread:
+
+end // thug06_thread
+
+
+//===========================================================================
+//===========================================================================
+// DIALOG
+//===========================================================================
+//===========================================================================
+// no_exit_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+no_exit_dialog_thread:
+
+thread dialog::jc_sightseeing
+waitForThread parm.previousthread
+
+end // no_exit_dialog_thread
+
+
+// hc_heavy_resistance_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+hc_heavy_resistance_dialog_thread:
+
+// [XA] new to Reloaded: delay this line until other dialogue is complete.
+level.start_of_map_dialog ifnotequal 0 waitForThread level.start_of_map_dialog
+
+thread dialog::hc_heavy_resistance
+level.start_of_map_dialog = parm.previousthread
+waitForThread level.start_of_map_dialog
+level.start_of_map_dialog = 0
+
+end // hc_heavy_resistance_dialog_thread
+
+
+// hc_alpha_team_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+hc_alpha_team_dialog_thread:
+
+thread dialog::hc_alpha_team
+waitForThread parm.previousthread
+
+end // hc_alpha_team_dialog_thread
+
+
+// mancini_what_get_paid_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancini_what_get_paid_dialog_thread:
+
+wait 1
+
+thread dialog::mancini_what_get_paid_for
+level.start_cinematic_dialog_thread = parm.previousthread
+waitForThread level.start_cinematic_dialog_thread
+
+end // mancini_what_get_paid_dialog_thread
+
+
+// thug_hurryup_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+thug_hurryup_dialog_thread:
+
+parm.thug1 string "$start_thug01"
+thread dialog::thug_hurry_up
+waitForThread parm.previousthread
+
+end // thug_hurryup_dialog_thread
+
+
+// thug_move_move_move_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+thug_move_move_move_dialog_thread:
+
+parm.thug1 string "$start_thug02"
+thread dialog::thug_move_move_move
+waitForThread parm.previousthread
+
+end // thug_move_move_move_dialog_thread
+
+
+// blade_saved_female_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+blade_saved_female_dialog_thread:
+
+local.Count randomint 2
+
+local.Count ifequal 0 thread dialog::blade_civfemale_rescue1
+local.Count ifequal 1 thread dialog::blade_civfemale_rescue2
+waitForThread parm.previousthread
+
+end // blade_saved_female_dialog_thread
+
+
+// blade_saved_male_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+blade_saved_male_dialog_thread:
+
+local.Count randomint 2
+
+local.Count ifequal 0 thread dialog::blade_civmale_rescue1
+local.Count ifequal 1 thread dialog::blade_civmale_rescue2
+waitForThread parm.previousthread
+
+end // blade_saved_male_dialog_thread
+
+
+// jc_clear_bank_out_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+jc_clear_bank_out_dialog_thread:
+
+// [XA] new to Reloaded: delay this line until other dialogue is complete.
+level.start_of_map_dialog ifnotequal 0 waitForThread level.start_of_map_dialog
+
+thread dialog::jc_clear_bank_out
+level.start_of_map_dialog = parm.previousthread
+waitForThread level.start_of_map_dialog
+level.start_of_map_dialog = 0
+
+end // jc_clear_bank_out_dialog_thread
+
+
+// quarter_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+quarter_dialog_thread:
+
+thread dialog::blade_finds_quarter
+waitForThread parm.previousthread
+
+local.index randomint 4
+local.index ifequal 0 thread dialog::jc_need_that
+local.index ifequal 1 thread dialog::jc_a_raise
+local.index ifequal 2 thread dialog::jc_able_to_pay
+local.index ifequal 3 thread dialog::jc_every_quarter
+
+end // quarter_dialog_thread
+
+
+// thug_trouble_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+thug_trouble_dialog_thread:
+
+parm.thug1 string "$mancini_thug07"
+thread dialog::thug_trouble_at_vault
+waitForThread parm.previousthread
+
+end // thug_trouble_dialog_thread
+
+
+// need_vault_combo_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+need_vault_combo_dialog_thread:
+
+thread dialog::blade_needs_vault_combo
+waitForThread parm.previousthread
+
+end // need_vault_combo_dialog_thread
+
+
+// identcard_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+identcard_dialog_thread:
+
+thread dialog::jc_handy1
+waitForThread parm.previousthread
+
+end // end identcard_dialog_thread
+
+
+// jc_warn_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+jc_warn_dialog_thread:
+
+thread dialog::jneed_to_shut_down_sec1
+waitForThread parm.previousthread
+
+end // jc_warn_dialog_thread
+
+
+// cash1_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+cash1_dialog_thread:
+
+thread dialog::blade_takes_money1
+waitForThread parm.previousthread
+
+end // cash1_dialog_thread
+
+
+// cash2_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+cash2_dialog_thread:
+
+thread dialog::blade_takes_money2
+waitForThread parm.previousthread
+
+end // cash2_dialog_thread
+
+
+// destroys_furniture1_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+destroys_furniture1_dialog_thread:
+
+thread dialog::blade_destroys_furniture1
+waitForThread parm.previousthread
+
+end // destroys_furniture1_dialog_thread
+
+
+// destroys_furniture2_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+destroys_furniture2_dialog_thread:
+
+thread dialog::blade_destroys_furniture2
+waitForThread parm.previousthread
+
+end // destroys_furniture2_dialog_thread
+
+
+// destroys_furniture3_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+destroys_furniture3_dialog_thread:
+
+thread dialog::blade_destroys_furniture3
+waitForThread parm.previousthread
+
+end // destroys_furniture3_dialog_thread
+
+
+// destroys_furniture4_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+destroys_furniture4_dialog_thread:
+
+thread dialog::blade_destroys_furniture4
+waitForThread parm.previousthread
+
+end // destroys_furniture4_dialog_thread
+
+
+// destroys_property8_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+destroys_property8_dialog_thread:
+
+thread dialog::blade_destroys_property8
+waitForThread parm.previousthread
+
+end // destroys_property8_dialog_thread
+
+
+// destroys_plant1_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+destroys_plant1_dialog_thread:
+
+thread dialog::blade_destroys_plant
+waitForThread parm.previousthread
+
+end // destroys_plant1_dialog_thread
+
+
+// phone_bruno_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+phone_bruno_dialog_thread:
+
+parm.phone string "$tele1"
+thread dialog::phone_bruno
+waitForThread parm.previousthread
+
+end // phone_bruno_dialog_thread
+
+
+// phone_cinema_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+phone_cinema_dialog_thread:
+
+parm.phone string "$tele2"
+thread dialog::phone_cinema
+waitForThread parm.previousthread
+
+end // phone_cinema_dialog_thread
+
+
+// mancini_seen1_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancini_seen1_dialog_thread:
+
+parm.mancini1 string "$mancini"
+thread dialog::mancini_damn_blade
+waitForThread parm.previousthread
+
+parm.mancini1 string "$mancini"
+parm.thug1 string $mancini_thug03
+thread dialog::mancini_dont_stand_kill
+waitForThread parm.previousthread
+
+end // mancini_seen1_dialog_thread
+
+
+// blade_open_tellers:
+/////////////////////////////////////////////////////////////////////////////
+blade_open_tellers:
+
+thread dialog::blade_can_u_open
+waitForThread parm.previousthread
+
+end // blade_open_tellers
+
+
+// jc_opened_tellers:
+/////////////////////////////////////////////////////////////////////////////
+jc_opened_tellers:
+
+thread dialog::jc_opened_it
+waitForThread parm.previousthread
+
+// [XA] allow the quarter to be picked up when the dialogue is concluded
+$fountain_quarter notsolid trigger
+
+end // jc_opened_tellers
+
+
+// mancini_seen2_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancini_seen2_dialog_thread:
+
+parm.mancini1 string "$mancini"
+thread dialog::mancini_dont_let_him_thru
+waitForThread parm.previousthread
+
+end // mancini_seen2_dialog_thread
+
+
+// mancini_seen3_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancini_seen3_dialog_thread:
+
+local.thug04alive isentalive $mancini_thug04
+local.thug05alive isentalive $mancini_thug05
+
+local.thug04alive ifnotequal 1 goto mancini_seen3_dummy_end
+local.thug05alive ifnotequal 1 goto mancini_seen3_dummy_end
+
+parm.thug1 string "$mancini_thug04"
+thread dialog::thug_leave_now
+waitForThread parm.previousthread
+
+parm.thug1 string "$mancini_thug05"
+thread dialog::thug_call_chopper
+waitForThread parm.previousthread
+
+end // mancini_seen3_dialog_thread
+
+mancini_seen3_dummy_end:
+// FS: Dummy function to end early if we killed the thugs.
+end
+
+// evidence_found_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+evidence_found_dialog_thread:
+
+game.bank_evidence_found = 1
+
+thread dialog::jc_hint1
+waitForThread parm.previousthread
+
+end // evidence_found_dialog_thread
+
+
+// end_sequence_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+end_sequence_dialog_thread:
+
+thread dialog::end_of_level
+waitForThread parm.previousthread
+
+end // end_sequence_dialog_thread
+
+
+//===========================================================================
+//===========================================================================
+// CONSOLES
+//===========================================================================
+//===========================================================================
+//---------------------------------------------------------------
+// SecMenu_Thread
+//---------------------------------------------------------------
+SecMenu_Thread:
+wait 3
+local.sec_console string "con_security"
+local.sec_consoleobject string "%con_security"
+local.sec_consoleobject confraction .3
+goto SecMenu_Main_Input
+
+//---------------------------------------------------------------
+SecMenu_Main_Input:
+local.CustomerName string "--------"
+local.CustomerNumber string "--------"
+local.CustomerPIN string "--------"
+local.sec_consoleobject conclear
+local.sec_consoleobject confraction .3
+local.sec_consoleobject conmenufile "menus/bank/bank.001"
+local.PrintString string "xl 280 yt -350 fc 0.5 0.5 0.5 1 string \""
+local.doors_locked ifequal 0 local.PrintString append "m_locked\" xl 280 yt -400 fc 0.5 0.5 0.5 1 string \""
+local.doors_locked ifequal 1 local.PrintString append "m_unlocked\" xl 280 yt -400 fc 0.5 0.5 0.5 1 string \""
+level.description ifequal 0 local.PrintString append "m_high\""
+level.description ifequal 1 local.PrintString append "m_low\""
+local.sec_consoleobject conlayout local.PrintString
+local.sec_consoleobject focus menu
+waitForConsole local.sec_console
+local.secinput coninput local.sec_console
+goto SecMenu_Main_ProcessInput
+
+SecMenu_Main_ProcessInput:
+local.secinput ifequal 1 goto SecMenu_Doors_Input
+local.secinput ifequal 2 goto SecMenu_Vault_Input
+local.secinput ifequal 3 goto SecMenu_Account_Input
+local.secinput ifequal 4 goto SecMenu_Prompt_Input
+goto SecMenu_Main_Input
+
+//---------------------------------------------------------------
+SecMenu_Doors_Input:
+local.sec_consoleobject conclear
+local.doors_locked ifequal 0 local.sec_consoleobject conmenufile "menus/bank/bank.002"
+local.doors_locked ifequal 1 local.sec_consoleobject conmenufile "menus/bank/bank.003"
+local.PrintString string "xl 280 yt -350 fc 0.5 0.5 0.5 1 string \""
+local.doors_locked ifequal 0 local.PrintString append "m_locked\" xl 280 yt -400 fc 0.5 0.5 0.5 1 string \""
+local.doors_locked ifequal 1 local.PrintString append "m_unlocked\" xl 280 yt -400 fc 0.5 0.5 0.5 1 string \""
+level.description ifequal 0 local.PrintString append "m_high\""
+level.description ifequal 1 local.PrintString append "m_low\""
+local.sec_consoleobject conlayout local.PrintString
+waitForConsole local.sec_console
+local.secinput coninput local.sec_console
+goto SecMenu_Doors_ProcessInput
+
+SecMenu_Doors_ProcessInput:
+local.secinput ifequal 2 goto SecMenu_Main_Input
+local.doors_locked *= -1
+local.doors_locked += 1
+
+local.SecurityDoorsUnlockedOnce ifequal 0 thread security_doors_unlocked_misscomp_thread
+local.SecurityDoorsUnlockedOnce = 1
+
+local.doors_locked ifequal 1 goto SecMenu_Doors_Unlock
+
+SecMenu_Doors_Lock:
+$door_security                    lock
+$door_security_thug03             respondto 8   // door usable by monsters-only
+$door_security_thug06             respondto 8   // door usable by monsters-only
+$door_security_thug03_fakeuse     respondto 4   // fake 'use' volume triggerable by players
+$door_security_thug06_fakeuse     respondto 4   // fake 'use' volume triggerable by players
+$door_security_thug03_playerclip  moveDown 96   // move playerclip volume back in place
+$door_security_thug06_playerclip  moveDown 96   // move playerclip volume back in place
+goto SecMenu_Doors_Input
+
+SecMenu_Doors_Unlock:
+$door_security                    unlock
+$door_security_thug03             respondto 12  // door usable by monsters & players
+$door_security_thug06             respondto 12  // door usable by monsters & players
+$door_security_thug03_fakeuse     respondto 0   // fake 'use' volume triggerable by nothing
+$door_security_thug06_fakeuse     respondto 0   // fake 'use' volume triggerable by nothing
+$door_security_thug03_playerclip  moveUp 96     // move playerclip volume out of the way
+$door_security_thug06_playerclip  moveUp 96     // move playerclip volume out of the way
+goto SecMenu_Doors_Input
+
+//---------------------------------------------------------------
+SecMenu_Vault_Input:
+local.sec_consoleobject conclear
+level.description ifequal 0 local.sec_consoleobject conmenufile "menus/bank/bank.004"
+level.description ifequal 1 local.sec_consoleobject conmenufile "menus/bank/bank.005"
+local.PrintString string "xl 280 yt -350 fc 0.5 0.5 0.5 1 string \""
+local.doors_locked ifequal 0 local.PrintString append "m_locked\" xl 280 yt -400 fc 0.5 0.5 0.5 1 string \""
+local.doors_locked ifequal 1 local.PrintString append "m_unlocked\" xl 280 yt -400 fc 0.5 0.5 0.5 1 string \""
+level.description ifequal 0 local.PrintString append "m_high\""
+level.description ifequal 1 local.PrintString append "m_low\""
+local.sec_consoleobject conlayout local.PrintString
+waitForConsole local.sec_console
+local.secinput coninput local.sec_console
+goto SecMenu_Vault_ProcessInput
+
+SecMenu_Vault_ProcessInput:
+local.secinput ifequal 2 goto SecMenu_Vault_ViewPasscode
+local.secinput ifequal 3 goto SecMenu_Main_Input
+level.description *= -1
+level.description += 1
+level.description ifequal 0 $camgun1 activate
+level.description ifequal 0 $camgun2 activate
+level.description ifequal 1 $camgun1 deactivate
+level.description ifequal 1 $camgun2 deactivate
+goto SecMenu_Vault_Input
+
+SecMenu_Vault_ViewPasscode:
+local.sec_consoleobject conclear
+local.sec_consoleobject conmenufile "menus/bank/bank.006"
+local.PrintString string "xl 140 yt -210 fc 0.5 0.5 0.5 1 string \"                     "
+local.PrintString appendint level.VaultCombo1
+local.PrintString append "\" xl 140 yt -240 fc 0.5 0.5 0.5 1 string \"                     "
+local.PrintString appendint level.VaultCombo2
+local.PrintString append "\" xl 280 yt -350 fc 0.5 0.5 0.5 1 string \""
+local.doors_locked ifequal 0 local.PrintString append "m_locked\" xl 280 yt -400 fc 0.5 0.5 0.5 1 string \""
+local.doors_locked ifequal 1 local.PrintString append "m_unlocked\" xl 280 yt -400 fc 0.5 0.5 0.5 1 string \""
+level.description ifequal 0 local.PrintString append "m_high\""
+level.description ifequal 1 local.PrintString append "m_low\""
+local.sec_consoleobject conlayout local.PrintString
+waitForConsole local.sec_console
+local.secinput coninput local.sec_console
+goto SecMenu_Vault_Input
+
+//---------------------------------------------------------------
+SecMenu_Account_Input:
+local.sec_consoleobject conclear
+local.sec_consoleobject conmenufile "menus/bank/bank.007"
+local.PrintString string "xl 260 yt -230 fc 0.5 0.5 0.5 1 string \""
+local.PrintString append local.CustomerName
+local.PrintString append "\" xl 260 yt -260 fc 0.5 0.5 0.5 1 string \""
+local.PrintString append local.CustomerNumber
+local.PrintString append "\" xl 260 yt -290 fc 0.5 0.5 0.5 1 string \""
+local.PrintString append local.CustomerPIN
+local.PrintString append "\""
+local.sec_consoleobject conlayout local.PrintString
+local.sec_consoleobject focus console
+waitForConsole local.sec_console
+local.secinput coninput local.sec_console
+goto SecMenu_Account_ProcessInput
+
+SecMenu_Account_ProcessInput:
+local.secinput ifstrequal "Blade" goto SecMenu_Account_Blade
+local.secinput ifstrequal "blade" goto SecMenu_Account_Blade
+local.secinput ifstrequal "BLADE" goto SecMenu_Account_Blade
+local.secinput ifstrequal "Sinclaire" goto SecMenu_Account_Sinclaire
+local.secinput ifstrequal "sinclaire" goto SecMenu_Account_Sinclaire
+local.secinput ifstrequal "SINCLAIRE" goto SecMenu_Account_Sinclaire
+local.secinput ifstrequal "Exit" goto SecMenu_Main_Input
+local.secinput ifstrequal "exit" goto SecMenu_Main_Input
+local.secinput ifstrequal "EXIT" goto SecMenu_Main_Input
+local.CustomerName string "m_invalid_handle"
+local.CustomerNumber string "--------"
+local.CustomerPIN string "--------"
+goto SecMenu_Account_Input
+
+SecMenu_Account_Blade:
+local.CustomerName string "m_john_r_blade"
+local.CustomerNumber string "010345"
+local.CustomerPIN string "2019"
+goto SecMenu_Account_Input
+
+SecMenu_Account_Sinclaire:
+local.CustomerName string "m_elexis_sinclaire"
+local.CustomerNumber string "010333"
+local.CustomerPIN string "6969"
+goto SecMenu_Account_Input
+
+//---------------------------------------------------------------
+SecMenu_Prompt_Input:
+local.CurrentDir string "fcbsec"
+local.sec_consoleobject conclear
+local.sec_consoleobject conclearlayout
+local.sec_consoleobject conmenufile "menus/bank/bank.008"
+local.sec_consoleobject confraction .9
+local.sec_consoleobject focus console
+local.PrintString string "m_ultralarger_doorways_36tm"
+local.PrintString append "m_c_copyright_2015_2037"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_Input_Loop:
+local.sec_consoleobject conprint local.PrintString
+waitForConsole local.sec_console
+local.secinput coninput local.sec_console
+goto SecMenu_Prompt_ProcessInput
+
+SecMenu_Prompt_ProcessInput:
+local.secinput ifstrequal "dir" goto SecMenu_Prompt_Dir
+local.secinput ifstrequal "cd .." goto SecMenu_Prompt_CDDotDot
+local.secinput ifstrequal "cd.." goto SecMenu_Prompt_CDDotDot
+local.secinput ifstrequal "cd fcbsec" goto SecMenu_Prompt_CDUpTo_fcbsec
+local.secinput ifstrequal "cd data" goto SecMenu_Prompt_CDUpTo_fcbsec_data
+local.secinput ifstrequal "cd doorways" goto SecMenu_Prompt_Denied
+local.secinput ifstrequal "type fcbsec.ini" goto SecMenu_Prompt_Type_fcbsecini
+local.secinput ifstrequal "type fcbsec01.pwd" goto SecMenu_Prompt_Type_fcbsec01pwd
+local.secinput ifstrequal "type fcbsec02.pwd" goto SecMenu_Prompt_Type_fcbsec02pwd
+local.secinput ifstrequal "type fcbsec03.pwd" goto SecMenu_Prompt_Type_fcbsec03pwd
+local.secinput ifstrequal "type fcbsec04.pwd" goto SecMenu_Prompt_Type_fcbsec04pwd
+local.secinput ifstrequal "type fcbsec05.pwd" goto SecMenu_Prompt_Type_fcbsec05pwd
+local.secinput ifstrequal "type fcbsec06.pwd" goto SecMenu_Prompt_Type_fcbsec06pwd
+local.secinput ifstrequal "type fcbsec07.pwd" goto SecMenu_Prompt_Type_fcbsec07pwd
+local.secinput ifstrequal "type fcbsec08.pwd" goto SecMenu_Prompt_Type_fcbsec08pwd
+local.secinput ifstrequal "type fcbsec.exe" goto SecMenu_Prompt_Type_fcbsecexe
+local.secinput ifstrequal "type autoexec.bat" goto SecMenu_Prompt_Type_autoexec
+local.secinput ifstrequal "type config.sys" goto SecMenu_Prompt_Type_config
+local.secinput ifstrequal "autoexec" goto SecMenu_Main_Input
+local.secinput ifstrequal "autoexec.bat" SecMenu_Main_Input
+local.secinput ifstrequal "fcbsec" goto SecMenu_Main_Input
+local.secinput ifstrequal "fcbsec.exe" goto SecMenu_Main_Input
+local.secinput ifstrequal "cls" goto SecMenu_Prompt_Cls
+local.secinput ifstrequal "" goto SecMenu_Prompt_Empty
+local.secinput ifstrequal "date" goto SecMenu_Prompt_Date
+local.secinput ifstrequal "help" goto SecMenu_Prompt_Help
+local.secinput ifstrequal "exit" goto SecMenu_Main_Input
+goto SecMenu_Prompt_Invalid
+
+SecMenu_Prompt_Dir:
+local.CurrentDir ifstrequal "fcbsec_data" goto SecMenu_Prompt_Dir_fcbsec_data
+local.CurrentDir ifstrequal "fcbsec" goto SecMenu_Prompt_Dir_fcbsec
+local.CurrentDir ifstrequal "root" goto SecMenu_Prompt_Dir_root
+
+SecMenu_Prompt_Dir_fcbsec_data:
+local.CurrentDir string "fcbsec_data"
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n\n"
+local.PrintString append "m_volume_in_drive"
+local.PrintString append "m_directory_of_cfcbsecdata"
+local.PrintString append "m_dir_06_24_35_912a_1"
+local.PrintString append "m_dir_06_24_35_912a_2"
+local.PrintString append "m_fcbsec01pwd_110_01_01_37"
+local.PrintString append "m_fcbsec02pwd_110_01_01_37"
+local.PrintString append "m_fcbsec03pwd_110_01_01_37"
+local.PrintString append "m_fcbsec04pwd_110_01_01_37"
+local.PrintString append "m_fcbsec05pwd_110_01_01_37"
+local.PrintString append "m_fcbsec06pwd_110_01_01_37"
+local.PrintString append "m_fcbsec07pwd_110_01_01_37"
+local.PrintString append "m_fcbsec08pwd_72_02_19_37"
+local.PrintString append "m_fcbsecini_97_01_01_37"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_Dir_fcbsec:
+local.CurrentDir string "fcbsec"
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n\n"
+local.PrintString append "m_volume_in_drive"
+local.PrintString append "m_directory_of_cfcbsec"
+local.PrintString append "m_dir_06_24_35_912a_1"
+local.PrintString append "m_dir_06_24_35_912a_2"
+local.PrintString append "m_data_dir_03_10_36_755p"
+local.PrintString append "m_fcbsecexe_21710_03_10_36"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_Dir_root:
+local.CurrentDir string "root"
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n\n"
+local.PrintString append "m_volume_in_drive"
+local.PrintString append "Directory of C:\\n\n"
+local.PrintString append "m_doorways_dir_06_22_35_332a"
+local.PrintString append "m_fcbsec_dir_03_10_36_754p"
+local.PrintString append "m_autoexecbat_156_06_22_35"
+local.PrintString append "m_configsys_145_06_22_35"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_CDDotDot:
+local.CurrentDir ifstrequal "fcbsec_data" goto SecMenu_Prompt_CDDownto_fcbsec
+local.CurrentDir ifstrequal "fcbsec" goto SecMenu_Prompt_CDDownto_root
+local.CurrentDir ifstrequal "root" goto SecMenu_Prompt_CDDownto_root
+
+SecMenu_Prompt_CDUpTo_fcbsec_data:
+local.CurrentDir ifstrnotequal "fcbsec" goto SecMenu_Prompt_Invalid
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n\n"
+local.CurrentDir string "fcbsec_data"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_CDUpTo_fcbsec:
+local.CurrentDir ifstrnotequal "root" goto SecMenu_Prompt_Invalid
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n\n"
+local.CurrentDir string "fcbsec"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_CDDownto_fcbsec:
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n\n"
+local.CurrentDir string "fcbsec"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_CDDownto_root:
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n\n"
+local.CurrentDir string "root"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_Type_fcbsecexe:
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n"
+local.PrintString append "mz fUfi%fu(    <&wRiEeDdEeIrW"
+$warn_dialog_trigger playsound "environment/computer/beeps/cmpbp1.wav" 3
+local.sec_consoleobject conprint local.PrintString
+wait 0.5
+local.PrintString string "iL!@ $$nNtX*%=\n"
+local.PrintString append "frfuflfefs*u0=eN2eiv0       "
+$warn_dialog_trigger playsound "environment/computer/beeps/reject1.wav" 3
+local.sec_consoleobject conprint local.PrintString
+wait 0.5
+local.PrintString string "EISA&f;u\n"
+local.PrintString append "viQif\n"
+local.PrintString append "uZ<e-\\<u^<e-<$vi+Qi[f\n\n"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_Type_autoexec:
+local.CurrentDir ifstrnotequal "root" goto SecMenu_Prompt_Invalid
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n"
+local.PrintString append "@ECHO OFF\n"
+local.PrintString append "m_cdoors36mscdexexe_daspicd0"
+local.PrintString append "m_prompt_g"
+local.PrintString append "PATH C:\\DOORS36;C:\\FCBSEC;C:\\\n"
+local.PrintString append "m_set_tempcdoors36"
+local.PrintString append "m_rem_cdoors36mouseexe"
+local.PrintString append "m_cfcbsecfcbsecexe"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_Type_config:
+local.CurrentDir ifstrnotequal "root" goto SecMenu_Prompt_Invalid
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n"
+local.PrintString append "m_devicecscsiaspi8doorssys_d"
+local.PrintString append "m_devicecscsiaspicdsys_daspicd0"
+local.PrintString append "m_devicecdoors36setverexe"
+local.PrintString append "m_devicecdoors36himemsys"
+local.PrintString append "m_doors36high"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_Type_fcbsecini:
+local.CurrentDir ifstrnotequal "fcbsec_data" goto SecMenu_Prompt_Invalid
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n"
+local.PrintString append "m_branchfreeport"
+local.PrintString append "m_wallpapercdoorwaysjlh_is_hotbmp"
+local.PrintString append "m_qtdvideo0x0001"
+local.PrintString append "m_mcixsnd0x0001"
+local.PrintString append "m_gdanim0x0001"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_Type_fcbsec01pwd:
+local.CurrentDir ifstrnotequal "fcbsec_data" goto SecMenu_Prompt_Invalid
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n"
+local.PrintString append "$303195@6666\n"
+local.PrintString append "$845724@9157\n"
+local.PrintString append "$010333@6969\n"
+local.PrintString append "$060571@8303\n"
+local.PrintString append "$601571@6672\n"
+local.PrintString append "$010345@2019\n"
+local.PrintString append "$002215@2635\n"
+local.PrintString append "$873282@2635\n\n"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_Type_fcbsec02pwd:
+local.CurrentDir ifstrnotequal "fcbsec_data" goto SecMenu_Prompt_Invalid
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n"
+local.PrintString append "$112029@2029\n"
+local.PrintString append "$042171@5811\n"
+local.PrintString append "$101505@5769\n"
+local.PrintString append "$??????@????\n"
+local.PrintString append "$443344@4444\n"
+local.PrintString append "$123456@1234\n"
+local.PrintString append "$100372@3265\n"
+local.PrintString append "$070677@5316\n\n"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_Type_fcbsec03pwd:
+local.CurrentDir ifstrnotequal "fcbsec_data" goto SecMenu_Prompt_Invalid
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n"
+local.PrintString append "$081296@0000\n"
+local.PrintString append "$021977@5334\n"
+local.PrintString append "$272727@2727\n"
+local.PrintString append "$052881@6275\n"
+local.PrintString append "$032079@2361\n"
+local.PrintString append "$041384@2663\n"
+local.PrintString append "$020298@5334\n"
+local.PrintString append "$422907@8252\n\n"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_Type_fcbsec04pwd:
+local.CurrentDir ifstrnotequal "fcbsec_data" goto SecMenu_Prompt_Invalid
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n"
+local.PrintString append "$012671@2600\n"
+local.PrintString append "$642753@9084\n"
+local.PrintString append "$081698@2433\n"
+local.PrintString append "$061071@8998\n"
+local.PrintString append "$012571@8998\n"
+local.PrintString append "$075202@2255\n"
+local.PrintString append "$090351@8864\n"
+local.PrintString append "$050480@1984\n\n"
+goto SecMenu_Prompt_Input_Loop
+
+
+SecMenu_Prompt_Type_fcbsec05pwd:
+local.CurrentDir ifstrnotequal "fcbsec_data" goto SecMenu_Prompt_Invalid
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n"
+local.PrintString append "$081698@2433\n"
+local.PrintString append "$061071@8998\n"
+local.PrintString append "$012571@8998\n"
+local.PrintString append "$075202@2255\n"
+local.PrintString append "$090351@8864\n"
+local.PrintString append "$101153@2622\n"
+local.PrintString append "$071473@5150\n"
+local.PrintString append "$080273@2112\n\n"
+goto SecMenu_Prompt_Input_Loop
+
+
+SecMenu_Prompt_Type_fcbsec06pwd:
+local.CurrentDir ifstrnotequal "fcbsec_data" goto SecMenu_Prompt_Invalid
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n"
+local.PrintString append "$042773@9639\n"
+local.PrintString append "$333333@9696\n"
+local.PrintString append "$091475@0627\n"
+local.PrintString append "$666999@1299\n"
+local.PrintString append "$011333@3333\n"
+local.PrintString append "$103077@1979\n"
+local.PrintString append "$767143@0110\n"
+local.PrintString append "$234567@2345\n\n"
+goto SecMenu_Prompt_Input_Loop
+
+
+SecMenu_Prompt_Type_fcbsec07pwd:
+local.CurrentDir ifstrnotequal "fcbsec_data" goto SecMenu_Prompt_Invalid
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n"
+local.PrintString append "$062078@3825\n"
+local.PrintString append "$101695@1207\n"
+local.PrintString append "$053173@7874\n"
+local.PrintString append "$052369@1357\n"
+local.PrintString append "$101566@1098\n"
+local.PrintString append "$122773@2696\n"
+local.PrintString append "$632050@3276\n"
+local.PrintString append "$062866@1998\n\n"
+goto SecMenu_Prompt_Input_Loop
+
+
+SecMenu_Prompt_Type_fcbsec08pwd:
+local.CurrentDir ifstrnotequal "fcbsec_data" goto SecMenu_Prompt_Invalid
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n"
+local.PrintString append "$010967@1998\n"
+local.PrintString append "$112370@1998\n"
+local.PrintString append "$060167@1998\n"
+local.PrintString append "$666666@6666\n"
+local.PrintString append "$110011@1001\n"
+local.PrintString append "$999999@9999\n\n"
+goto SecMenu_Prompt_Input_Loop
+
+
+
+SecMenu_Prompt_Help:
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n"
+local.PrintString append "m_available_commands"
+local.PrintString append "m_cd_change_current"
+local.PrintString append "m_cls_clears_the"
+local.PrintString append "m_date_print_the"
+local.PrintString append "m_dir_view_the"
+local.PrintString append "m_type_displays_the"
+local.PrintString append "m_exit_exit_the"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_Empty:
+local.PrintString string "C:\\>\n"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_Cls:
+local.PrintString string ""
+local.sec_consoleobject conclear
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_Date:
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n"
+local.PrintString append "m_current_date_is"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_Denied:
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n"
+local.PrintString append "m_access_denied_1"
+goto SecMenu_Prompt_Input_Loop
+
+SecMenu_Prompt_Invalid:
+local.PrintString string "m_c_1"
+local.PrintString append local.secinput
+local.PrintString append "\n"
+local.PrintString append "m_bad_command_or"
+goto SecMenu_Prompt_Input_Loop
+
+end
+
+
+//---------------------------------------------------------------
+// ATM_Setup_Thread
+//---------------------------------------------------------------
+ATM_Setup_Thread:
+
+level.ElexisAccount string "010333"
+level.ElexisPIN string "6969"
+level.ElexisChecking string "$9,390,000.00"
+level.ElexisSavings string "$100,040.00"
+
+level.BladeAccount string "010345"
+level.BladePIN string "2019"
+level.BladeChecking string "$0.00"
+level.BladeSavings string "$0.00"
+
+parm.atm_console string "con_atm1"
+thread ATM_Thread
+
+game.intro_billboard_fall ifequal 3 trigger $atm_sparks
+game.intro_billboard_fall ifequal 3 $con_atm2_use remove
+game.intro_billboard_fall ifequal 3 goto con_atm_bottom
+
+parm.atm_console string "con_atm2"
+thread ATM_Thread
+
+con_atm_bottom:
+
+end
+
+//-----------------
+----------------------------------------------------------
+ATM_Thread:
+
+local.Egg1Account string "303195"
+local.Egg1PIN string "6666"
+local.Egg1Checking string "$-10,000,000.00"
+local.Egg1Savings string "$0.00"
+
+local.Egg2Account string "845724"
+local.Egg2PIN string "9157"
+local.Egg2Checking string "$357.01"
+local.Egg2Savings string "$5,000.99"
+
+local.Egg3Account string "060571"
+local.Egg3PIN string "8303"
+local.Egg3Checking string "$403.71"
+local.Egg3Savings string "$1.99"
+
+local.Egg4Account string "601571"
+local.Egg4PIN string "6672"
+local.Egg4Checking string "$2,753.65"
+local.Egg4Savings string "$2,500.00"
+
+local.Egg5Account string "002215"
+local.Egg5PIN string "2635"
+local.Egg5Checking string "$256.03"
+local.Egg5Savings string "$109.19"
+
+local.Egg6Account string "873282"
+local.Egg6PIN string "2635"
+local.Egg6Checking string "$20,000.70"
+local.Egg6Savings string "$2,500.00"
+
+local.Egg7Account string "112029"
+local.Egg7PIN string "2029"
+local.Egg7Checking string "$42,276.00"
+local.Egg7Savings string "$22.00"
+
+local.Egg8Account string "042171"
+local.Egg8PIN string "5811"
+local.Egg8Checking string "$-32,000.00"
+local.Egg8Savings string "m_yeah_right"
+
+local.Egg9Account string "101505"
+local.Egg9PIN string "5769"
+local.Egg9Checking string "$14,022.00"
+local.Egg9Savings string "$65,536.00"
+
+local.Egg10Account string "??????"
+local.Egg10PIN string "????"
+local.Egg10Checking string "$???,???.??"
+local.Egg10Savings string "$???,???.??"
+
+local.Egg11Account string "443344"
+local.Egg11PIN string "4444"
+local.Egg11Checking string "$5.45"
+local.Egg11Savings string "$0.00"
+
+local.Egg12Account string "123456"
+local.Egg12PIN string "1234"
+local.Egg12Checking string "$1,234,567.89"
+local.Egg12Savings string "$9,876,543.21"
+
+local.Egg13Account string "100372"
+local.Egg13PIN string "3265"
+local.Egg13Checking string "$0.00"
+local.Egg13Savings string "$0.00"
+
+local.Egg14Account string "070677"
+local.Egg14PIN string "5316"
+local.Egg14Checking string "$16,000,000.00"
+local.Egg14Savings string "$17,500,000.00"
+
+local.Egg15Account string "422907"
+local.Egg15PIN string "8252"
+local.Egg15Checking string "$69,907.00"
+local.Egg15Savings string "$8.00"
+
+local.Egg16Account string "272727"
+local.Egg16PIN string "2727"
+local.Egg16Checking string "$27,000.00"
+local.Egg16Savings string "$27,000.00"
+
+local.Egg17Account string "052881"
+local.Egg17PIN string "6275"
+local.Egg17Checking string "$2,954.00"
+local.Egg17Savings string "$14,326.00"
+
+local.Egg18Account string "032079"
+local.Egg18PIN string "2361"
+local.Egg18Checking string "$-9,000.00"
+local.Egg18Savings string "$0.00"
+
+local.Egg19Account string "041384"
+local.Egg19PIN string "2663"
+local.Egg19Checking string "$0.00"
+local.Egg19Savings string "$20,000.00"
+
+local.Egg20Account string "020298"
+local.Egg20PIN string "5334"
+local.Egg20Checking string "$2,090.21"
+local.Egg20Savings string "$0.00"
+
+local.Egg21Account string "021977"
+local.Egg21PIN string "5334"
+local.Egg21Checking string "$2,090.21"
+local.Egg21Savings string "$0.00"
+
+local.Egg22Account string "081296"
+local.Egg22PIN string "0000"
+local.Egg22Checking string "$250,000.00"
+local.Egg22Savings string "$0.00"
+
+local.Egg23Account string "050480"
+local.Egg23PIN string "1984"
+local.Egg23Checking string "$66,082.00"
+local.Egg23Savings string "$28,064.00"
+
+local.Egg24Account string "642753"
+local.Egg24PIN string "9084"
+local.Egg24Checking string "$65,302.00"
+local.Egg24Savings string "$29,053.00"
+
+local.Egg25Account string "012671"
+local.Egg25PIN string "2600"
+local.Egg25Checking string "m_not_enough"
+local.Egg25Savings string "m_too_much"
+
+local.Egg26Account string "081698"
+local.Egg26PIN string "2433"
+local.Egg26Checking string "$0.00"
+local.Egg26Savings string "$0.00"
+
+local.Egg27Account string "061071"
+local.Egg27PIN string "8998"
+local.Egg27Checking string "$100.000.00"
+local.Egg27Savings string "$10M"
+
+local.Egg28Account string "012571"
+local.Egg28PIN string "8989"
+local.Egg28Checking string "$100,000.00"
+local.Egg28Savings string "$10M"
+
+local.Egg29Account string "075206"
+local.Egg29PIN string "2255"
+local.Egg29Checking string "$374,329.00"
+local.Egg29Savings string "$427,267.00"
+
+local.Egg30Account string "090351"
+local.Egg30PIN string "8864"
+local.Egg30Checking string "$0.00"
+local.Egg30Savings string "$9,000,000.00"
+
+local.Egg31Account string "101153"
+local.Egg31PIN string "2622"
+local.Egg31Checking string "$9,000,000.00"
+local.Egg31Savings string "$0.00"
+
+local.Egg32Account string "071473"
+local.Egg32PIN string "5150"
+local.Egg32Checking string "$0.00"
+local.Egg32Savings string "$147,000K"
+
+local.Egg33Account string "080273"
+local.Egg33PIN string "2112"
+local.Egg33Checking string "$0.00"
+local.Egg33Savings string "$1,124.00"
+
+local.Egg34Account string "042773"
+local.Egg34PIN string "9639"
+local.Egg34Checking string "-$256.33"
+local.Egg34Savings string "$0.25"
+
+local.Egg35Account string "333333"
+local.Egg35PIN string "9696"
+local.Egg35Checking string "$49,354,321M"
+local.Egg35Savings string "22.50"
+
+local.Egg36Account string "091475"
+local.Egg36PIN string "0627"
+local.Egg36Checking string "$8,235,932.73"
+local.Egg36Savings string "$5,830,068.95"
+
+local.Egg37Account string "666999"
+local.Egg37PIN string "1299"
+local.Egg37Checking string "$2,000.00"
+local.Egg37Savings string "$1.00"
+
+local.Egg38Account string "011333"
+local.Egg38PIN string "3333"
+local.Egg38Checking string "$0"
+local.Egg38Savings string "$0.25"
+
+local.Egg39Account string "103077"
+local.Egg39PIN string "1979"
+local.Egg39Checking string "$7,474,871"
+local.Egg39Savings string "$7,474,872"
+
+local.Egg40Account string "767143"
+local.Egg40PIN string "0110"
+local.Egg40Checking string "$44 M"
+local.Egg40Savings string "$66 M"
+
+local.Egg41Account string "234567"
+local.Egg41PIN string "2345"
+local.Egg41Checking string "$0.50"
+local.Egg41Savings string "$0.50"
+
+local.Egg42Account string "062078"
+local.Egg42PIN string "3825"
+local.Egg42Checking string "14,695.42"
+local.Egg42Savings string "$13.82"
+
+local.Egg43Account string "101695"
+local.Egg43PIN string "1207"
+local.Egg43Checking string "$4.00"
+local.Egg43Savings string "$375.00"
+
+local.Egg44Account string "053173"
+local.Egg44PIN string "7874"
+local.Egg44Checking string "$8,000,000"
+local.Egg44Savings string "$8,000,000"
+
+local.Egg45Account string "052369"
+local.Egg45PIN string "1357"
+local.Egg45Checking string "$2.29"
+local.Egg45Savings string "$0.00"
+
+local.Egg46Account string "101566"
+local.Egg46PIN string "1098"
+local.Egg46Checking string "$-3.33"
+local.Egg46Savings string "$9.99"
+
+local.Egg47Account string "122773"
+local.Egg47PIN string "2696"
+local.Egg47Checking string "$10,697.00"
+local.Egg47Savings string "$82,765.00"
+
+local.Egg48Account string "632050"
+local.Egg48PIN string "3276"
+local.Egg48Checking string "$1,000.00"
+local.Egg48Savings string "$999,999.66"
+
+local.Egg49Account string "062866"
+local.Egg49PIN string "1998"
+local.Egg49Checking string "$3,084"
+local.Egg49Savings string "$12,261"
+
+local.Egg50Account string "010967"
+local.Egg50PIN string "1998"
+local.Egg50Checking string "$5,000.00"
+local.Egg50Savings string "$87,000.00"
+
+local.Egg51Account string "112370"
+local.Egg51PIN string "1998"
+local.Egg51Checking string "$2,300.00"
+local.Egg51Savings string "$34,000.00"
+
+local.Egg52Account string "060167"
+local.Egg52PIN string "1998"
+local.Egg52Checking string "$1,400.00"
+local.Egg52Savings string "$5,222.70"
+
+local.Egg53Account string "666666"
+local.Egg53PIN string "6666"
+local.Egg53Checking string "$666 M"
+local.Egg53Savings string "$666 M"
+
+local.Egg54Account string "110011"
+local.Egg54PIN string "1001"
+local.Egg54Checking string "$1,010,101.01"
+local.Egg54Savings string "$0.10"
+
+local.Egg55Account string "999999"
+local.Egg55PIN string "9999"
+local.Egg55Checking string "infinite"
+local.Egg55Savings string "limitless"
+
+local.atm_console string parm.atm_console
+local.atm_consoleobject string "%"
+local.atm_consoleobject append local.atm_console
+local.atm_consoleobject confraction .3
+local.MainScreenInvalid = 0
+goto ATM_Main_Input
+
+ATM_Main_Input:
+local.atm_consoleobject conclear
+local.atm_consoleobject conclearlayout
+local.MainScreenInvalid ifequal 0 local.atm_consoleobject conmenufile "menus/bank/bank.009"
+local.MainScreenInvalid ifequal 1 local.atm_consoleobject conmenufile "menus/bank/bank.010"
+local.atm_consoleobject focus console
+waitForConsole local.atm_console
+local.atminput coninput local.atm_console
+goto ATM_Main_ProcessInput
+
+ATM_Main_ProcessInput:
+local.Account string local.atminput
+local.atminput ifstrequal level.ElexisAccount goto ATM_Pin_Input
+local.atminput ifstrequal level.BladeAccount goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg1Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg2Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg3Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg4Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg5Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg6Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg7Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg8Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg9Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg10Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg11Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg12Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg13Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg14Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg15Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg16Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg17Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg18Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg19Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg20Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg21Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg22Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg23Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg24Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg25Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg26Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg27Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg28Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg29Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg30Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg31Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg32Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg33Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg34Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg35Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg36Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg37Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg38Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg39Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg40Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg41Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg42Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg43Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg44Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg45Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg46Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg47Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg48Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg49Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg50Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg51Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg52Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg53Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg54Account goto ATM_Pin_Input
+local.atminput ifstrequal local.Egg55Account goto ATM_Pin_Input
+
+local.MainScreenInvalid = 1
+goto ATM_Main_Input
+
+ATM_Pin_Input:
+local.MainScreenInvalid = 0
+local.Account ifstrequal level.ElexisAccount local.atm_consoleobject conmenufile "menus/bank/bankac01.001"
+local.Account ifstrequal level.BladeAccount local.atm_consoleobject conmenufile "menus/bank/bankac02.001"
+local.Account ifstrequal local.Egg1Account local.atm_consoleobject conmenufile "menus/bank/bankac03.001"
+local.Account ifstrequal local.Egg2Account local.atm_consoleobject conmenufile "menus/bank/bankac04.001"
+local.Account ifstrequal local.Egg3Account local.atm_consoleobject conmenufile "menus/bank/bankac05.001"
+local.Account ifstrequal local.Egg4Account local.atm_consoleobject conmenufile "menus/bank/bankac06.001"
+local.Account ifstrequal local.Egg5Account local.atm_consoleobject conmenufile "menus/bank/bankac07.001"
+local.Account ifstrequal local.Egg6Account local.atm_consoleobject conmenufile "menus/bank/bankac08.001"
+local.Account ifstrequal local.Egg7Account local.atm_consoleobject conmenufile "menus/bank/bankac09.001"
+local.Account ifstrequal local.Egg8Account local.atm_consoleobject conmenufile "menus/bank/bankac10.001"
+local.Account ifstrequal local.Egg9Account local.atm_consoleobject conmenufile "menus/bank/bankac11.001"
+local.Account ifstrequal local.Egg10Account local.atm_consoleobject conmenufile "menus/bank/bankac12.001"
+local.Account ifstrequal local.Egg11Account local.atm_consoleobject conmenufile "menus/bank/bankac13.001"
+local.Account ifstrequal local.Egg12Account local.atm_consoleobject conmenufile "menus/bank/bankac14.001"
+local.Account ifstrequal local.Egg13Account local.atm_consoleobject conmenufile "menus/bank/bankac15.001"
+local.Account ifstrequal local.Egg14Account local.atm_consoleobject conmenufile "menus/bank/bankac16.001"
+local.Account ifstrequal local.Egg15Account local.atm_consoleobject conmenufile "menus/bank/bankac17.001"
+local.Account ifstrequal local.Egg16Account local.atm_consoleobject conmenufile "menus/bank/bankac18.001"
+local.Account ifstrequal local.Egg17Account local.atm_consoleobject conmenufile "menus/bank/bankac19.001"
+local.Account ifstrequal local.Egg18Account local.atm_consoleobject conmenufile "menus/bank/bankac20.001"
+local.Account ifstrequal local.Egg19Account local.atm_consoleobject conmenufile "menus/bank/bankac21.001"
+local.Account ifstrequal local.Egg20Account local.atm_consoleobject conmenufile "menus/bank/bankac22.001"
+
+local.Account ifstrequal local.Egg21Account local.atm_consoleobject conmenufile "menus/bank/bankac23.001"
+local.Account ifstrequal local.Egg22Account local.atm_consoleobject conmenufile "menus/bank/bankac24.001"
+local.Account ifstrequal local.Egg23Account local.atm_consoleobject conmenufile "menus/bank/bankac25.001"
+local.Account ifstrequal local.Egg24Account local.atm_consoleobject conmenufile "menus/bank/bankac26.001"
+local.Account ifstrequal local.Egg25Account local.atm_consoleobject conmenufile "menus/bank/bankac27.001"
+
+local.Account ifstrequal local.Egg26Account local.atm_consoleobject conmenufile "menus/bank/bankac28.001"
+local.Account ifstrequal local.Egg27Account local.atm_consoleobject conmenufile "menus/bank/bankac29.001"
+local.Account ifstrequal local.Egg28Account local.atm_consoleobject conmenufile "menus/bank/bankac30.001"
+local.Account ifstrequal local.Egg29Account local.atm_consoleobject conmenufile "menus/bank/bankac31.001"
+local.Account ifstrequal local.Egg30Account local.atm_consoleobject conmenufile "menus/bank/bankac32.001"
+local.Account ifstrequal local.Egg31Account local.atm_consoleobject conmenufile "menus/bank/bankac33.001"
+local.Account ifstrequal local.Egg32Account local.atm_consoleobject conmenufile "menus/bank/bankac34.001"
+local.Account ifstrequal local.Egg33Account local.atm_consoleobject conmenufile "menus/bank/bankac35.001"
+local.Account ifstrequal local.Egg34Account local.atm_consoleobject conmenufile "menus/bank/bankac36.001"
+local.Account ifstrequal local.Egg35Account local.atm_consoleobject conmenufile "menus/bank/bankac37.001"
+local.Account ifstrequal local.Egg36Account local.atm_consoleobject conmenufile "menus/bank/bankac38.001"
+local.Account ifstrequal local.Egg37Account local.atm_consoleobject conmenufile "menus/bank/bankac39.001"
+local.Account ifstrequal local.Egg38Account local.atm_consoleobject conmenufile "menus/bank/bankac40.001"
+local.Account ifstrequal local.Egg39Account local.atm_consoleobject conmenufile "menus/bank/bankac41.001"
+local.Account ifstrequal local.Egg40Account local.atm_consoleobject conmenufile "menus/bank/bankac42.001"
+local.Account ifstrequal local.Egg41Account local.atm_consoleobject conmenufile "menus/bank/bankac43.001"
+local.Account ifstrequal local.Egg42Account local.atm_consoleobject conmenufile "menus/bank/bankac44.001"
+local.Account ifstrequal local.Egg43Account local.atm_consoleobject conmenufile "menus/bank/bankac45.001"
+local.Account ifstrequal local.Egg44Account local.atm_consoleobject conmenufile "menus/bank/bankac46.001"
+local.Account ifstrequal local.Egg45Account local.atm_consoleobject conmenufile "menus/bank/bankac47.001"
+local.Account ifstrequal local.Egg46Account local.atm_consoleobject conmenufile "menus/bank/bankac48.001"
+local.Account ifstrequal local.Egg47Account local.atm_consoleobject conmenufile "menus/bank/bankac49.001"
+local.Account ifstrequal local.Egg48Account local.atm_consoleobject conmenufile "menus/bank/bankac50.001"
+local.Account ifstrequal local.Egg49Account local.atm_consoleobject conmenufile "menus/bank/bankac51.001"
+local.Account ifstrequal local.Egg50Account local.atm_consoleobject conmenufile "menus/bank/bankac52.001"
+local.Account ifstrequal local.Egg51Account local.atm_consoleobject conmenufile "menus/bank/bankac53.001"
+local.Account ifstrequal local.Egg52Account local.atm_consoleobject conmenufile "menus/bank/bankac54.001"
+local.Account ifstrequal local.Egg53Account local.atm_consoleobject conmenufile "menus/bank/bankac55.001"
+local.Account ifstrequal local.Egg54Account local.atm_consoleobject conmenufile "menus/bank/bankac56.001"
+local.Account ifstrequal local.Egg55Account local.atm_consoleobject conmenufile "menus/bank/bankac57.001"
+
+
+waitForConsole local.atm_console
+local.atminput coninput local.atm_console
+goto ATM_Pin_ProcessInput
+
+ATM_Pin_ProcessInput:
+local.Account ifstrequal level.ElexisAccount goto ATM_PIN_Elexis
+local.Account ifstrequal level.BladeAccount goto ATM_PIN_Blade
+goto ATM_PIN_Eggs
+
+ATM_PIN_Elexis:
+local.atminput ifstrequal level.ElexisPIN goto ATM_PIN_Elexis_Valid
+local.atm_consoleobject focus menu
+local.atm_consoleobject conmenufile "menus/bank/bank.011"
+waitForConsole local.atm_console
+local.atminput coninput local.atm_console
+goto ATM_Main_Input
+
+ATM_PIN_Elexis_Valid:
+local.DisplayAccount string level.ElexisAccount
+local.DisplayChecking string level.ElexisChecking
+local.DisplaySavings string level.ElexisSavings
+goto ATM_Account_Input
+
+ATM_PIN_Blade:
+local.atminput ifstrequal level.BladePIN goto ATM_PIN_Blade_Valid
+local.atm_consoleobject focus menu
+local.atm_consoleobject conmenufile "menus/bank/bank.011"
+waitForConsole local.atm_console
+local.atminput coninput local.atm_console
+goto ATM_Main_Input
+
+ATM_PIN_Blade_Valid:
+local.DisplayAccount string level.BladeAccount
+local.DisplayChecking string level.BladeChecking
+local.DisplaySavings string level.BladeSavings
+goto ATM_Account_Input
+
+ATM_PIN_Eggs:
+local.Account ifstrequal local.Egg1Account local.PIN string local.Egg1PIN
+local.Account ifstrequal local.Egg2Account local.PIN string local.Egg2PIN
+local.Account ifstrequal local.Egg3Account local.PIN string local.Egg3PIN
+local.Account ifstrequal local.Egg4Account local.PIN string local.Egg4PIN
+local.Account ifstrequal local.Egg5Account local.PIN string local.Egg5PIN
+local.Account ifstrequal local.Egg6Account local.PIN string local.Egg6PIN
+local.Account ifstrequal local.Egg7Account local.PIN string local.Egg7PIN
+local.Account ifstrequal local.Egg8Account local.PIN string local.Egg8PIN
+local.Account ifstrequal local.Egg9Account local.PIN string local.Egg9PIN
+local.Account ifstrequal local.Egg10Account local.PIN string local.Egg10PIN
+local.Account ifstrequal local.Egg11Account local.PIN string local.Egg11PIN
+local.Account ifstrequal local.Egg12Account local.PIN string local.Egg12PIN
+local.Account ifstrequal local.Egg13Account local.PIN string local.Egg13PIN
+local.Account ifstrequal local.Egg14Account local.PIN string local.Egg14PIN
+local.Account ifstrequal local.Egg15Account local.PIN string local.Egg15PIN
+local.Account ifstrequal local.Egg16Account local.PIN string local.Egg16PIN
+local.Account ifstrequal local.Egg17Account local.PIN string local.Egg17PIN
+local.Account ifstrequal local.Egg18Account local.PIN string local.Egg18PIN
+local.Account ifstrequal local.Egg19Account local.PIN string local.Egg19PIN
+local.Account ifstrequal local.Egg20Account local.PIN string local.Egg20PIN
+local.Account ifstrequal local.Egg21Account local.PIN string local.Egg21PIN
+local.Account ifstrequal local.Egg22Account local.PIN string local.Egg22PIN
+local.Account ifstrequal local.Egg23Account local.PIN string local.Egg23PIN
+local.Account ifstrequal local.Egg24Account local.PIN string local.Egg24PIN
+local.Account ifstrequal local.Egg25Account local.PIN string local.Egg25PIN
+local.Account ifstrequal local.Egg26Account local.PIN string local.Egg26PIN
+local.Account ifstrequal local.Egg27Account local.PIN string local.Egg27PIN
+
+local.Account ifstrequal local.Egg28Account local.PIN string local.Egg28PIN
+local.Account ifstrequal local.Egg29Account local.PIN string local.Egg29PIN
+local.Account ifstrequal local.Egg30Account local.PIN string local.Egg30PIN
+local.Account ifstrequal local.Egg31Account local.PIN string local.Egg31PIN
+local.Account ifstrequal local.Egg32Account local.PIN string local.Egg32PIN
+local.Account ifstrequal local.Egg33Account local.PIN string local.Egg33PIN
+local.Account ifstrequal local.Egg34Account local.PIN string local.Egg34PIN
+local.Account ifstrequal local.Egg35Account local.PIN string local.Egg35PIN
+local.Account ifstrequal local.Egg36Account local.PIN string local.Egg36PIN
+local.Account ifstrequal local.Egg37Account local.PIN string local.Egg37PIN
+
+local.Account ifstrequal local.Egg38Account local.PIN string local.Egg38PIN
+local.Account ifstrequal local.Egg39Account local.PIN string local.Egg39PIN
+local.Account ifstrequal local.Egg40Account local.PIN string local.Egg40PIN
+local.Account ifstrequal local.Egg41Account local.PIN string local.Egg41PIN
+local.Account ifstrequal local.Egg42Account local.PIN string local.Egg42PIN
+local.Account ifstrequal local.Egg43Account local.PIN string local.Egg43PIN
+local.Account ifstrequal local.Egg44Account local.PIN string local.Egg44PIN
+local.Account ifstrequal local.Egg45Account local.PIN string local.Egg45PIN
+local.Account ifstrequal local.Egg46Account local.PIN string local.Egg46PIN
+local.Account ifstrequal local.Egg47Account local.PIN string local.Egg47PIN
+local.Account ifstrequal local.Egg48Account local.PIN string local.Egg48PIN
+local.Account ifstrequal local.Egg49Account local.PIN string local.Egg49PIN
+local.Account ifstrequal local.Egg50Account local.PIN string local.Egg50PIN
+local.Account ifstrequal local.Egg51Account local.PIN string local.Egg51PIN
+local.Account ifstrequal local.Egg52Account local.PIN string local.Egg52PIN
+local.Account ifstrequal local.Egg53Account local.PIN string local.Egg53PIN
+local.Account ifstrequal local.Egg54Account local.PIN string local.Egg54PIN
+local.Account ifstrequal local.Egg55Account local.PIN string local.Egg55PIN
+
+
+
+local.atminput ifstrequal local.PIN goto ATM_PIN_Eggs_Valid
+local.atm_consoleobject focus menu
+local.atm_consoleobject conmenufile "menus/bank/bank.011"
+waitForConsole local.atm_console
+local.atminput coninput local.atm_console
+goto ATM_Main_Input
+
+ATM_PIN_Eggs_Valid:
+local.DisplayAccount string local.Account
+local.Account ifstrequal local.Egg1Account local.DisplayChecking string local.Egg1Checking
+local.Account ifstrequal local.Egg1Account local.DisplaySavings string local.Egg1Savings
+local.Account ifstrequal local.Egg2Account local.DisplayChecking string local.Egg2Checking
+local.Account ifstrequal local.Egg2Account local.DisplaySavings string local.Egg2Savings
+local.Account ifstrequal local.Egg3Account local.DisplayChecking string local.Egg3Checking
+local.Account ifstrequal local.Egg3Account local.DisplaySavings string local.Egg3Savings
+local.Account ifstrequal local.Egg4Account local.DisplayChecking string local.Egg4Checking
+local.Account ifstrequal local.Egg4Account local.DisplaySavings string local.Egg4Savings
+local.Account ifstrequal local.Egg5Account local.DisplayChecking string local.Egg5Checking
+local.Account ifstrequal local.Egg5Account local.DisplaySavings string local.Egg5Savings
+local.Account ifstrequal local.Egg6Account local.DisplayChecking string local.Egg6Checking
+local.Account ifstrequal local.Egg6Account local.DisplaySavings string local.Egg6Savings
+local.Account ifstrequal local.Egg7Account local.DisplayChecking string local.Egg7Checking
+local.Account ifstrequal local.Egg7Account local.DisplaySavings string local.Egg7Savings
+local.Account ifstrequal local.Egg8Account local.DisplayChecking string local.Egg8Checking
+local.Account ifstrequal local.Egg8Account local.DisplaySavings string local.Egg8Savings
+local.Account ifstrequal local.Egg9Account local.DisplayChecking string local.Egg9Checking
+local.Account ifstrequal local.Egg9Account local.DisplaySavings string local.Egg9Savings
+local.Account ifstrequal local.Egg10Account local.DisplayChecking string local.Egg10Checking
+local.Account ifstrequal local.Egg10Account local.DisplaySavings string local.Egg10Savings
+local.Account ifstrequal local.Egg11Account local.DisplayChecking string local.Egg11Checking
+local.Account ifstrequal local.Egg11Account local.DisplaySavings string local.Egg11Savings
+local.Account ifstrequal local.Egg12Account local.DisplayChecking string local.Egg12Checking
+local.Account ifstrequal local.Egg12Account local.DisplaySavings string local.Egg12Savings
+local.Account ifstrequal local.Egg13Account local.DisplayChecking string local.Egg13Checking
+local.Account ifstrequal local.Egg13Account local.DisplaySavings string local.Egg13Savings
+local.Account ifstrequal local.Egg14Account local.DisplayChecking string local.Egg14Checking
+local.Account ifstrequal local.Egg14Account local.DisplaySavings string local.Egg14Savings
+local.Account ifstrequal local.Egg15Account local.DisplayChecking string local.Egg15Checking
+local.Account ifstrequal local.Egg15Account local.DisplaySavings string local.Egg15Savings
+local.Account ifstrequal local.Egg16Account local.DisplayChecking string local.Egg16Checking
+local.Account ifstrequal local.Egg16Account local.DisplaySavings string local.Egg16Savings
+local.Account ifstrequal local.Egg17Account local.DisplayChecking string local.Egg17Checking
+local.Account ifstrequal local.Egg17Account local.DisplaySavings string local.Egg17Savings
+local.Account ifstrequal local.Egg18Account local.DisplayChecking string local.Egg18Checking
+local.Account ifstrequal local.Egg18Account local.DisplaySavings string local.Egg18Savings
+local.Account ifstrequal local.Egg19Account local.DisplayChecking string local.Egg19Checking
+local.Account ifstrequal local.Egg19Account local.DisplaySavings string local.Egg19Savings
+local.Account ifstrequal local.Egg20Account local.DisplayChecking string local.Egg20Checking
+local.Account ifstrequal local.Egg20Account local.DisplaySavings string local.Egg20Savings
+local.Account ifstrequal local.Egg21Account local.DisplayChecking string local.Egg21Checking
+local.Account ifstrequal local.Egg21Account local.DisplaySavings string local.Egg21Savings
+local.Account ifstrequal local.Egg22Account local.DisplayChecking string local.Egg22Checking
+local.Account ifstrequal local.Egg22Account local.DisplaySavings string local.Egg22Savings
+local.Account ifstrequal local.Egg23Account local.DisplayChecking string local.Egg23Checking
+local.Account ifstrequal local.Egg23Account local.DisplaySavings string local.Egg23Savings
+local.Account ifstrequal local.Egg24Account local.DisplayChecking string local.Egg24Checking
+local.Account ifstrequal local.Egg24Account local.DisplaySavings string local.Egg24Savings
+local.Account ifstrequal local.Egg25Account local.DisplayChecking string local.Egg25Checking
+local.Account ifstrequal local.Egg25Account local.DisplaySavings string local.Egg25Savings
+
+local.Account ifstrequal local.Egg26Account local.DisplayChecking string local.Egg26Checking
+local.Account ifstrequal local.Egg26Account local.DisplaySavings string local.Egg26Savings
+local.Account ifstrequal local.Egg27Account local.DisplayChecking string local.Egg27Checking
+local.Account ifstrequal local.Egg27Account local.DisplaySavings string local.Egg27Savings
+local.Account ifstrequal local.Egg28Account local.DisplayChecking string local.Egg28Checking
+local.Account ifstrequal local.Egg28Account local.DisplaySavings string local.Egg28Savings
+local.Account ifstrequal local.Egg29Account local.DisplayChecking string local.Egg29Checking
+local.Account ifstrequal local.Egg29Account local.DisplaySavings string local.Egg29Savings
+local.Account ifstrequal local.Egg30Account local.DisplayChecking string local.Egg30Checking
+local.Account ifstrequal local.Egg30Account local.DisplaySavings string local.Egg30Savings
+local.Account ifstrequal local.Egg31Account local.DisplayChecking string local.Egg31Checking
+local.Account ifstrequal local.Egg31Account local.DisplaySavings string local.Egg31Savings
+local.Account ifstrequal local.Egg32Account local.DisplayChecking string local.Egg32Checking
+local.Account ifstrequal local.Egg32Account local.DisplaySavings string local.Egg32Savings
+local.Account ifstrequal local.Egg33Account local.DisplayChecking string local.Egg33Checking
+local.Account ifstrequal local.Egg33Account local.DisplaySavings string local.Egg33Savings
+local.Account ifstrequal local.Egg34Account local.DisplayChecking string local.Egg34Checking
+local.Account ifstrequal local.Egg34Account local.DisplaySavings string local.Egg34Savings
+local.Account ifstrequal local.Egg35Account local.DisplayChecking string local.Egg35Checking
+local.Account ifstrequal local.Egg35Account local.DisplaySavings string local.Egg35Savings
+local.Account ifstrequal local.Egg36Account local.DisplayChecking string local.Egg36Checking
+local.Account ifstrequal local.Egg36Account local.DisplaySavings string local.Egg36Savings
+local.Account ifstrequal local.Egg37Account local.DisplayChecking string local.Egg37Checking
+local.Account ifstrequal local.Egg37Account local.DisplaySavings string local.Egg37Savings
+
+local.Account ifstrequal local.Egg38Account local.DisplayChecking string local.Egg38Checking
+local.Account ifstrequal local.Egg38Account local.DisplaySavings string local.Egg38Savings
+local.Account ifstrequal local.Egg39Account local.DisplayChecking string local.Egg39Checking
+local.Account ifstrequal local.Egg39Account local.DisplaySavings string local.Egg39Savings
+local.Account ifstrequal local.Egg40Account local.DisplayChecking string local.Egg40Checking
+local.Account ifstrequal local.Egg40Account local.DisplaySavings string local.Egg40Savings
+local.Account ifstrequal local.Egg41Account local.DisplayChecking string local.Egg41Checking
+local.Account ifstrequal local.Egg41Account local.DisplaySavings string local.Egg41Savings
+local.Account ifstrequal local.Egg42Account local.DisplayChecking string local.Egg42Checking
+local.Account ifstrequal local.Egg42Account local.DisplaySavings string local.Egg42Savings
+local.Account ifstrequal local.Egg43Account local.DisplayChecking string local.Egg43Checking
+local.Account ifstrequal local.Egg43Account local.DisplaySavings string local.Egg43Savings
+local.Account ifstrequal local.Egg44Account local.DisplayChecking string local.Egg44Checking
+local.Account ifstrequal local.Egg44Account local.DisplaySavings string local.Egg44Savings
+local.Account ifstrequal local.Egg45Account local.DisplayChecking string local.Egg45Checking
+local.Account ifstrequal local.Egg45Account local.DisplaySavings string local.Egg45Savings
+local.Account ifstrequal local.Egg46Account local.DisplayChecking string local.Egg46Checking
+local.Account ifstrequal local.Egg46Account local.DisplaySavings string local.Egg46Savings
+local.Account ifstrequal local.Egg47Account local.DisplayChecking string local.Egg47Checking
+local.Account ifstrequal local.Egg47Account local.DisplaySavings string local.Egg47Savings
+local.Account ifstrequal local.Egg48Account local.DisplayChecking string local.Egg48Checking
+local.Account ifstrequal local.Egg48Account local.DisplaySavings string local.Egg48Savings
+local.Account ifstrequal local.Egg49Account local.DisplayChecking string local.Egg49Checking
+local.Account ifstrequal local.Egg49Account local.DisplaySavings string local.Egg49Savings
+local.Account ifstrequal local.Egg50Account local.DisplayChecking string local.Egg50Checking
+local.Account ifstrequal local.Egg50Account local.DisplaySavings string local.Egg50Savings
+local.Account ifstrequal local.Egg51Account local.DisplayChecking string local.Egg51Checking
+local.Account ifstrequal local.Egg51Account local.DisplaySavings string local.Egg51Savings
+local.Account ifstrequal local.Egg52Account local.DisplayChecking string local.Egg52Checking
+local.Account ifstrequal local.Egg52Account local.DisplaySavings string local.Egg52Savings
+local.Account ifstrequal local.Egg53Account local.DisplayChecking string local.Egg53Checking
+local.Account ifstrequal local.Egg53Account local.DisplaySavings string local.Egg53Savings
+local.Account ifstrequal local.Egg54Account local.DisplayChecking string local.Egg54Checking
+local.Account ifstrequal local.Egg54Account local.DisplaySavings string local.Egg54Savings
+local.Account ifstrequal local.Egg55Account local.DisplayChecking string local.Egg55Checking
+local.Account ifstrequal local.Egg55Account local.DisplaySavings string local.Egg55Savings
+
+goto ATM_Account_Input
+
+ATM_Account_Input:
+local.DisplayAccount ifstrequal level.ElexisAccount local.atm_consoleobject conmenufile "menus/bank/bankac01.002"
+local.DisplayAccount ifstrequal level.BladeAccount local.atm_consoleobject conmenufile "menus/bank/bankac02.002"
+local.DisplayAccount ifstrequal local.Egg1Account local.atm_consoleobject conmenufile "menus/bank/bankac03.002"
+local.DisplayAccount ifstrequal local.Egg2Account local.atm_consoleobject conmenufile "menus/bank/bankac04.002"
+local.DisplayAccount ifstrequal local.Egg3Account local.atm_consoleobject conmenufile "menus/bank/bankac05.002"
+local.DisplayAccount ifstrequal local.Egg4Account local.atm_consoleobject conmenufile "menus/bank/bankac06.002"
+local.DisplayAccount ifstrequal local.Egg5Account local.atm_consoleobject conmenufile "menus/bank/bankac07.002"
+local.DisplayAccount ifstrequal local.Egg6Account local.atm_consoleobject conmenufile "menus/bank/bankac08.002"
+local.DisplayAccount ifstrequal local.Egg7Account local.atm_consoleobject conmenufile "menus/bank/bankac09.002"
+local.DisplayAccount ifstrequal local.Egg8Account local.atm_consoleobject conmenufile "menus/bank/bankac10.002"
+local.DisplayAccount ifstrequal local.Egg9Account local.atm_consoleobject conmenufile "menus/bank/bankac11.002"
+local.DisplayAccount ifstrequal local.Egg10Account local.atm_consoleobject conmenufile "menus/bank/bankac12.002"
+local.DisplayAccount ifstrequal local.Egg11Account local.atm_consoleobject conmenufile "menus/bank/bankac13.002"
+local.DisplayAccount ifstrequal local.Egg12Account local.atm_consoleobject conmenufile "menus/bank/bankac14.002"
+local.DisplayAccount ifstrequal local.Egg13Account local.atm_consoleobject conmenufile "menus/bank/bankac15.002"
+local.DisplayAccount ifstrequal local.Egg14Account local.atm_consoleobject conmenufile "menus/bank/bankac16.002"
+local.DisplayAccount ifstrequal local.Egg15Account local.atm_consoleobject conmenufile "menus/bank/bankac17.002"
+local.DisplayAccount ifstrequal local.Egg16Account local.atm_consoleobject conmenufile "menus/bank/bankac18.002"
+local.DisplayAccount ifstrequal local.Egg17Account local.atm_consoleobject conmenufile "menus/bank/bankac19.002"
+local.DisplayAccount ifstrequal local.Egg18Account local.atm_consoleobject conmenufile "menus/bank/bankac20.002"
+local.DisplayAccount ifstrequal local.Egg19Account local.atm_consoleobject conmenufile "menus/bank/bankac21.002"
+local.DisplayAccount ifstrequal local.Egg20Account local.atm_consoleobject conmenufile "menus/bank/bankac22.002"
+local.DisplayAccount ifstrequal local.Egg21Account local.atm_consoleobject conmenufile "menus/bank/bankac23.002"
+local.DisplayAccount ifstrequal local.Egg22Account local.atm_consoleobject conmenufile "menus/bank/bankac24.002"
+local.DisplayAccount ifstrequal local.Egg23Account local.atm_consoleobject conmenufile "menus/bank/bankac25.002"
+local.DisplayAccount ifstrequal local.Egg24Account local.atm_consoleobject conmenufile "menus/bank/bankac26.002"
+local.DisplayAccount ifstrequal local.Egg25Account local.atm_consoleobject conmenufile "menus/bank/bankac27.002"
+local.DisplayAccount ifstrequal local.Egg26Account local.atm_consoleobject conmenufile "menus/bank/bankac28.002"
+local.DisplayAccount ifstrequal local.Egg27Account local.atm_consoleobject conmenufile "menus/bank/bankac29.002"
+local.DisplayAccount ifstrequal local.Egg28Account local.atm_consoleobject conmenufile "menus/bank/bankac30.002"
+local.DisplayAccount ifstrequal local.Egg29Account local.atm_consoleobject conmenufile "menus/bank/bankac31.002"
+local.DisplayAccount ifstrequal local.Egg30Account local.atm_consoleobject conmenufile "menus/bank/bankac32.002"
+local.DisplayAccount ifstrequal local.Egg31Account local.atm_consoleobject conmenufile "menus/bank/bankac33.002"
+local.DisplayAccount ifstrequal local.Egg32Account local.atm_consoleobject conmenufile "menus/bank/bankac34.002"
+local.DisplayAccount ifstrequal local.Egg33Account local.atm_consoleobject conmenufile "menus/bank/bankac35.002"
+local.DisplayAccount ifstrequal local.Egg34Account local.atm_consoleobject conmenufile "menus/bank/bankac36.002"
+local.DisplayAccount ifstrequal local.Egg35Account local.atm_consoleobject conmenufile "menus/bank/bankac37.002"
+local.DisplayAccount ifstrequal local.Egg36Account local.atm_consoleobject conmenufile "menus/bank/bankac38.002"
+local.DisplayAccount ifstrequal local.Egg37Account local.atm_consoleobject conmenufile "menus/bank/bankac39.002"
+
+local.DisplayAccount ifstrequal local.Egg38Account local.atm_consoleobject conmenufile "menus/bank/bankac40.002"
+local.DisplayAccount ifstrequal local.Egg39Account local.atm_consoleobject conmenufile "menus/bank/bankac41.002"
+local.DisplayAccount ifstrequal local.Egg40Account local.atm_consoleobject conmenufile "menus/bank/bankac42.002"
+local.DisplayAccount ifstrequal local.Egg41Account local.atm_consoleobject conmenufile "menus/bank/bankac43.002"
+local.DisplayAccount ifstrequal local.Egg42Account local.atm_consoleobject conmenufile "menus/bank/bankac44.002"
+local.DisplayAccount ifstrequal local.Egg43Account local.atm_consoleobject conmenufile "menus/bank/bankac45.002"
+local.DisplayAccount ifstrequal local.Egg44Account local.atm_consoleobject conmenufile "menus/bank/bankac46.002"
+local.DisplayAccount ifstrequal local.Egg45Account local.atm_consoleobject conmenufile "menus/bank/bankac47.002"
+local.DisplayAccount ifstrequal local.Egg46Account local.atm_consoleobject conmenufile "menus/bank/bankac48.002"
+local.DisplayAccount ifstrequal local.Egg47Account local.atm_consoleobject conmenufile "menus/bank/bankac49.002"
+local.DisplayAccount ifstrequal local.Egg48Account local.atm_consoleobject conmenufile "menus/bank/bankac50.002"
+local.DisplayAccount ifstrequal local.Egg49Account local.atm_consoleobject conmenufile "menus/bank/bankac51.002"
+local.DisplayAccount ifstrequal local.Egg50Account local.atm_consoleobject conmenufile "menus/bank/bankac52.002"
+local.DisplayAccount ifstrequal local.Egg51Account local.atm_consoleobject conmenufile "menus/bank/bankac53.002"
+local.DisplayAccount ifstrequal local.Egg52Account local.atm_consoleobject conmenufile "menus/bank/bankac54.002"
+local.DisplayAccount ifstrequal local.Egg53Account local.atm_consoleobject conmenufile "menus/bank/bankac55.002"
+local.DisplayAccount ifstrequal local.Egg54Account local.atm_consoleobject conmenufile "menus/bank/bankac56.002"
+local.DisplayAccount ifstrequal local.Egg55Account local.atm_consoleobject conmenufile "menus/bank/bankac57.002"
+
+local.PrintString string "jr 20 yt -120 fc 0.5 0.5 0.5 1 string \""
+local.PrintString append local.DisplayChecking
+local.PrintString append "\" jr 20 yt -180 fc 0.5 0.5 0.5 1 string \""
+local.PrintString append local.DisplaySavings
+local.PrintString append "\""
+local.atm_consoleobject conlayout local.PrintString
+
+local.atm_consoleobject focus menu
+waitForConsole local.atm_console
+local.atminput coninput local.atm_console
+goto ATM_Account_ProcessInput
+
+ATM_Account_ProcessInput:
+local.atminput ifequal 1 goto ATM_Account_Withdrawl
+local.atminput ifequal 2 goto ATM_Account_Deposit
+local.atminput ifequal 3 goto ATM_Account_WireFunds
+local.atminput ifequal 4 goto ATM_Main_Input
+
+ATM_Account_Withdrawl:
+local.atm_consoleobject conprint "m_withdrawls_temporarily"
+goto ATM_Account_Input
+
+ATM_Account_Deposit:
+local.atm_consoleobject conprint "m_deposits_temporarily"
+goto ATM_Account_Input
+
+ATM_Account_WireFunds:
+local.DisplayAccount ifstrequal level.ElexisAccount goto ATM_Account_WireFunds_FromElexis
+local.DisplayAccount ifstrequal level.BladeAccount goto ATM_Account_WireFunds_FromBlade
+local.atm_consoleobject conprint "m_access_denied"
+goto ATM_Account_Input
+
+ATM_Account_WireFunds_FromElexis:
+game.bank_balance ifequal 1 goto ATM_Account_WireFunds_FromElexis_OnHold
+local.atm_consoleobject conprint "m_enter_destination"
+local.atm_consoleobject focus console
+waitForConsole local.atm_console
+local.atminput coninput local.atm_console
+local.atminput ifstrequal level.BladeAccount goto ATM_Account_WireFunds_FromElexis_ValidAccount
+local.atminput ifstrequal level.ElexisAccount goto ATM_Account_WireFunds_Denied
+// Put stuff for extra accounts
+local.atm_consoleobject conprint "m_invalid_account"
+goto ATM_Account_Input
+
+ATM_Account_WireFunds_FromElexis_ValidAccount:
+game.bank_balance ifequal 0 goto ATM_Account_WireFunds_FromElexis_Sufficient
+goto ATM_Account_WireFunds_FromElexis_OnHold
+
+ATM_Account_WireFunds_FromElexis_OnHold:
+local.atm_consoleobject conprint "m_funds_on"
+local.DisplayChecking string level.ElexisChecking
+local.DisplaySavings string level.ElexisSavings
+local.PrintString string "jr 20 yt -120 fc 0.5 0.5 0.5 1 string \""
+local.PrintString append local.DisplayChecking
+local.PrintString append "\" jr 20 yt -180 fc 0.5 0.5 0.5 1 string \""
+local.PrintString append local.DisplaySavings
+local.PrintString append "\""
+goto ATM_Account_Input
+
+ATM_Account_WireFunds_FromElexis_Sufficient:
+game.bank_balance = 1
+local.DisplayChecking string "$0.00"
+local.DisplaySavings string "$0.00"
+level.ElexisChecking string "$0.00"
+level.ElexisSavings string "$0.00"
+level.BladeChecking string "$9,390,000.00"
+level.BladeSavings string "$100,040.00"
+local.atm_consoleobject conprint "m_949004100_wired_to"
+goto ATM_Account_Input
+
+ATM_Account_WireFunds_FromBlade:
+game.bank_balance ifequal 0 goto ATM_Account_WireFunds_FromBlade_Insufficient
+game.bank_balance ifequal 1 goto ATM_Account_WireFunds_FromBlade_OnHold
+
+ATM_Account_WireFunds_FromBlade_OnHold:
+local.atm_consoleobject conprint "m_funds_on"
+local.DisplayChecking string level.BladeChecking
+local.DisplaySavings string level.BladeSavings
+local.PrintString string "jr 20 yt -120 fc 0.5 0.5 0.5 1 string \""
+local.PrintString append local.DisplayChecking
+local.PrintString append "\" jr 20 yt -180 fc 0.5 0.5 0.5 1 string \""
+local.PrintString append local.DisplaySavings
+local.PrintString append "\""
+goto ATM_Account_Input
+
+ATM_Account_WireFunds_FromBlade_Insufficient:
+local.atm_consoleobject conprint "m_insufficient_funds"
+goto ATM_Account_Input
+
+ATM_Account_WireFunds_Denied:
+local.atm_consoleobject conprint "m_action_denied"
+local.atm_consoleobject conprint local.atminput
+local.atm_consoleobject conprint "\n"
+goto ATM_Account_Input
+
+end
+
+
+//===========================================================================
+//===========================================================================
+// MISSION COMPUTER
+//===========================================================================
+//===========================================================================
+// bank_start_misscomp_thread:
+/////////////////////////////////////////////////////////////////////////////
+bank_start_misscomp_thread:
+
+thread BankMissionComputer
+thread universal::StatusUpdated
+waitForThread parm.previousthread
+
+end // bank_start_misscomp_thread
+
+// capture_mancini_misscomp_thread:
+/////////////////////////////////////////////////////////////////////////////
+capture_mancini_misscomp_thread:
+
+thread blade_open_tellers
+waitForThread parm.previousthread
+
+level.PObjective5 = 0 // Chase Mancini
+
+thread BankMissionComputer
+thread universal::StatusUpdated
+waitForThread parm.previousthread
+
+end // capture_mancini_misscomp_thread
+
+
+// security_key_misscomp_thread:
+/////////////////////////////////////////////////////////////////////////////
+security_key_misscomp_thread:
+
+level.PObjective2 = 1 // Locate Security Office Key
+level.PObjective3 = 0 // Gain Access To Security Room
+
+music success normal
+
+thread universal::PObjectiveComplete
+waitForThread parm.previousthread
+
+thread BankMissionComputer
+thread universal::StatusUpdated
+waitForThread parm.previousthread
+
+end // security_key_misscomp_thread
+
+
+// security_room_entered_misscomp_thread:
+/////////////////////////////////////////////////////////////////////////////
+security_room_entered_misscomp_thread:
+
+level.PObjective3 = 1 // Gain Access To Security Room
+level.PObjective4 = 0 // Gain Access To The Vault
+
+// [XA] new to reloaded: don't trigger success music
+// here so it doesn't interrupt the suspense music
+thread universal::PObjectiveCompleteNoMusic
+waitForThread parm.previousthread
+
+thread BankMissionComputer
+thread universal::StatusUpdated
+waitForThread parm.previousthread
+
+end // security_room_entered_misscomp_thread
+
+
+// vault_opened_misscomp_thread:
+/////////////////////////////////////////////////////////////////////////////
+vault_opened_misscomp_thread:
+
+level.PObjective4 = 1 // Gain Access To The Vault
+
+// [XA] new to Reloaded: immediately trigger the new 'mystery' music
+// track when the vault opens, instead of the success music
+music mystery
+
+thread BankMissionComputer
+thread universal::PObjectiveCompleteNoMusic
+
+thread BankMissionComputer
+thread universal::StatusUpdated
+waitForThread parm.previousthread
+
+end // vault_opened_misscomp_thread
+
+
+// security_doors_unlocked_misscomp_thread:
+/////////////////////////////////////////////////////////////////////////////
+security_doors_unlocked_misscomp_thread:
+
+level.SObjective1 = 1 // Unlock All Security Doors
+
+music success normal
+
+// [XA] new to Reloaded: remove the suspense music triggers when the security
+// door objective gets marked complete, since you're basically "done" here
+$trigger_security_music remove
+
+thread BankMissionComputer
+thread universal::SObjectiveComplete
+waitForThread parm.previousthread
+
+end // security_doors_unlocked_misscomp_thread
+
+
+// hostages_saved_misscomp_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostages_saved_misscomp_thread:
+
+level.SObjective2 = 1 // Secure Hostages
+
+music success normal
+
+thread BankMissionComputer
+thread universal::SObjectiveComplete
+waitForThread parm.previousthread
+
+end // hostages_saved_misscomp_thread
+
+
+// hostages_killed_misscomp_thread:
+/////////////////////////////////////////////////////////////////////////////
+hostages_killed_misscomp_thread:
+
+level.SObjective2 = 2 // Secure Hostages
+
+music failure normal
+
+thread BankMissionComputer
+thread universal::SObjectiveFailed
+waitForThread parm.previousthread
+
+end // hostages_killed_misscomp_thread
+
+
+// BankMissionComputer:
+/////////////////////////////////////////////////////////////////////////////
+BankMissionComputer:
+
+thread universal::NewMisConSetup
+
+parm.status = level.PObjective1
+parm.title string "\"m_disable_hostile_threat_1\""
+thread universal::NewMisConPrimary
+
+parm.status = level.PObjective2
+parm.title string "\"m_locate_security_office_1\""
+thread universal::NewMisConPrimary
+
+parm.status = level.PObjective3
+parm.title string "\"m_gain_access_to_1_1\""
+thread universal::NewMisConPrimary
+
+parm.status = level.PObjective4
+parm.title string "\"m_gain_access_to_2_1\""
+thread universal::NewMisConPrimary
+
+parm.status = level.PObjective5
+parm.title string "\"m_chase_mancini\""
+thread universal::NewMisConPrimary
+
+parm.status = level.SObjective1
+parm.title string "\"m_unlock_all_security_1\""
+thread universal::NewMisConSecondary
+
+parm.status = level.SObjective2
+parm.title string "\"m_secure_hostages\""
+thread universal::NewMisConSecondary
+
+end // BankMissionComputer
+
+
+//---------------------------------------------------------------------------
+// Finished Level Update
+//---------------------------------------------------------------------------
+LevelComplete:
+
+// Clears any items in the player's inventory that need to be removed
+thread universal::ClearInventory
+
+*1 take evidence
+*1 take dollar
+
+// P1 & 5 are the only objects that need to be set, anything else is a bug
+level.PObjective1 = 1 // Disable Hostile Threat
+//level.PObjective2 = 1 // Locate Security Office Key
+//level.PObjective3 = 1 // Gain Access To Security Room
+//level.PObjective4 = 1 // Gain Access To The Vault
+level.PObjective5 = 1 // Chase Mancini
+
+// Fail the incomplete secondary objectives
+level.SObjective1 ifequal 0 level.SObjective1 = 2 // Unlock All Security Doors
+level.SObjective2 ifequal 0 level.SObjective2 = 2 // Secure Hostages
+
+thread BankMissionComputer
+
+// Send over the information that Scott needs to load the proper intermission
+game.bank_evidence_found ifnotequal 1 loadintermission "layouts/im_layouts/bank_to_abandon"
+game.bank_evidence_found ifequal 1 loadintermission "layouts/im_layouts/bank_to_abandon2"
+thread universal::CopyNewMisConToIntermission
+
+end
+
+// new elevator
+Elevator_Init:
+  local.elev string "$elev"
+  local.elev_surf string "@elev"
+
+  local.elev_inner_btn string local.elev
+  local.elev_inner_btn append "_inner_btn"
+  local.elev_inner_btn_surf string local.elev_surf
+  local.elev_inner_btn_surf append "_inner_btn"
+
+  local.elev_lower string local.elev
+  local.elev_lower append "2"
+  local.elev_lower_btn string local.elev_lower
+  local.elev_lower_btn append "_btn"
+  local.elev_lower_doora string local.elev_lower
+  local.elev_lower_doora append "_door_a"
+  local.elev_lower_doorb string local.elev_lower
+  local.elev_lower_doorb append "_door_b"
+  local.elev_lower_waypoint string local.elev_lower
+  local.elev_lower_waypoint append "_waypoint"
+  local.elev_lower_btn_surf string local.elev_surf
+  local.elev_lower_btn_surf append "2_btn"
+
+  local.elev_lower_doora_start getorigin local.elev_lower_doora
+  local.elev_lower_doorb_start getorigin local.elev_lower_doorb
+  local.elev_lower_doora_end vector local.elev_lower_doora_start
+  local.elev_lower_doora_end vector_add "0 44 0"
+  local.elev_lower_doorb_end vector local.elev_lower_doorb_start
+  local.elev_lower_doorb_end vector_add "0 84 0"
+
+
+  local.elev_upper string local.elev
+  local.elev_upper append "1"
+  local.elev_upper_btn string local.elev_upper
+  local.elev_upper_btn append "_btn"
+  local.elev_upper_doora string local.elev_upper
+  local.elev_upper_doora append "_door_a"
+  local.elev_upper_doorb string local.elev_upper
+  local.elev_upper_doorb append "_door_b"
+  local.elev_upper_waypoint string local.elev_upper
+  local.elev_upper_waypoint append "_waypoint"
+  local.elev_upper_btn_surf string local.elev_surf
+  local.elev_upper_btn_surf append "1_btn"
+
+  local.elev_upper_doora_start getorigin local.elev_upper_doora
+  local.elev_upper_doorb_start getorigin local.elev_upper_doorb
+  local.elev_upper_doora_end vector local.elev_upper_doora_start
+  local.elev_upper_doora_end vector_add "0 44 0"
+  local.elev_upper_doorb_end vector local.elev_upper_doorb_start
+  local.elev_upper_doorb_end vector_add "0 84 0"
+
+
+  // set up initial state of elevator, at the bottom
+  // with lower doors open
+  local.elev time 2.4
+
+  local.elev_lower_doora time 1
+  local.elev_lower_doorb time 1
+  local.elev_upper_doora time 1
+  local.elev_upper_doorb time 1
+
+  local.elev_upper_doora onblock upper_doors_blocked
+  local.elev_upper_doorb onblock upper_doors_blocked
+
+  local.elev_lower_doora onblock lower_doors_blocked
+  local.elev_lower_doorb onblock lower_doors_blocked
+
+  // set up state machine
+  local.elev_state = 8
+  goto elev_state_machine
+
+  pause
+
+  // buzz
+  // TODO: since the state machine is one thread, these buttons
+  // don't directly work like I hoped they would.
+  elev_btn_unavailable:
+    // can't get "self" from here but this should be OK I think
+    local.elev playsound environment/computer/beeps/reject1.wav 1.0
+  pause
+
+  upper_doors_blocked:
+    local.elev_state = 3
+    goto elev_state_machine
+  pause
+
+  lower_doors_blocked:
+    local.elev_state = 7
+    goto elev_state_machine
+  pause
+
+  elev_state_machine:
+    print "state machine: " local.elev_state "\n"
+    local.elev_state ifequal 0 goto elev_state_at_bottom
+    local.elev_state ifequal 1 goto elev_state_closing_lower_doors
+    local.elev_state ifequal 2 goto elev_state_going_up
+    local.elev_state ifequal 3 goto elev_state_opening_upper_doors
+    local.elev_state ifequal 4 goto elev_state_at_top
+    local.elev_state ifequal 5 goto elev_state_closing_upper_doors
+    local.elev_state ifequal 6 goto elev_state_going_down
+    local.elev_state ifequal 7 goto elev_state_opening_lower_doors
+    local.elev_state ifequal 8 goto elev_state_opening_lower_doors_start
+
+    elev_state_at_bottom:
+      local.elev_lower_btn nouse
+      local.elev_lower_btn_surf frame 0
+      local.elev_upper_btn onuse elev_upper_press
+      local.elev_upper_btn_surf frame 1
+      local.elev_inner_btn onuse elev_inner_press
+      local.elev_inner_btn_surf frame 1
+    pause
+
+    elev_state_closing_lower_doors:
+      local.elev_lower_doora playsound environment/conveyor/convnice1.wav 1.0
+      local.elev_lower_doorb playsound environment/conveyor/convnice1.wav 1.0
+      local.elev_lower_doora moveto local.elev_lower_doora_start
+      local.elev_lower_doorb moveto local.elev_lower_doorb_start
+      waitFor local.elev_lower_doora
+      local.elev_lower_doora playsound environment/conveyor/con4end.wav 1.0
+      local.elev_lower_doorb playsound environment/conveyor/con4end.wav 1.0
+      wait 1.0
+      local.elev_state = 2
+      goto elev_state_machine
+    pause
+
+    elev_state_going_up:
+      local.elev playsound environment/levelsnds/bank/bankmix2.wav 1.0
+      local.elev moveto local.elev_upper_waypoint
+      waitFor local.elev
+      wait 1.0
+      local.elev_upper_btn playsound environment/computer/beeps/doorbeep.wav 1.0
+      local.elev_state = 3
+      goto elev_state_machine
+    pause
+
+    elev_state_opening_upper_doors:
+      local.elev_upper_doora playsound environment/conveyor/convnice1.wav 1.0
+      local.elev_upper_doorb playsound environment/conveyor/convnice1.wav 1.0
+      local.elev_upper_doora moveto local.elev_upper_doora_end
+      local.elev_upper_doorb moveto local.elev_upper_doorb_end
+      waitFor local.elev_upper_doora
+      local.elev_upper_doora playsound environment/conveyor/con4end.wav 1.0
+      local.elev_upper_doorb playsound environment/conveyor/con4end.wav 1.0
+      local.elev_state = 4
+      goto elev_state_machine
+    pause
+
+    elev_state_at_top:
+      local.elev_upper_btn nouse
+      local.elev_upper_btn_surf frame 0
+      local.elev_lower_btn onuse elev_lower_press
+      local.elev_lower_btn_surf frame 1
+      local.elev_inner_btn onuse elev_inner_press
+      local.elev_inner_btn_surf frame 1
+    pause
+
+    elev_state_closing_upper_doors:
+      local.elev_upper_doora playsound environment/conveyor/convnice1.wav 1.0
+      local.elev_upper_doorb playsound environment/conveyor/convnice1.wav 1.0
+      local.elev_upper_doora moveto local.elev_upper_doora_start
+      local.elev_upper_doorb moveto local.elev_upper_doorb_start
+      waitFor local.elev_upper_doora
+      local.elev_upper_doora playsound environment/conveyor/con4end.wav 1.0
+      local.elev_upper_doorb playsound environment/conveyor/con4end.wav 1.0
+      wait 1.0
+      local.elev_state = 6
+      goto elev_state_machine
+    pause
+
+    elev_state_going_down:
+      local.elev playsound environment/levelsnds/bank/bankmix2.wav 1.0
+      local.elev moveto local.elev_lower_waypoint
+      waitFor local.elev
+      wait 1.0
+      local.elev_lower_btn playsound environment/computer/beeps/doorbeep.wav 1.0
+      local.elev_state = 7
+      goto elev_state_machine
+    pause
+
+    elev_state_opening_lower_doors:
+      local.elev_lower_doora playsound environment/conveyor/convnice1.wav 1.0
+      local.elev_lower_doorb playsound environment/conveyor/convnice1.wav 1.0
+      local.elev_lower_doora moveto local.elev_lower_doora_end
+      local.elev_lower_doorb moveto local.elev_lower_doorb_end
+      waitFor local.elev_lower_doora
+      local.elev_lower_doora playsound environment/conveyor/con4end.wav 1.0
+      local.elev_lower_doorb playsound environment/conveyor/con4end.wav 1.0
+      local.elev_state = 0
+      goto elev_state_machine
+    pause
+
+    elev_state_opening_lower_doors_start:
+      local.elev_lower_doora moveto local.elev_lower_doora_end
+      local.elev_lower_doorb moveto local.elev_lower_doorb_end
+      waitFor local.elev_lower_doora
+      local.elev_state = 0
+      goto elev_state_machine
+    pause
+  pause
+
+  elev_upper_press:
+    local.elev_lower_btn nouse
+    local.elev_upper_btn nouse
+    local.elev_inner_btn nouse
+    local.elev_upper_btn playsound environment/cabinet/glasscab/latch12.wav 1.0
+    local.elev_lower_btn_surf frame 2
+    local.elev_upper_btn_surf frame 2
+    local.elev_inner_btn_surf frame 2
+    local.elev_state = 1
+    goto elev_state_machine
+  pause
+
+  elev_lower_press:
+    local.elev_lower_btn nouse
+    local.elev_upper_btn nouse
+    local.elev_inner_btn nouse
+    local.elev_lower_btn playsound environment/cabinet/glasscab/latch12.wav 1.0
+    local.elev_lower_btn_surf frame 2
+    local.elev_upper_btn_surf frame 2
+    local.elev_inner_btn_surf frame 2
+    local.elev_state = 5
+    goto elev_state_machine
+  pause
+
+  elev_inner_press:
+    local.elev_lower_btn nouse
+    local.elev_upper_btn nouse
+    local.elev_inner_btn nouse
+    local.elev_inner_btn playsound environment/cabinet/glasscab/latch12.wav 1.0
+    local.elev_lower_btn_surf frame 2
+    local.elev_upper_btn_surf frame 2
+    local.elev_inner_btn_surf frame 2
+
+    local.old_state = local.elev_state
+    local.elev_state = 5
+    local.old_state ifequal 0 local.elev_state = 1
+    goto elev_state_machine
+  pause
+end
