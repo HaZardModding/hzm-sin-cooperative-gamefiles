@@ -1,0 +1,1395 @@
+//Contains main coop scripts
+//Chrissstrahl - 2026.10.22
+
+main:
+	//do not run twiche
+	level.coopRunning ifequal 1 end
+	level.coopRunning = 1
+	
+	//we might want to spawn our own spawnlocations in the future here or in mapname.ent_patch
+	//The first player will always spawn at info_player_start, regardless, he needs to be moved
+	//spawn info_player_coop"origin "400 -909 240" targetname "coopSpawn1"
+	
+	aliasscript global/coop_mom.scr coopMom
+	aliasscript global/coop_replace.scr coopReplace
+	aliasscript global/coop_spawnlocations.scr coopPlayerSpawn
+	thread global/coop_variables.scr::main
+	waitForThread parm.previousthread
+	
+	//spawn spawnlocations
+	local.playerSpawnThread string "coopPlayerSpawn::"
+	local.playerSpawnThread append level.map_name
+	thread local.playerSpawnThread
+	
+	//handle players
+	thread coopWaitForPlayer
+	
+	//check server and script settings
+		// sv_fraglimit (15) - id Tech 2 game variable
+		// sv_timelimit (20) - id Tech 2 game variable
+		// sv_vote_single_vote (0) - Toggle if a vote can be initiated with only one player on the server.
+		// sv_vote_chat_yesno ( 1) - Set to 1 to allow 'yes' and 'no' voting commands as a chat message while a vote is in progress.
+		// sv_spawn_protection (0) - Toggle spawn protection in multiplayer.
+		// sv_spawn_protection_time (2) - Time (in seconds) for spawn protection in multiplayer.  Requires sv_spawn_protection CVAR to be set.
+	
+		// sv_motd () - Message of the Day (MOTD) for multiplayer.  Separate newlines with the pipe '|' character.
+		// sv_motd_time (5.0) - Time (in seconds) to display the Message of the Day (MOTD) for multiplayer.
+	
+		// sv_vote_disallow_flags:
+		// * No gamemode changes - 1
+		// * No Deathmatch gamemode changes - 2
+		// * No CTF gamemode changes - 4
+		// * No Coop gamemode - 8
+		// * No Fraglimit changes - 16
+		// * No Timelimit changes - 32
+		// * No Coop skill changes - 64
+		// * No Map changes - 128
+		// * No Random maps - 256
+		// * No Map Resets - 512
+		// * Map voting locked to map rotation CVAR - 1024
+		// * No voting for end match/next map - 2048
+		// * No voting for maxclients changes - 4096
+		// * No voting for grappling hook changes - 8192
+		// * No voting for fast weapon switching changes - 16384
+	thread checkInfoPlayerStart
+	thread checkSpawnLocations
+	thread checkCoopGame
+	
+	//Allow single blade voting for dev testing
+	local.hostName getcvar "name"
+	local.chriss string "ChristianStrahl"
+	local.hostName ifequal level.devName stuffcmd "seta sv_vote_single_vote 1"
+	
+	print "=======================\nCoop started and ready\n=======================\n"
+end
+
+coopWaitForPlayer:
+	waitForPlayer
+	thread playerTargetnames
+	waitForThread parm.previousthread
+end
+
+resetCoordForPlayer:
+//INTERNAL coop_main.scr USE ONLY!
+//Resets where the player should respawn - will then spawn at predefined spot
+	parm.player ifstrequal "$player1" level.coopPlayer1LastCoord string "0 0 0"
+	parm.player ifstrequal "$player2" level.coopPlayer2LastCoord string "0 0 0"
+	parm.player ifstrequal "$player3" level.coopPlayer3LastCoord string "0 0 0"
+	parm.player ifstrequal "$player4" level.coopPlayer4LastCoord string "0 0 0"
+end
+
+setCoordForPlayer:
+//INTERNAL coop_main.scr USE ONLY!
+//Keeps track of where the player should respawn
+	parm.player ifstrequal "$player1" level.coopPlayer1LastCoord string parm.setCoordForPlayer
+	parm.player ifstrequal "$player2" level.coopPlayer2LastCoord string parm.setCoordForPlayer
+	parm.player ifstrequal "$player3" level.coopPlayer3LastCoord string parm.setCoordForPlayer
+	parm.player ifstrequal "$player4" level.coopPlayer4LastCoord string parm.setCoordForPlayer
+end
+
+getCoordForPlayer:
+//INTERNAL coop_main.scr USE ONLY!
+//Keeps track of where the player should respawn
+	parm.player ifstrequal "$player1" parm.getCoordForPlayer string level.coopPlayer1LastCoord
+	parm.player ifstrequal "$player2" parm.getCoordForPlayer string level.coopPlayer2LastCoord
+	parm.player ifstrequal "$player3" parm.getCoordForPlayer string level.coopPlayer3LastCoord
+	parm.player ifstrequal "$player4" parm.getCoordForPlayer string level.coopPlayer4LastCoord
+end
+
+aliveStatusForPlayer:
+//INTERNAL coop_main.scr USE ONLY!
+	parm.player ifstrequal "$player1" level.coopPlayer1Alive = parm.aliveStatusForPlayer
+	parm.player ifstrequal "$player2" level.coopPlayer2Alive = parm.aliveStatusForPlayer
+	parm.player ifstrequal "$player3" level.coopPlayer3Alive = parm.aliveStatusForPlayer
+	parm.player ifstrequal "$player4" level.coopPlayer4Alive = parm.aliveStatusForPlayer
+end
+
+manageStatusForPlayer:
+//INTERNAL coop_main.scr USE ONLY!
+	parm.manageStatusForPlayer_value = 0
+	parm.player ifstrequal "$player1" parm.manageStatusForPlayer_value = level.coopPlayer1Managing
+	parm.player ifstrequal "$player2" parm.manageStatusForPlayer_value = level.coopPlayer2Managing
+	parm.player ifstrequal "$player3" parm.manageStatusForPlayer_value = level.coopPlayer3Managing
+	parm.player ifstrequal "$player4" parm.manageStatusForPlayer_value = level.coopPlayer4Managing
+end
+
+manageStatusForPlayerSet:
+//INTERNAL coop_main.scr USE ONLY!
+	parm.player ifstrequal "$player1" level.coopPlayer1Managing = parm.manageStatusForPlayer
+	parm.player ifstrequal "$player2" level.coopPlayer2Managing = parm.manageStatusForPlayer
+	parm.player ifstrequal "$player3" level.coopPlayer3Managing = parm.manageStatusForPlayer
+	parm.player ifstrequal "$player4" level.coopPlayer4Managing = parm.manageStatusForPlayer
+end
+
+managePlayer4_start:
+//INTERNAL coop_main.scr USE ONLY!
+	parm.player string "$player4"
+	parm.playerExist string parm.player
+	thread playerExist
+	parm.playerExistTrue iflessequal 0 end
+	parm.playerEvent string parm.player
+	thread managePlayer4
+	thread playerEntered_event
+end
+
+managePlayer3_start:	
+//INTERNAL coop_main.scr USE ONLY!
+	parm.player string "$player3"
+	parm.playerExist string parm.player
+	thread playerExist
+	parm.playerExistTrue iflessequal 0 end
+	parm.playerEvent string parm.player
+	thread managePlayer3
+	thread playerEntered_event
+end
+
+managePlayer2_start:
+//INTERNAL coop_main.scr USE ONLY!
+	parm.player string "$player2"
+	parm.playerExist string parm.player
+	thread playerExist
+	parm.playerExistTrue iflessequal 0 end
+	parm.playerEvent string parm.player
+	thread managePlayer2
+	thread playerEntered_event
+end
+
+managePlayer1_start:
+//INTERNAL coop_main.scr USE ONLY!
+	parm.player string "$player1"
+	parm.playerExist string parm.player
+	thread playerExist
+	parm.playerExistTrue iflessequal 0 end
+	parm.playerEvent string parm.player
+	thread managePlayer1
+	thread playerEntered_event
+end
+
+managePlayer4:
+//INTERNAL coop_main.scr USE ONLY!
+	local.player string parm.player
+	level.coopPlayer4Managing = 1
+	level.coopDebug ifgreaterequal 1 print "managePlayer4 Started\n"
+
+	//loop it
+	managePlayer4_loop:
+	parm.player string local.player
+	parm.lastAliveState = level.coopPlayer4Alive
+	thread managePlayer_checkAliveChange
+	waitForThread parm.previousthread
+	
+	wait game.FRAMETIME	
+	level.coopPlayer4Managing ifgreaterequal 1 goto managePlayer4_loop
+	level.coopDebug ifgreaterequal 1 print "managePlayer4 Terminated\n"
+end
+
+managePlayer3:
+//INTERNAL coop_main.scr USE ONLY!
+	local.player string parm.player
+	level.coopPlayer3Managing = 1
+	level.coopDebug ifgreaterequal 1 print "managePlayer3 Started\n"
+	
+	//loop it
+	managePlayer3_loop:
+	parm.player string local.player
+	parm.lastAliveState = level.coopPlayer3Alive
+	thread managePlayer_checkAliveChange
+	waitForThread parm.previousthread
+	
+	wait game.FRAMETIME	
+	level.coopPlayer3Managing ifgreaterequal 1 goto managePlayer3_loop
+	level.coopDebug ifgreaterequal 1 print "managePlayer3 Terminated\n"
+end
+
+managePlayer2:
+//INTERNAL coop_main.scr USE ONLY!
+	local.player string parm.player
+	level.coopPlayer2Managing = 1
+	level.coopDebug ifgreaterequal 1 print "managePlayer2 Started\n"
+	
+	//loop it
+	managePlayer2_loop:
+	parm.player string local.player
+	parm.lastAliveState = level.coopPlayer2Alive
+	thread managePlayer_checkAliveChange
+	waitForThread parm.previousthread
+	
+	wait game.FRAMETIME	
+	level.coopPlayer2Managing ifgreaterequal 1 goto managePlayer2_loop
+	level.coopDebug ifgreaterequal 1 print "managePlayer2 Terminated\n"
+end
+
+managePlayer1:
+//INTERNAL coop_main.scr USE ONLY!
+	local.player string parm.player
+	level.coopPlayer1Managing = 1
+	level.coopDebug ifgreaterequal 1 print "managePlayer1 Started\n"
+
+	//loop it
+	managePlayer1_loop:
+	parm.player string local.player
+	parm.lastAliveState = level.coopPlayer1Alive
+	thread managePlayer_checkAliveChange
+	waitForThread parm.previousthread
+	wait game.FRAMETIME
+	
+	level.coopPlayer1Managing ifgreaterequal 1 goto managePlayer1_loop
+	level.coopDebug ifgreaterequal 1 print "managePlayer1 Terminated\n"
+end
+
+managePlayer_checkAliveChange:
+//INTERNAL coop_main.scr USE ONLY!
+	parm.playerAlive isentalive parm.player
+	parm.playerAlive ifequal 1 goto managePlayer_checkAliveChange_exist
+	parm.playerExist string parm.player
+	thread playerExist
+	parm.playerExistTrue ifequal 1 goto managePlayer_checkAliveChange_exist
+	goto playerDisconnected
+	end
+	
+	managePlayer_checkAliveChange_exist:
+	thread manageStatusForPlayer
+	thread playerIsSpectator
+	parm.playerIsSpectatorTrue ifgreaterequal 1 goto managePlayer_checkAliveChange_spectator
+	parm.manageStatusForPlayer_value ifequal 4 goto managePlayer_checkAliveChange_alive
+	
+	parm.playerAlive ifequal parm.lastAliveState end
+	parm.playerAlive ifequal 1 goto managePlayer_checkAliveChange_alive
+	parm.playerAlive ifequal 0 goto managePlayer_checkAliveChange_dead
+	end
+	managePlayer_checkAliveChange_spectator:
+	parm.manageStatusForPlayer_value ifequal 4 end
+	thread playerSpectator
+	end
+	managePlayer_checkAliveChange_alive:
+	thread playerSpawned
+	end
+	managePlayer_checkAliveChange_dead:
+	thread playerDied
+end
+
+playerSpectator:
+//INTERNAL coop_main.scr USE ONLY!
+	parm.print1 string "Player became spectator: "
+	parm.print2 append parm.player
+	thread println
+	
+	parm.playerEvent string parm.player
+
+	thread manageStatusForPlayer
+	parm.manageStatusForPlayer_value ifequal 4 end
+	
+	thread resetCoordForPlayer
+
+	parm.manageStatusForPlayer = 4
+	thread manageStatusForPlayerSet
+	
+	thread playerCinematic
+	
+	thread playerSpectator_event
+end
+
+playerSpawned:
+//INTERNAL coop_main.scr USE ONLY!
+	parm.print1 string "Player was spawned: "
+	parm.print2 append parm.player
+	thread println
+	
+	parm.playerEvent string parm.player
+	
+	parm.manageStatusForPlayer = 2
+	thread manageStatusForPlayerSet
+	
+	parm.aliveStatusForPlayer = 1
+	thread aliveStatusForPlayer
+	
+	thread playerMoveToSpawn
+	thread playerEquip
+	
+	thread playerCinematic
+	
+	thread playerSpawned_event
+	
+	//TEST - REMOVE
+	//TEST - REMOVE
+	//TEST - REMOVE
+	//TEST - REMOVE
+	thread testStuff
+end
+
+playerDied:
+//INTERNAL coop_main.scr USE ONLY!
+	parm.print1 string "Player was killed: "
+	parm.print2 append parm.player
+	thread println
+	
+	parm.playerEvent string parm.player	
+	
+	local.playerOrigin getorigin parm.player
+	parm.setCoordForPlayer string local.playerOrigin
+	thread setCoordForPlayer
+		
+	//parm.player clearsavedangles
+	parm.aliveStatusForPlayer = 0
+	thread aliveStatusForPlayer
+	
+	parm.manageStatusForPlayer = 3
+	thread manageStatusForPlayerSet
+	
+	thread playerCinematic	
+	
+	thread playerDied_event
+end
+
+playerDisconnected_event:
+//INTERNAL coop_main.scr USE ONLY!
+	level.coopExecEventDisconnected ifless 1 end
+	local.threadIDrunning = parm.previousthread
+	local.spawnLocThread string "maps/"
+	local.spawnLocThread append level.map_name
+	local.spawnLocThread append ".scr::coop_justLeft"
+	thread local.spawnLocThread
+	//function does not exist if thread id is identical prevent further execution for this level
+	local.threadID = parm.previousthread
+	local.threadID iflessequal local.threadIDrunning level.coopExecEventDisconnected = 0
+end
+
+playerSpectator_event:
+//INTERNAL coop_main.scr USE ONLY!
+	level.coopExecEventSpectator ifless 1 end
+	local.threadIDrunning = parm.previousthread
+	local.spawnLocThread string "maps/"
+	local.spawnLocThread append level.map_name
+	local.spawnLocThread append ".scr::coop_justBecameSpectator"
+	thread local.spawnLocThread
+	//function does not exist if thread id is identical prevent further execution for this level
+	local.threadID = parm.previousthread
+	local.threadID iflessequal local.threadIDrunning level.coopExecEventSpectator = 0
+end
+
+playerSpawned_event:
+//INTERNAL coop_main.scr USE ONLY!
+	level.coopExecEventSpawned ifless 1 end
+	local.threadIDrunning = parm.previousthread
+	local.spawnLocThread string "maps/"
+	local.spawnLocThread append level.map_name
+	local.spawnLocThread append ".scr::coop_justSpawned"
+	thread local.spawnLocThread
+	//function does not exist if thread id is identical prevent further execution for this level
+	local.threadID = parm.previousthread
+	local.threadID ifequal local.threadIDrunning level.coopExecEventSpawned = 0
+end
+
+playerDied_event:
+//INTERNAL coop_main.scr USE ONLY!
+	level.coopExecEventDied ifless 1 end
+	local.threadIDrunning = parm.previousthread
+	local.spawnLocThread string "maps/"
+	local.spawnLocThread append level.map_name
+	local.spawnLocThread append ".scr::coop_justDied"
+	thread local.spawnLocThread
+	//function does not exist if thread id is identical prevent further execution for this level
+	local.threadID = parm.previousthread
+	local.threadID iflessequal local.threadIDrunning level.coopExecEventDied = 0
+end
+
+playerEntered_event:
+//INTERNAL coop_main.scr USE ONLY!
+	level.coopExecEventEntered ifless 1 end
+	local.threadIDrunning = parm.previousthread
+	local.spawnLocThread string "maps/"
+	local.spawnLocThread append level.map_name
+	local.spawnLocThread append ".scr::coop_justEntered"
+	thread local.spawnLocThread
+	//function does not exist if thread id is identical prevent further execution for this level
+	local.threadID = parm.previousthread
+	local.threadID iflessequal local.threadIDrunning level.coopExecEventEntered = 0
+end
+
+playerIsSpectator:
+	parm.playerIsSpectatorTrue = 0
+	//spectators can't be dead, and you can't go spec when dead
+    local.alive isentalive parm.player
+    local.alive iflessequal 0 end
+	//player will always spawn with a gun so at least for one frame (if other(TAKE) functions are timed right) this will return false
+	local.weapon getweapon parm.player
+	local.weapon ifstrnotequal "" end
+	//failsafe, check if player still has the item we gave them
+	parm.playerHasItem string level.coopSpectatorCheckModel
+	thread playerHasItem
+	parm.playerHasItemTrue ifgreaterequal 1 end
+	parm.playerIsSpectatorTrue = 1
+end
+
+playerHasItem:
+	parm.playerHasItemTrue = 0
+    parm.player ifstrequal "$player1" local.itemcount getitemcount *1 parm.playerHasItem
+    parm.player ifstrequal "$player2" local.itemcount getitemcount *2 parm.playerHasItem
+    parm.player ifstrequal "$player3" local.itemcount getitemcount *3 parm.playerHasItem
+    parm.player ifstrequal "$player4" local.itemcount getitemcount *4 parm.playerHasItem
+	local.itemcount iflessequal 0 end
+	parm.playerHasItemTrue = 1
+end
+
+// Generated by ChatGTP
+//input: parm.playerAnyoneHasItem
+//output: parm.playerAnyoneHasItemTrue
+playerAnyoneHasItem:
+    parm.playerAnyoneHasItemTrue = 0
+    local.index = 0
+
+	playerAnyoneHasItem_loop:
+    local.index += 1
+    local.index ifgreaterequal 5 end
+
+    parm.player string "$player"
+    parm.player appendint local.index
+
+	parm.playerHasItem string parm.playerAnyoneHasItem
+    thread playerHasItem
+    parm.playerHasItemTrue iflessequal 0 goto playerAnyoneHasItem_loop
+	
+    parm.playerAnyoneHasItemTrue = 1
+end
+
+playerDisconnected:
+//INTERNAL coop_main.scr USE ONLY!
+	local.playerFunc string parm.player
+	local.playerFunc append "Disconnected"
+	thread local.playerFunc
+	
+	//reset dynamic spawn location
+	thread resetCoordForPlayer
+	
+	parm.playerEvent string parm.player
+	thread playerDisconnected_event
+end
+
+$player1Disconnected:
+//INTERNAL coop_main.scr USE ONLY!
+	print "$player1 Disconnected\n"
+    level.coopPlayer1Alive = 0
+	level.coopPlayer1Managing = 0
+	level.coopPlayer1MakeSolidAsapRunning = 0
+end
+
+$player2Disconnected:
+//INTERNAL coop_main.scr USE ONLY!
+	print "$player2 Disconnected\n"
+    level.coopPlayer2Alive = 0
+	level.coopPlayer2Managing = 0
+	level.coopPlayer2MakeSolidAsapRunning = 0
+end
+
+$player3Disconnected:
+//INTERNAL coop_main.scr USE ONLY!
+	print "$player3 Disconnected\n"
+    level.coopPlayer3Alive = 0
+	level.coopPlayer3Managing = 0
+	level.coopPlayer3MakeSolidAsapRunning = 0
+end
+
+$player4Disconnected:
+//INTERNAL coop_main.scr USE ONLY!
+	print "$player4 Disconnected\n"
+    level.coopPlayer4Alive = 0
+	level.coopPlayer4Managing = 0
+	level.coopPlayer4MakeSolidAsapRunning = 0
+end
+
+playerEquip:
+	local.player string parm.player
+	//give inventory listed in coop_inventory.scr for this level
+	local.equipThread string "global/coop_inventory.scr::"
+	local.equipThread append level.coopPlayerInventoryThread
+	thread local.equipThread
+
+	//just make very sure this works regardless of any mess in inventory file
+	//give this always, this will be used to detect if player went into spectator
+	local.player give level.coopSpectatorCheckModel 1
+	local.player dropweapon level.coopEnablePlayerDrop
+end
+
+playerMoveToSpawn:
+	// Check if player exists
+	local.player string parm.player
+	parm.objectExist string local.player
+	thread objectExist
+	parm.objectExistTrue ifequal 0 end
+	
+	level.coopDisableSpawnWarper ifequal 1 goto playerMoveToSpawn_predefined
+	
+	//move to last known pos
+	playerMoveToSpawn_restore:
+	thread getCoordForPlayer
+	local.spawnLocation vector parm.getCoordForPlayer
+	local.vecLngt vector_length local.spawnLocation
+	local.vecLngt ifgreater 20 goto playerMoveToSpawn_origin
+	
+	//use predefined spawnpoints - can be updated
+	playerMoveToSpawn_predefined:	
+	local.player ifstrequal "$player1" local.spawnLocation string level.coopPlayer1SpawnLocation
+	local.player ifstrequal "$player2" local.spawnLocation string level.coopPlayer2SpawnLocation
+	local.player ifstrequal "$player3" local.spawnLocation string level.coopPlayer3SpawnLocation
+	local.player ifstrequal "$player4" local.spawnLocation string level.coopPlayer4SpawnLocation	
+	
+	local.player ifstrequal "$player1" local.spawnAngles string level.coopPlayer1SpawnAngles
+	local.player ifstrequal "$player2" local.spawnAngles string level.coopPlayer2SpawnAngles
+	local.player ifstrequal "$player3" local.spawnAngles string level.coopPlayer3SpawnAngles
+	local.player ifstrequal "$player4" local.spawnAngles string level.coopPlayer4SpawnAngles
+	
+	playerMoveToSpawn_origin:
+	local.player origin local.spawnLocation
+	local.player clearsavedangles
+	local.player deltaangles local.spawnAngles
+	
+	//make sure players don't get stuck in each other
+	parm.playerMakeSolidAsap string local.player
+	thread playerMakeSolidAsap
+	
+	//this prevents sliding caused by the pushtrigger spawned at info_player_start
+	local.player freeze
+	wait game.FRAMETIME
+	local.player unfreeze
+end
+
+// Generated by ChatGTP
+playerMoveAllToSpawn:
+    local.index = 0
+
+	playerMoveAllToSpawn_loop:
+    local.index += 1
+    local.index ifgreaterequal 5 end
+
+    parm.player string "$player"
+    parm.player appendint local.index
+    thread playerMoveToSpawn
+
+    goto playerMoveAllToSpawn_loop
+end
+
+playerTargetnames:
+//INTERNAL coop_main.scr USE ONLY!
+	//make sure the mod is started
+	thread main
+	
+	//rename players
+	*1 targetname "player1"
+	*2 targetname "player2"
+	*3 targetname "player3"
+	*4 targetname "player4"
+	
+	//handle players
+	level.coopPlayer1Managing iflessequal 0 thread managePlayer1_start
+	level.coopPlayer2Managing iflessequal 0 thread managePlayer2_start
+	level.coopPlayer3Managing iflessequal 0 thread managePlayer3_start
+	level.coopPlayer4Managing iflessequal 0 thread managePlayer4_start
+	
+	//spawn trigger to detect new players
+	level.coopSpawnedTrigger ifequal 1 end
+	level.coopSpawnedTrigger = 1
+	
+	//MISC NOTES
+	//cmd, stuffcmd, menu_main
+	//Player bbox: "-16 -16 0" "16 16 72" chrouched: "-16 -16 0" "16 16 36"
+	
+	//SPAWNFLAGS NOTES
+	//trigger_pushany - 4 NOT_PLAYERS, 8 NOT_MONSTERS, 16 NOT_PROJECTILES,  32 STARTOFF (game2015)
+	//trigger_push - 4 NOT_PLAYERS, 4 NOT_PLAYERS, 8 NOT_MONSTERS, 16 NOT_PROJECTILES, 32 STARTOFF (game2015)
+	//trigger_once - 1 NOTOUCH, 8 MONSTERS, 16 PROJECTILES, 
+	//trigger_multiple - 4 NOT_PLAYERS, 8 MONSTERS, 16 PROJECTILES, 
+	
+	//spawn player detect trigger
+	//some spawnlocations are above the ground, we use this to minimize the point of contact
+	local.triggerPos33 vector level.infoPlayerStartOrigin1
+	local.triggerPos33 vector_add "0 0 71"
+	
+	spawn trigger_multiple origin level.infoPlayerStartOrigin1 targetname "coopInfoPlayerStartTrigger1" thread "coopInfoPlayerStartActivated"
+	$coopInfoPlayerStartTrigger1 setsize "0 0 0" "1 1 1" //was "1 1 20"
+	$coopInfoPlayerStartTrigger1 origin local.triggerPos33
+	
+	//this trigger pushes player away from the trigger - we don't want to constantly re-targetname
+	//push players away, that works better than moving them away to spawn
+	spawn trigger_push origin level.infoPlayerStartOrigin1 speed "500" spawnflags "24" targetname "coopInfoPlayerStartPush1" angle level.infoPlayerStartPushDirection1
+	$coopInfoPlayerStartPush1 setsize "-10 -10 -0" "10 10 10" //was "10 10 76"
+	$coopInfoPlayerStartPush1 origin local.triggerPos33
+	
+	//for alternative spawn spot if it exists
+	level.infoPlayerStartOrigin2 ifstrequal "" end
+	spawn trigger_multiple origin level.infoPlayerStartOrigin2 targetname "coopInfoPlayerStartTrigger2" thread "coopInfoPlayerStartActivated"
+	$coopInfoPlayerStartTrigger2 setsize "0 0 0" "1 1 1" //was "1 1 20"
+	spawn trigger_push origin level.infoPlayerStartOrigin2 speed "500" spawnflags "24" targetname "coopInfoPlayerStartPush2" angle level.infoPlayerStartPushDirection2
+	$coopInfoPlayerStartPush2 setsize "-10 -10 0" "10 10 10" //was "10 10 76"
+end
+
+//make player use object or trigger
+playerActivate:
+	parm.object doUse parm.player
+end
+
+//make player activate trigger
+playerTrigger:
+	triggerfroment parm.player parm.trigger 
+end
+
+//untested
+//untested
+//untested
+playerWeaponForce:
+	parm.player use parm.playerWeaponForce
+	parm.player weaponuse
+end
+
+//moves players to their spawn spots
+//parm.playerMoveOrigin - Specify the location to measure from, i.e: "( 0 120 99 )"
+//parm.playerMoveExclude - Exclude a single player, i.e: $player1
+//parm.playerMoveMaxDistance - default is: 100 - move when this distance away from the location (to far away)
+//parm.playerMoveWithin -  0/1 default 0 - move when this distance within from the location (to close)
+//parm.playerMoveIgnoreZAxis - 0/1 default is 0 - ignore Z-Axis and only check 2d distance
+playerMove:
+	local.index = 0
+	parm.playerMoveMaxDistance ifstrequal "" parm.playerMoveMaxDistance = 100
+	parm.playerMoveMaxDistance iflessequal 0 parm.playerMoveMaxDistance = 100
+	
+	playerMove_loop:
+	local.index += 1
+	local.index ifgreaterequal 5 goto playerMove_end
+	
+	local.player string "$player"
+	local.player appendint local.index
+	
+	local.playerAlive isentalive local.player
+	local.playerAlive ifequal 0 goto playerMove_loop
+	
+	//exclude check - exclude a player, regardless of distance
+	parm.playerMoveExclude ifstrequal local.player goto playerMove_loop
+	
+	//distance check
+	playerMove_distanceCheck:
+	//verify origin
+	parm.playerMoveOriginEntity ifstrequal "" parm.playerMoveOriginEntity vector level.coopPlayer1SpawnLocation
+	
+	local.playerOrigin getorigin local.player
+	local.checkOrigin vector parm.playerMoveOriginEntity
+	local.calcVecLength vector local.playerOrigin
+	local.calcVecLength vector_subtract local.checkOrigin
+	parm.playerMoveIgnoreZAxis ifequal 1 local.calcVecLength vector_setz 0
+	local.vecLength vector_length local.calcVecLength
+	
+	parm.playerMoveWithin ifequal 1 goto playerMove_within
+	
+	local.vecLength ifgreaterequal parm.playerMoveMaxDistance goto playerMove_doMove
+	goto playerMove_loop
+	
+	playerMove_within:
+	local.vecLength ifgreaterequal parm.playerMoveMaxDistance goto playerMove_loop
+	
+	playerMove_doMove:
+	//don't move if allready there
+	local.vecLength iflessequal 2 goto playerMove_loop	
+	parm.player string local.player
+	thread playerMoveToSpawn
+	goto playerMove_loop
+	
+	playerMove_end:
+end
+
+//lower weapons of players
+playerLowerAll:
+	$player1 forcelowerweapon
+	$player2 forcelowerweapon
+	$player3 forcelowerweapon
+	$player4 forcelowerweapon
+end
+
+//raise weapons of players
+playerRaiseAll:
+	$player1 forceraiseweapon
+	$player2 forceraiseweapon
+	$player3 forceraiseweapon
+	$player4 forceraiseweapon
+end
+
+//change player to the fists
+playerFistsAll:
+	$player1 use fists
+	$player1 forcelowerweapon
+	$player1 forceraiseweapon
+	$player2 use fists
+	$player2 forcelowerweapon
+	$player2 forceraiseweapon
+	$player3 use fists
+	$player3 forcelowerweapon
+	$player3 forceraiseweapon
+	$player4 use fists
+	$player4 forcelowerweapon
+	$player4 forceraiseweapon
+end
+
+//teleport given player
+playerTeleport:
+	parm.player teleport parm.vectorX parm.vectorY parm.vectorZ 3.7 5.5 0.0
+end
+
+//also works with actors
+//ISSUES: Will not detect dead entities at "0 0 0"
+//returns: parm.playerExistTrue
+playerExist:
+	parm.playerExistTrue = 0
+	local.playerOrigin getorigin parm.playerExist
+	local.vecLength vector_length local.playerOrigin
+	local.vecLength ifgreaterequal 1 goto playerExist_true
+	local.playerAlive isentalive parm.playerExist
+	local.playerAlive ifgreaterequal 1 goto playerExist_true
+	parm.playerExistTrue = 0
+	end
+	
+	playerExist_true:
+	parm.playerExistTrue = 1
+end
+
+//meant to be used with entities
+//if entity is exactly on "0 0 0" it won't work
+//Result: parm.objectExistTrue
+objectExist:
+    parm.objectExistTrue = 0
+
+    local.objectOrigin getorigin parm.objectExist
+    local.vecLength vector_length local.objectOrigin
+    local.vecLength ifgreaterequal 1 goto objectExist_exist
+
+    local.objectOrigin getorigin parm.objectExist
+    local.vecLength vector_length local.objectOrigin
+    local.vecLength ifequal 0 end
+
+	objectExist_exist:
+    parm.objectExistTrue = 1
+end
+
+isPlayerObject:
+	parm.isPlayerObjectTrue = 0
+    local.index = 0
+	
+	isPlayerObject_loop:
+    local.index += 1
+    local.index ifgreaterequal 5 end
+    local.player string "$player"
+    local.player append local.index
+	parm.isPlayerObject ifstrequal local.player goto isPlayerObject_true
+    goto isPlayerObject_loop
+	
+	isPlayerObject_true:
+	parm.isPlayerObjectTrue = 1
+end
+
+isPlayerValid:
+	parm.isPlayerValidTrue = 0
+	local.player string parm.isPlayerValid
+	
+	parm.isPlayerObject string local.player
+	thread isPlayerObject
+	parm.isPlayerObjectTrue iflessequal 0 end
+	
+	parm.playerExist string local.player
+	thread playerExist
+	parm.playerExistTrue iflessequal 0 end
+	
+	local.playerAlive isentalive local.player
+	local.playerAlive ifequal 0 end
+	
+	parm.isPlayerValidTrue = 1
+end
+
+//iterate trough players to find closest
+//object=entity OR origin=vector
+//Input: parm.playerClosestObject OR parm.playerClosestOrigin
+//Output: parm.playerClosest, parm.playersClosestDistance
+playerClosest:
+	local.index = 0
+	parm.playersClosestDistance = 99999
+	parm.playerClosest string ""
+	
+	parm.playerClosestObject ifstrnotequal "parm.playerClosestObject" goto playerClosest_object
+	
+	//work with vector directly
+	local.otherorigin vector parm.playerClosestOrigin	
+	goto playerClosest_loop
+	
+	//object
+	playerClosest_object:
+	parm.objectExist string parm.playerClosestObject
+	thread objectExist
+	parm.objectExistTrue iflessequal 0 goto playerClosest_existNot
+	local.otherorigin getorigin parm.playerClosestObject
+	
+	//loop form here
+	playerClosest_loop:
+	local.index += 1
+	local.index ifgreaterequal 5 goto playerClosest_end
+	
+	local.player string "$player"
+	local.player appendint local.index
+	
+	local.playerAlive isentalive local.player
+	local.playerAlive ifequal 0 goto playerClosest_loop
+	
+	local.playerOrigin getorigin local.player
+	local.calcVecLength vector local.playerOrigin
+	local.calcVecLength vector_subtract local.otherorigin
+	local.calcVecLength vector_setz 0
+	local.vecLength vector_length local.calcVecLength
+	
+	local.vecLength ifgreaterequal parm.playersClosestDistance goto playerClosest_loop
+	
+	parm.playersClosestDistance = local.vecLength
+	parm.playerClosest string local.player
+	goto playerClosest_loop
+	
+	playerClosest_end:
+	level.coopDebug iflessequal 0 end
+	parm.print1 string "playerClosest: "
+	parm.print2 string parm.playerClosest
+	parm.print3 string " - "
+	parm.print4 string parm.playersClosestDistance
+	thread println
+	end
+	
+	playerClosest_existNot:
+	local.printOut string parm.playerClosestObject
+	local.printOut append "does not exist, playerClosest ending prematurley\n"
+	print local.printOut
+end
+
+//checks if any player is within given distance of entity
+//Input: parm.playerWithinDistanceOfEntity, parm.playerWithinDistanceOfEntity_distance
+//Result: parm.playerWithinDistanceOfEntityTrue
+playerWithinDistanceOfEntity:
+	parm.playerWithinDistanceOfEntityTrue = 0
+	parm.playerClosestObject string parm.playerWithinDistanceOfEntity
+	thread playerClosest
+	parm.playerClosest ifstrequal "" end
+	parm.playersClosestDistance iflessequal parm.playerWithinDistanceOfEntity_distance parm.playerWithinDistanceOfEntityTrue = 1
+end
+
+//allow or disallow dropping weapons when players die
+playersDropWeapon:
+    local.index = 0
+	
+	playersDropWeapon_loop:
+    local.index += 1
+    local.index ifgreaterequal 5 end
+    local.player string "$player"
+    local.player append local.index
+	parm.playerExist string local.player
+	thread playerExist
+	parm.playerExistTrue ifequal 1 local.player dropweapon level.coopEnablePlayerDrop
+    goto playerMoveAllToSpawn_loop
+end
+
+//iterate trough players to check if all use fists
+//Return vars: parm.playersUseFistsOnly
+playersWithFistsOnly:
+	local.index = 0
+	parm.playersUseFistsOnly = 1
+	
+	playersWithFistsOnly_loop:
+	local.index += 1
+	local.index ifgreaterequal 5 goto playersWithFistsOnly_true
+	
+	local.player string "$player"
+	local.player appendint local.index	
+	local.playerAlive isentalive local.player
+	local.playerAlive ifequal 0 goto playersWithFistsOnly_loop
+	
+	parm.check getweapon local.player
+	parm.check ifstrnotequal "Fists" goto playersWithFistsOnly_false
+	goto playersWithFistsOnly_loop
+	
+	playersWithFistsOnly_false:
+	parm.playersUseFistsOnly = 0
+	goto playersWithFistsOnly_end
+	
+	playersWithFistsOnly_true:
+	parm.playersUseFistsOnly = 1
+	
+	playersWithFistsOnly_end:	
+end
+
+println:
+	local.printOut string ""
+	parm.print1 ifstrnotequal "" local.printOut append parm.print1
+	parm.print2 ifstrnotequal "" local.printOut append parm.print2
+	parm.print3 ifstrnotequal "" local.printOut append parm.print3
+	parm.print4 ifstrnotequal "" local.printOut append parm.print4
+	parm.print5 ifstrnotequal "" local.printOut append parm.print5
+	parm.print6 ifstrnotequal "" local.printOut append parm.print6
+	parm.print7 ifstrnotequal "" local.printOut append parm.print7
+	parm.print8 ifstrnotequal "" local.printOut append parm.print8
+	local.printOut append "#\n"
+	print local.printOut
+end
+
+playerMakeSolidAsapPlayerOther:
+//INTERNAL coop_main.scr USE ONLY!
+	local.function string "playerMakeSolidAsapPlayerOther_"
+	local.function append parm.playerMakeSolidAsapPlayerOther
+	goto local.function
+	
+	//make sure we always check if the thread is running, to never run into any timing issues
+	playerMakeSolidAsapPlayerOther_$player1:
+	level.coopPlayer1MakeSolidAsapRunning iflessequal 0 goto playerMakeSolidAsapPlayerOther_doRun
+	end
+	playerMakeSolidAsapPlayerOther_$player2:
+	level.coopPlayer2MakeSolidAsapRunning iflessequal 0 goto playerMakeSolidAsapPlayerOther_doRun
+	end
+	playerMakeSolidAsapPlayerOther_$player3:
+	level.coopPlayer3MakeSolidAsapRunning iflessequal 0 goto playerMakeSolidAsapPlayerOther_doRun
+	end
+	playerMakeSolidAsapPlayerOther_$player4:
+	level.coopPlayer4MakeSolidAsapRunning iflessequal 0 goto playerMakeSolidAsapPlayerOther_doRun
+	end
+	
+	playerMakeSolidAsapPlayerOther_doRun:
+	parm.playerMakeSolidAsap string parm.playerMakeSolidAsapPlayerOther
+	thread playerMakeSolidAsap
+end
+
+playerMakeSolidAsap:
+    local.playerToHandle string parm.playerMakeSolidAsap
+	local.index = 0
+	local.inside = 0
+	
+	//make sure this is a player
+	parm.isPlayerObject string local.playerToHandle
+	thread isPlayerObject
+	parm.isPlayerObjectTrue iflessequal 0 goto playerMakeSolidAsap_doesnotexist
+	
+	local.playerAlive isentalive local.playerToHandle
+	local.playerAlive ifequal 0 goto playerMakeSolidAsap_isdead
+
+	local.playerFunc string "playerMakeSolidAsap_"
+	local.playerFunc append local.playerToHandle
+	goto local.playerFunc
+	//end if player is not valid
+	end
+	
+	//these must NOT goto playerMakeSolidAsap_end - no no no!
+	playerMakeSolidAsap_$player1:
+	level.coopPlayer1MakeSolidAsapRunning ifgreaterequal 1 goto playerMakeSolidAsap_allreadyrunning
+	level.coopPlayer1MakeSolidAsapRunning = 1
+	goto playerMakeSolidAsap_doRun
+
+	playerMakeSolidAsap_$player2:
+	level.coopPlayer2MakeSolidAsapRunning ifgreaterequal 1 goto playerMakeSolidAsap_allreadyrunning
+	level.coopPlayer2MakeSolidAsapRunning = 1
+	goto playerMakeSolidAsap_doRun
+
+	playerMakeSolidAsap_$player3:
+	level.coopPlayer3MakeSolidAsapRunning ifgreaterequal 1 goto playerMakeSolidAsap_allreadyrunning
+	level.coopPlayer3MakeSolidAsapRunning = 1
+	goto playerMakeSolidAsap_doRun
+
+	playerMakeSolidAsap_$player4:
+	level.coopPlayer4MakeSolidAsapRunning ifgreaterequal 1 goto playerMakeSolidAsap_allreadyrunning
+	level.coopPlayer4MakeSolidAsapRunning = 1
+	goto playerMakeSolidAsap_doRun
+	
+	//lets goooooo
+	playerMakeSolidAsap_doRun:
+	local.playerToHandle notsolid
+	
+	//loop from here
+	playerMakeSolidAsap_loop:
+	local.index += 1
+	local.index ifgreaterequal 5 goto playerMakeSolidAsap_check
+	local.player string "$player"
+	local.player appendint local.index
+	
+	//same player, skip
+	local.playerToHandle ifstrequal local.player goto playerMakeSolidAsap_skip
+	level.coopCinematic ifequal 1 goto playerMakeSolidAsap_cinematic	
+	//dead, skip
+	local.playerAlive isentalive local.player
+	// local.printout string "playerMakeSolidAsap: player dead:"
+	// local.printout append local.player
+	// local.printout append "\n"
+	// local.playerAlive ifequal 0 print local.printout
+	local.playerAlive ifequal 0 goto playerMakeSolidAsap_loop
+	
+	parm.playersTouching1 string local.playerToHandle
+	parm.playersTouching2 string local.player
+	thread playersTouching
+	local.inside = parm.playersTouching
+    local.inside ifgreaterequal 1 goto playerMakeSolidAsap_inside
+	goto playerMakeSolidAsap_loop
+	
+	playerMakeSolidAsap_check:
+	// parm.print1 string "playerMakeSolidAsap: check: "
+	// parm.print2 string local.playerToHandle
+	// parm.print3 string " cin/inside: "
+	// parm.print4 string level.coopCinematic
+	// parm.print5 string "/"
+	// parm.print6 string local.inside
+	// thread println
+	local.inside iflessequal 0 goto playerMakeSolidAsap_makeSolid
+	
+	//player inside player -make the other nonsolid as well
+	playerMakeSolidAsap_inside:
+	parm.playerMakeSolidAsapPlayerOther string local.player
+	thread playerMakeSolidAsapPlayerOther
+	
+	// local.printout string "MakeSolid inside for player: "
+	// local.printout append local.player
+	// local.printout append " is inside "
+	// local.printout append local.playerToHandle
+	// local.printout append "\n"
+	// print local.printout
+	goto playerMakeSolidAsap_waitframe
+	
+	//wait a frame, then check if player still exists
+	playerMakeSolidAsap_waitframe:
+	local.index = 0
+	local.inside = 0
+	wait game.FRAMETIME
+	parm.playerExist string local.playerToHandle
+	thread playerExist
+	local.playerExist = parm.playerExistTrue
+	local.playerExist iflessequal 0 goto playerMakeSolidAsap_end
+	goto playerMakeSolidAsap_loop
+	
+	//same player, skip
+	playerMakeSolidAsap_skip:
+	// local.printout string "MakeSolid skipped player: "
+	// local.printout append local.playerToHandle
+	// local.printout append " versus "
+	// local.printout append local.player
+	// local.printout append "\n"
+	// print local.printout
+	goto playerMakeSolidAsap_loop
+	
+	//yay - make it solid baby
+	playerMakeSolidAsap_makeSolid:
+	// local.printout string "MakeSolid success for player: "
+	// local.printout append local.playerToHandle
+	// local.printout append "\n"
+	// print local.printout
+	local.playerToHandle solid
+	
+	//make sure to clean up afterwards!
+	playerMakeSolidAsap_end:
+	// local.printout string "playerMakeSolidAsap_end for: "
+	// local.printout append local.playerToHandle
+	// local.printout append "\n"
+	// print local.printout
+	local.playerToHandle ifstrequal "$player1" level.coopPlayer1MakeSolidAsapRunning = 0
+	local.playerToHandle ifstrequal "$player2" level.coopPlayer2MakeSolidAsapRunning = 0
+	local.playerToHandle ifstrequal "$player3" level.coopPlayer3MakeSolidAsapRunning = 0
+	local.playerToHandle ifstrequal "$player4" level.coopPlayer4MakeSolidAsapRunning = 0
+	end
+	playerMakeSolidAsap_cinematic:
+	// local.printout string "MakeSolid aborted cinematic: "
+	// local.printout append local.playerToHandle
+	// local.printout append "\n"
+	goto playerMakeSolidAsap_end
+	
+	playerMakeSolidAsap_doesnotexist:
+	// local.printout string "MakeSolid aborted does not exist: "
+	// local.printout append local.playerToHandle
+	// local.printout append "\n"
+	goto playerMakeSolidAsap_end
+	
+	playerMakeSolidAsap_isdead:
+	// local.printout string "MakeSolid aborted is dead: "
+	// local.printout append local.playerToHandle
+	// local.printout append "\n"
+	goto playerMakeSolidAsap_end
+
+	playerMakeSolidAsap_allreadyrunning:
+	// local.printout string "MakeSolid allready running for: "
+	// local.printout append local.playerToHandle
+	// local.printout append "\n"
+	end
+end
+
+// Generated by ChatGTP and updated by Chrissstrahl
+// Checks whether two player bounding boxes overlap.
+// parm.playersTouching1 = first player
+// parm.playersTouching2 = second player
+//
+// Result: parm.playersTouching
+// 0 = not touching
+// 1 = touching
+//
+// Assumes standing players: 32x32x72.
+playersTouching:
+    parm.playersTouching = 0
+
+	parm.objectExist string parm.playersTouching1
+	thread objectExist
+	parm.objectExistTrue iflessequal 0 end
+
+	parm.objectExist string parm.playersTouching2
+	thread objectExist
+	parm.objectExistTrue iflessequal 0 end
+	
+    local.origin1 getorigin parm.playersTouching1
+    local.origin2 getorigin parm.playersTouching2
+
+    local.diff vector local.origin1
+    local.diff vector_subtract local.origin2
+
+	// local.vecLngt1 vector local.origin1
+	// local.vecLngt1 vector_subtract local.origin2
+	// local.vecLngt vector_length local.vecLngt1
+	// parm.print1 string "playersTouching Vector Length is: "
+	// parm.print2 string local.vecLngt
+	// thread println
+
+    local.x vector_x local.diff
+    local.y vector_y local.diff
+    local.z vector_z local.diff
+
+	playersTouching_check:
+    local.x ifgreater 32 end
+    local.x ifless -32 end
+
+    local.y ifgreater 32 end
+    local.y ifless -32 end
+
+    local.z ifgreater 72 end
+    local.z ifless -72 end
+
+    parm.playersTouching = 1
+end
+
+// Generated by ChatGTP and updated by Chrissstrahl
+// Calculates 3D distance between two entities
+// Input:
+//   parm.entityDistance1
+//   parm.entityDistance2
+// Output:
+//   parm.entityDistance
+//=============================================
+entityDistance:
+    parm.entityDistance = 99999
+
+    parm.objectExist string parm.entityDistance1
+    thread objectExist
+    parm.objectExistTrue iflessequal 0 end
+
+    parm.objectExist string parm.entityDistance2
+    thread objectExist
+    parm.objectExistTrue iflessequal 0 end
+
+    local.origin1 getorigin parm.entityDistance1
+    local.origin2 getorigin parm.entityDistance2
+
+    local.diff vector local.origin1
+    local.diff vector_subtract local.origin2
+
+    parm.entityDistance vector_length local.diff
+end
+
+//for testing, handels all entities
+//skipping world=0 and players=1+
+entitiesAll:
+	local.index = level.maxClientsCvar
+	local.objects = 0 
+	
+	entitiesRemove_loop:
+	local.objects += 1
+	local.index += 1
+	local.index ifgreaterequal level.maxentities end
+	
+	local.printOut string "Entnum: *"
+	local.printOut append local.index
+	local.printOut append "\n"
+	print local.printOut
+	
+	local.entityNum string "*"
+	local.entityNum append local.index
+	
+	local.entityNum open
+	local.entityNum unlock
+
+	//wait a frame every x loops to prevent infinite loop error (probably 150 to 1024 iterations - untested)
+	local.objects ifgreaterequal 500 goto entitiesRemove_loop_reset
+	goto entitiesRemove_loop
+	
+	entitiesRemove_loop_reset:
+	wait game.FRAMETIME
+	local.objects = 0
+	goto entitiesRemove_loop
+end
+
+checkInfoPlayerStart:
+//INTERNAL coop_main.scr USE ONLY!
+	local.vectorTest1 vector level.infoPlayerStartOrigin1
+	local.vectorLngt vector_length local.vectorTest1
+	local.vectorLngt ifgreaterequal 1 end
+	parm.warningLoop string "COOP ERROR: level.infoPlayerStartOrigin1 is '0 0 0' should be set to info_playerstart origin"
+	thread warningLoop
+end
+
+checkSpawnLocations:
+//INTERNAL coop_main.scr USE ONLY!
+	//'0 0 0'
+	parm.warningLoop string "COOP ERROR: level.coopPlayer1SpawnLocation coordinates at '0 0 0'\n"
+	local.vectorTest1 vector level.coopPlayer1SpawnLocation
+	local.vectorLngt vector_length local.vectorTest1
+	local.vectorLngt iflessequal 0 thread warningLoop
+	
+	parm.warningLoop string "COOP ERROR: level.coopPlayer2SpawnLocation coordinates at '0 0 0'\n"
+	local.vectorTest1 vector level.coopPlayer2SpawnLocation
+	local.vectorLngt vector_length local.vectorTest1
+	local.vectorLngt iflessequal 0 thread warningLoop
+	
+	parm.warningLoop string "COOP ERROR: level.coopPlayer3SpawnLocation coordinates at '0 0 0'\n"
+	local.vectorTest1 vector level.coopPlayer3SpawnLocation
+	local.vectorLngt vector_length local.vectorTest1
+	local.vectorLngt iflessequal 0 thread warningLoop
+	
+	parm.warningLoop string "COOP ERROR: level.coopPlayer4SpawnLocation coordinates at '0 0 0'\n"
+	local.vectorTest1 vector level.coopPlayer4SpawnLocation
+	local.vectorLngt vector_length local.vectorTest1
+	local.vectorLngt iflessequal 0 thread warningLoop
+	
+	//level.infoPlayerStartOrigin1
+	parm.warningLoop string "COOP ERROR: level.coopPlayer1SpawnLocation has the same coordinates as level.infoPlayerStartOrigin1"
+	local.vectorTest1 vector level.coopPlayer1SpawnLocation
+	local.vectorTest1 vector_subtract level.infoPlayerStartOrigin1
+	local.vectorLngt vector_length local.vectorTest1
+	local.vectorLngt iflessequal 0 thread warningLoop
+	
+	parm.warningLoop string "COOP ERROR: level.coopPlayer2SpawnLocation has the same coordinates as level.infoPlayerStartOrigin1"
+	local.vectorTest1 vector level.coopPlayer2SpawnLocation
+	local.vectorTest1 vector_subtract level.infoPlayerStartOrigin1
+	local.vectorLngt vector_length local.vectorTest1
+	local.vectorLngt iflessequal 0 thread warningLoop
+	
+	parm.warningLoop string "COOP ERROR: level.coopPlayer3SpawnLocation has the same coordinates as level.infoPlayerStartOrigin1"
+	local.vectorTest1 vector level.coopPlayer3SpawnLocation
+	local.vectorTest1 vector_subtract level.infoPlayerStartOrigin1
+	local.vectorLngt vector_length local.vectorTest1
+	local.vectorLngt iflessequal 0 thread warningLoop
+	
+	parm.warningLoop string "COOP ERROR: level.coopPlayer4SpawnLocation has the same coordinates as level.infoPlayerStartOrigin1"
+	local.vectorTest1 vector level.coopPlayer4SpawnLocation
+	local.vectorTest1 vector_subtract level.infoPlayerStartOrigin1
+	local.vectorLngt vector_length local.vectorTest1
+	local.vectorLngt iflessequal 0 thread warningLoop
+
+	//level.infoPlayerStartOrigin2
+	parm.warningLoop string "COOP ERROR: level.coopPlayer1SpawnLocation has the same coordinates as level.infoPlayerStartOrigin2"
+	local.vectorTest1 vector level.coopPlayer1SpawnLocation
+	local.vectorTest1 vector_subtract level.infoPlayerStartOrigin2
+	local.vectorLngt vector_length local.vectorTest1
+	local.vectorLngt iflessequal 0 thread warningLoop
+	
+	parm.warningLoop string "COOP ERROR: level.coopPlayer2SpawnLocation has the same coordinates as level.infoPlayerStartOrigin2"
+	local.vectorTest1 vector level.coopPlayer2SpawnLocation
+	local.vectorTest1 vector_subtract level.infoPlayerStartOrigin2
+	local.vectorLngt vector_length local.vectorTest1
+	local.vectorLngt iflessequal 0 thread warningLoop
+	
+	parm.warningLoop string "COOP ERROR: level.coopPlayer3SpawnLocation has the same coordinates as level.infoPlayerStartOrigin2"
+	local.vectorTest1 vector level.coopPlayer3SpawnLocation
+	local.vectorTest1 vector_subtract level.infoPlayerStartOrigin2
+	local.vectorLngt vector_length local.vectorTest1
+	local.vectorLngt iflessequal 0 thread warningLoop
+	
+	parm.warningLoop string "COOP ERROR: level.coopPlayer4SpawnLocation has the same coordinates as level.infoPlayerStartOrigin2"
+	local.vectorTest1 vector level.coopPlayer4SpawnLocation
+	local.vectorTest1 vector_subtract level.infoPlayerStartOrigin2
+	local.vectorLngt vector_length local.vectorTest1
+	local.vectorLngt iflessequal 0 thread warningLoop
+end
+
+checkCoopGame:
+//INTERNAL coop_main.scr USE ONLY!
+	//complain if the coop cvar is set incorrectly
+	level.coopInMultiplayer ifequal	666 end
+	parm.warningLoop string "COOP ERROR: Gametype is not coop, use >> set coop 1 << and load the level again"
+	thread warningLoop
+end
+
+warningLoop:
+	local.warning string parm.warningLoop
+	setcvar	"g_developer 128"
+	
+	warningLoop_loop:
+	level.coopDebug ifgreaterequal 1 thread errorNotify
+	parm.print1 string local.warning
+	thread println	
+	wait 3
+	goto warningLoop_loop
+end
+
+errorNotify:
+//INTERNAL coop_main.scr USE ONLY!
+	level.coopScreenprintWarningActive ifequal 1 end
+	level.coopScreenprintWarningActive = 1
+	screenprint 1 "jcx yv -40 fc 1 1 1 1 string \"COOP ERROR - Please check console!\""
+	wait 1
+	level.coopScreenprintWarningActive = 0
+end
+
+playerCinematic:
+//INTERNAL coop_main.scr USE ONLY!
+	local.player string parm.player
+	
+	//cue camera if set, this makes the player view from the current cinematic cam
+	level.coopCamera ifstrnotequal "" cuecamera level.coopCamera	
+	
+	//only during cinematic make notsolid
+	level.coopCinematic ifless 1 end
+	local.player notsolid
+	local.player hide
+end
+
+inMultiplayer:
+	parm.inMultiplayer = 0
+	level.coopInMultiplayer ifgreaterequal 1 parm.inMultiplayer = 1
+end
+
+inCoop:
+	parm.inCoop = 0
+	level.coopInMultiplayer ifequal 666 parm.inCoop = 1
+end
+
+waitForRemove:
+	local.removeMe string parm.waitRemove
+	waitForRemove_loop:
+	parm.playerExist string local.removeMe
+	thread playerExist
+	parm.playerExistTrue ifequal 0 end
+	wait game.FRAMETIME
+	goto waitForRemove_loop
+end
+
+//triggered when any player spawns
+testStuff:
+	//level.dugsfghjegfujdsgfACTIVE ifequal 1 end
+	//level.dugsfghjegfujdsgfACTIVE = 1
+	
+	thread coopMom::main
+	end	
+	
+	testStuff__spwLp:
+	parm.objectExist string "coop_specChecker1"
+	thread objectExist
+	print parm.objectExistTrue
+	print "\n"
+	wait game.FRAMETIME
+	goto testStuff__spwLp
+	
+	testStuff_inventoryCheckLoop:
+	local.item$count = 1
+	local.quartercount getitemcount *1 level.coopSpectatorCheckModel
+	local.quartercount ifequal 0 local.item$count = 0
+	parm.print1 string "Itemcount: "
+	parm.print2 string local.item$count
+	thread println
+	wait 2
+	goto testStuff_inventoryCheckLoop
+end

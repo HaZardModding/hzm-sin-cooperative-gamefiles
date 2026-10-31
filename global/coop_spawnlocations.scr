@@ -1,0 +1,90 @@
+//Contains the spawnlocations for coop
+//Some spawns must exist before getting moved
+//info_player_deathmatch, info_player_start,info_player_hardcorps, info_player_sintek
+//Chrissstrahl - 2026.10.22
+
+//testlevel (penthouse)
+chrissstrahl:
+	//used to spawn a trigger detecting players spawning (entering the server)
+	level.infoPlayerStartOrigin1 string "-560 1504 3072"
+	level.infoPlayerStartPushDirection1 string "0"
+	
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 0 0"
+	level.coopPlayer2SpawnAngles string "0 0 0"
+	level.coopPlayer3SpawnAngles string "0 0 0"
+	level.coopPlayer4SpawnAngles string "0 0 0"
+	
+	//the spawnlocation is just in the middle of the lift
+	//if a player spawns there the player will telekill other players
+	//so we are not using the entire space of the lift
+	//inside lift
+	level.coopPlayer1SpawnLocation string "-560 1554 3072"
+	level.coopPlayer2SpawnLocation string "-560 1454 3072"
+	//outside lift
+	level.coopPlayer3SpawnLocation string "-463 1615 3072"
+	level.coopPlayer4SpawnLocation string "-463 1392 3072"
+	
+
+	//TEST
+	//TEST
+	//TEST
+	// level.coopPlayer2SpawnLocation string "-560 1554 3072"
+	// level.coopPlayer3SpawnLocation string "-560 1554 3072"
+	// level.coopPlayer4SpawnLocation string "-560 1554 3072"
+end
+
+bank:
+	//used to spawn a trigger detecting players spawning (entering the server)
+	//move so they are no longer on the level where players can accidently run into them
+	$start1 origin "0 0 -9999"
+	$start2 origin "-9999 0 -9999"
+	level.infoPlayerStartOrigin1 string "0 0 -9999"
+	level.infoPlayerStartOrigin2 string "-9999 0 -9999"
+	
+	//level.infoPlayerStartOrigin1 string "-3360 1920 144"
+	//level.infoPlayerStartOrigin2 string "192 -832 272"
+	level.infoPlayerStartPushDirection1 string "270"
+	level.infoPlayerStartPushDirection2 string "0"
+	
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 75 0"
+	level.coopPlayer2SpawnAngles string "0 75 0"
+	level.coopPlayer3SpawnAngles string "0 75 0"
+	level.coopPlayer4SpawnAngles string "0 75 0"
+	
+	//spawnspots
+	level.coopPlayer1SpawnLocation string "400 -909 240"
+	level.coopPlayer2SpawnLocation string "440 -832 272"
+	level.coopPlayer3SpawnLocation string "480 -832 272"
+	level.coopPlayer4SpawnLocation string "520 -832 272"
+end
+
+bank_alt:
+	//used to spawn a trigger detecting players spawning (entering the server)
+	//move so they are no longer on the level where players can accidently run into them
+	$start1 origin "0 0 -9999"
+	$start2 origin "-9999 0 -9999"
+	level.infoPlayerStartOrigin1 string "0 0 -9999"
+	level.infoPlayerStartOrigin2 string "-9999 0 -9999"
+	
+	//level.infoPlayerStartOrigin1 string "-3360 1920 144"
+	//level.infoPlayerStartOrigin2 string "192 -832 272"
+	level.infoPlayerStartPushDirection1 string "270"
+	level.infoPlayerStartPushDirection2 string "0"
+	//the above part should not be needed because "bank" will always be executed
+	//but I want to make sure that future changes don't break this
+	
+	//spawnangle alternative
+	level.coopPlayer1SpawnAngles string "0 270 0"
+	level.coopPlayer2SpawnAngles string "0 270 0"
+	level.coopPlayer3SpawnAngles string "0 270 0"
+	level.coopPlayer4SpawnAngles string "0 270 0"
+	
+	//spawnspots alternative
+	level.coopPlayer1SpawnLocation string "-3382 1844 0"
+	level.coopPlayer2SpawnLocation string "-3422 1844 0"
+	level.coopPlayer3SpawnLocation string "-3462 1844 0"
+	level.coopPlayer4SpawnLocation string "-3502 1844 0"
+end
+

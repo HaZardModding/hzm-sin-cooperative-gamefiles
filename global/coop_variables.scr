@@ -1,0 +1,82 @@
+//Contains variables for coop
+//Chrissstrahl - 2026.10.22
+
+main:	
+	level.maxClientsCvar getcvar "maxclients"
+	level.maxentities getcvar "maxentities"
+	local.temp getcvar "coop"
+	local.temp ifequal 1 level.coopInMultiplayer = 666
+	// local.temp getcvar "deathmatch"
+	// local.temp ifequal 1 level.coopInMultiplayer = 1
+	// local.temp getcvar "ctf"
+	// local.temp ifequal 1 level.coopInMultiplayer = 2
+	
+	//used to skip cinematics and other parts of the missions while testing
+	//the idea is that even if it is not removed before release, this should
+	//very likely have no effect on other users
+	level.devName string "ChristianStrahl"
+	
+	//make this accesible we might need to change that on certain levels
+	level.coopSpectatorCheckModel string "Blueprints"
+	level.coopSpectatorIndex = 0
+	
+	//set to 1 will make players always spawn at the predefined spawnlocations
+	level.coopDisableSpawnWarper = 0
+	
+	//set to 1 will make players drop their inventory when they die
+	level.coopEnablePlayerDrop = 1
+	
+	level.coopDebug = 1
+	level.coopScreenprintWarningActive = 0
+	
+	level.coopCamera string ""
+	level.coopCinematic = 0
+	
+	level.coopExecEventDied = 1
+	level.coopExecEventSpawned = 1
+	level.coopExecEventEntered = 1
+	level.coopExecEventSpectator = 1
+	level.coopExecEventDisconnected = 1
+	
+	level.coopPlayer1Managing = 0
+	level.coopPlayer2Managing = 0
+	level.coopPlayer3Managing = 0
+	level.coopPlayer4Managing = 0
+
+	level.coopPlayer1Alive = 0
+	level.coopPlayer2Alive = 0
+	level.coopPlayer3Alive = 0
+	level.coopPlayer4Alive = 0
+	
+	level.coopPlayer1LastCoord string "0 0 0"
+	level.coopPlayer2LastCoord string "0 0 0"
+	level.coopPlayer3LastCoord string "0 0 0"
+	level.coopPlayer4LastCoord string "0 0 0"
+	
+	level.coopPlayer1MakeSolidAsapRunning = 0
+	level.coopPlayer2MakeSolidAsapRunning = 0
+	level.coopPlayer3MakeSolidAsapRunning = 0
+	level.coopPlayer4MakeSolidAsapRunning = 0
+	
+	level.coopSpawnedTrigger = 0
+	level.infoPlayerStartOrigin1 string "0 0 0"
+	level.infoPlayerStartOrigin2 string "0 0 0"
+	level.infoPlayerStartPushDirection1 string "0"
+	level.infoPlayerStartPushDirection2 string "0"
+	
+	level.coopPlayer1SpawnAngles string "0 0 0"
+	level.coopPlayer2SpawnAngles string "0 0 0"
+	level.coopPlayer3SpawnAngles string "0 0 0"
+	level.coopPlayer4SpawnAngles string "0 0 0"
+	
+	level.coopPlayer1SpawnLocation string "0 0 0"
+	level.coopPlayer2SpawnLocation string "0 0 0"
+	level.coopPlayer3SpawnLocation string "0 0 0"
+	level.coopPlayer4SpawnLocation string "0 0 0"
+	
+	level.coopPlayerInventoryThread string level.map_name
+	
+	level.coopReplaceFreezeplayer = 0
+	level.coopReplaceFreezeplayer = 0
+end
+

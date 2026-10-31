@@ -1,0 +1,190 @@
+//Contains coop replacement functions
+//These functions are meant to be used instead or in addition to
+//Script commands that would otherwhise cresate issues for multiple players
+//Chrissstrahl - 2026.10.26
+
+coop_freezeplayer:
+	freezeplayer
+	level.coopReplaceFreezeplayer = 1
+end
+
+coop_releaseplayer:
+	releaseplayer
+	level.coopReplaceFreezeplayer = 0
+end
+
+coop_cinematic:
+	cinematic
+	level.coopCinematic = 1
+	
+    local.index = 0
+	coop_cinematic_loop:
+    local.index += 1
+    local.index ifgreaterequal 5 end
+
+	local.player string "$player"
+    local.player appendint local.index
+	
+	parm.playerExist string local.player
+	thread coopMain::playerExist
+	parm.playerExistTrue ifless 1 goto coop_cinematic_loop
+	
+	local.player notsolid
+	local.player hide
+	local.player flags "+stealth"
+	local.player nodamage
+	
+	goto coop_cinematic_loop
+end
+
+coop_noncinematic:
+	noncinematic
+	level.coopCinematic = 0
+	
+    local.index = 0
+	coop_noncinematic_loop:
+    local.index += 1
+    local.index ifgreaterequal 5 end
+
+	local.player string "$player"
+    local.player appendint local.index
+	parm.player string local.player
+	parm.playerExist string local.player
+	parm.playerMakeSolidAsap string parm.player
+	
+	thread coopMain::playerExist
+	parm.playerExistTrue ifless 1 goto coop_noncinematic_loop
+	
+	//moved before spectator check for debugging - should have no actual effect on spectators
+	local.player flags "-stealth"
+	local.player takedamage
+	
+	thread coopMain::playerIsSpectator
+	parm.playerIsSpectatorTrue ifgreaterequal 1 goto coop_noncinematic_loop
+	
+	thread coopMain::playerMakeSolidAsap
+	//local.player solid //handled in: playerMakeSolidAsap
+	local.player show
+	
+	goto coop_noncinematic_loop
+end
+
+coop_cueplayer:
+	level.coopCamera string ""
+	cueplayer
+end
+
+coop_cuecamera:
+	level.coopCamera string parm.camera
+	cuecamera level.coopCamera
+end
+
+//nolerp for camera
+coop_nolerp:
+	$player1 nolerp 4
+	$player2 nolerp 4
+	$player3 nolerp 4
+	$player4 nolerp 4
+end
+
+//Use this if you want NPC to go to a specific or closest player
+//NPC COMMAND
+//input: parm.gotoobjectDist, parm.gotoobjectAni
+//optional input: parm.gotoobject //specific player
+coop_gotoobject:
+	local.dist = parm.gotoobjectDist
+	local.animation string parm.gotoobjectAni
+	local.gotoobjectEmpty string "parm.gotoobject"
+	local.gotoobject string parm.gotoobject
+	local.gotoobject ifstrequal local.gotoobjectEmpty goto coop_gotoobject_closest
+	local.player string parm.gotoobject
+	
+	//this needs a exist check for player
+	//possibly a limited retry loop
+	
+	coop_gotoobject_walkto:
+	local.self gotoobject local.player local.dist local.animation
+	
+	coop_gotoobject_closest:	
+	parm.playerClosestObject
+	thread coopMain::playerClosest
+	local.player string parm.playerClosest
+end
+
+//Use this if you want NPC to check if any player is close
+//NPC COMMAND
+//input: parm.ifnearDistance, 
+//optional input specify a player: parm.ifnear
+//output: parm.ifnearTrue
+coop_ifnear:
+	parm.ifnearTrue = 0
+	local.dist string parm.ifnearDistance
+	local.ifnear string parm.ifnear
+	local.ifnearEmpty string "parm.ifnear"
+	local.ifnear ifstrequal local.ifnearEmpty goto coop_ifnear_closest
+	local.player string parm.ifnear
+	
+	//this needs a exist check for player
+	//possibly a limited retry loop
+	
+	local.self ifnear local.player local.dist parm.ifnearTrue = 1
+	end
+	
+	coop_ifnear_closest:	
+	parm.playerClosestObject
+	thread coopMain::playerClosest
+	local.player string parm.playerClosest
+end
+
+coop_give:
+	local.itemAmout string parm.coop_giveAmount
+	local.itemName string parm.coop_give
+	local.exclude string parm.coop_giveExclude
+    local.index = 0
+	
+	coop_give_loop:
+    local.index += 1
+    local.index ifgreaterequal 5 end
+    
+	local.player string "$player"
+    local.player appendint local.index
+	
+	local.playerAlive isentalive local.player
+	local.playerAlive ifequal 0 goto coop_give_loop
+	parm.player string local.player
+	thread coopMain::playerIsSpectator
+	parm.playerIsSpectatorTrue ifgreaterequal 1 goto coop_give_loop
+	
+	//exclude this player
+	local.exclude ifstrequal local.player goto coop_give_loop
+	
+
+    local.player give local.itemName local.itemAmout
+    goto coop_give_loop
+end
+
+coop_take:
+	local.itemAmout string parm.coop_takeAmount
+	local.itemName string parm.coop_take
+	local.exclude string parm.coop_takeExclude
+    local.index = 0
+	
+	coop_take_loop:
+    local.index += 1
+    local.index ifgreaterequal 5 end
+    
+	local.player string "$player"
+    local.player appendint local.index
+	local.playerAlive isentalive local.player
+	local.playerAlive ifequal 0 goto coop_take_loop
+	//parm.player string local.player
+	//thread coopMain::playerIsSpectator
+	//parm.playerIsSpectatorTrue ifgreaterequal 1 goto coop_give_loop
+	
+	//exclude this player
+	local.exclude ifstrequal local.player goto coop_take_loop
+
+	local.player take local.itemName local.itemAmout
+    goto coop_take_loop
+end
+

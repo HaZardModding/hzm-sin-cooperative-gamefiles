@@ -1,0 +1,75 @@
+//Contains variables for coop
+//Chrissstrahl - 2026.10.22
+chrissstrahl:
+	//armor
+	parm.player give RiotHelmet 50
+	parm.player give FlakJacket 50
+	parm.player give FlakPants 50
+	//gun
+	parm.player give silencer 1
+	parm.player give Magnum 2
+	parm.player give Shotgun
+	parm.player give AssaultRifle	
+	parm.player give Chaingun
+	parm.player give PulseRifle
+	parm.player give QuantumDestabilizer
+	parm.player give SpearGun
+	parm.player give SpiderMines 5000
+	parm.player give PlasmaBow
+	parm.player give Flamethrower
+	parm.player give ConcussionGun
+	parm.player give IP36
+	parm.player give StingerPack
+	//parm.player give SniperRifle		
+	//items
+	parm.player give flashlight 999
+	parm.player give GlowStick 1000
+	parm.player give coin 999
+	//bullets
+	parm.player give Spears 5000
+	parm.player give BulletPulse 5000
+	parm.player give Bullet10mm 1000
+	parm.player give Bullet50mm 1000
+	parm.player give BulletPulse 1000
+	//parm.player give BulletSniper 1000
+	parm.player give ShotgunClip 5000
+	parm.player give Rockets 5000
+	parm.player give IlludiumModules 5000
+	
+	parm.player give Rockets 1000
+	parm.player give Spears 1000
+	parm.player give ShotgunClip 1000
+	parm.player give SpiderMines 1000
+	parm.player give FlakJacket 200
+	parm.player give FlakPants 200
+	parm.player give RiotHelmet 200
+	parm.player give BluePrints 1000
+	parm.player give ComLink 1000
+	parm.player give MoneyBag 1000
+	parm.player give PassCode 1000
+	parm.player give Chemsuit 1000
+end
+
+//contains weapons for part 2 of test level
+chrissstrahl_part2:
+	parm.player give QuantumDestabilizer
+	parm.player give SpearGun
+	parm.player give SpiderMines 5000
+	parm.player give PlasmaBow
+	parm.player give Flamethrower
+end
+
+//bank
+bank:
+	parm.player give RiotHelmet 50
+	parm.player give FlakJacket 50
+	parm.player give FlakPants 50
+end
+
+//bank alternative
+bank_alt:
+	parm.player give RiotHelmet 100
+	parm.player give FlakJacket 100
+	parm.player give FlakPants 100
+end
+
