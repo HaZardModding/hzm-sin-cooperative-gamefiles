@@ -1,7 +1,7 @@
 # HaZardModding Coop: SiN Reloaded
 HaZardModding Coop: SiN Reloaded is a free, open-source, non-profit project initiated by Chrissstrahl and developed by HaZardModding.
 The modification is primarily driven by level scripts and does **not** modify any executables or DLL files.
-It allows up to four players to play through parts of the game cooperatively.
+It allows up to **4 players** to play through parts of the game cooperatively.
 
 # 20 Years of Experience
 SiN Reloaded Coop builds upon Chrissstrahl's 20 years of experience developing cooperative modifications for games built using Ritual Entertainment's ÜberTools technology.
@@ -28,6 +28,7 @@ Additional features will be introduced as development progresses.
 This release provides a solid and tested foundation for future development.
 
 At the current stage, one single-player level (bank) has been completed.
+The focus will be on the SiN main game campaign.
 
 The main focus of future development will be adapting the original single-player level scripts for cooperative gameplay, making additional levels playable in co-op.
 The pace of development and eventual completion of the project will also depend on contributions from the community.
