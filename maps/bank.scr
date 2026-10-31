@@ -1,5 +1,18 @@
+//[coop] chrissstrahl - START COOP MOD - REQUIRED
+aliasscript global/coop_main.scr coopMain
+thread coopMain::main
+
+//[coop] chrissstrahl - this is the better starting position for coop
+thread coopMain::inMultiplayer
+level.coopInMultiplayer ifgreaterequal 1 level.intro_start2 = 1
+
 waitforplayercinematic
-cinematic
+//cinematic
+//[coop] chrissstrahl - notify coop about cinematic
+thread coopReplace::coop_cinematic
+
+//[coop] chrissstrahl - change inventory thread
+level.intro_start2 ifnotequal 0 level.coopPlayerInventoryThread string "bank_alt"
 
 spawn clipbox type 1 mins "-2584 1336 32" maxs "-2536 1536 384"
 spawn clipbox type 1 mins "-2584 1536 32" maxs "-2536 1776 640"
@@ -247,6 +260,10 @@ waitForThread parm.previousthread
 
 Waitforplayer
 
+//[coop] chrissstrahl - don't execute in multiplayer
+thread coopMain::inMultiplayer
+parm.inMultiplayer ifequal 1 end
+
 level.intro_start2 ifequal 0 *1 give RiotHelmet 100
 level.intro_start2 ifequal 0 *1 give FlakJacket 100
 level.intro_start2 ifequal 0 *1 give FlakPants 100
@@ -386,13 +403,23 @@ start_cinematic_thread:
 
 Waitforplayer
 freezeplayer
-cinematic
-cueplayer
+
+//cinematic
+//cueplayer
+//[coop] chrissstrahl - notify coop about cinematic
+//[coop] chrissstrahl - unregister camera and cueplayer
+thread coopReplace::coop_cinematic
+thread coopReplace::coop_cueplayer
+
 hud 0
 
 $start_camera jumpto $start_camera_start
 $start_camera lookat $start_mancini
-cuecamera $start_camera
+
+//cuecamera $start_camera
+//[coop] chrissstrahl - register and cue camera
+parm.camera string $start_camera
+thread coopReplace::coop_cuecamera
 
 parm.WaitTime = 7
 parm.TimeDate string "m_329_pm_july"
@@ -403,9 +430,19 @@ level.start_xfiles_thread = parm.previousthread
 
 fadein 8 0 0 0
 
+//level.coopInMultiplayer ifgreaterequal 1 thread coopPlayerSpawn::bank_alt
+thread coopPlayerSpawn::bank_alt
+wait game.FRAMETIME
+thread coopMain::playerMoveAllToSpawn
+
 wait 2
 
 skipthread start_cinematic_skip_thread
+
+
+//[coop] chrissstrahl - skip while testing
+//local.hostName getcvar "name"
+//local.hostName ifequal level.devName goto start_cinematic_skip_thread
 
 wait 4
 
@@ -444,8 +481,15 @@ fadein 1 0 0 0
 thread helicopter_sound_thread
 
 hud 1
-cueplayer
-noncinematic
+
+//cueplayer
+//[coop] chrissstrahl - unregister camera and cueplayer
+thread coopReplace::coop_cueplayer
+
+//noncinematic
+//[coop] chrissstrahl - end cinematic and notify script
+thread coopReplace::coop_noncinematic
+
 releaseplayer
 
 end // start_cinematic_thread
@@ -486,8 +530,15 @@ fadein 1 0 0 0
 thread helicopter_sound_thread
 
 hud 1
-cueplayer
-noncinematic
+
+//cueplayer
+//[coop] chrissstrahl - unregister camera and cueplayer
+thread coopReplace::coop_cueplayer
+
+//noncinematic
+//[coop] chrissstrahl - end cinematic and notify script
+thread coopReplace::coop_noncinematic
+
 releaseplayer
 
 end // start_cinematic_skip_thread
@@ -1095,13 +1146,20 @@ teller2_takecash:
 $teller2_use nouse
 $teller2_use remove
 
+//[coop] chrissstrahl - give dollar to everyone
+parm.coop_giveExclude string local.other
+parm.coop_give string "dollar"
+parm.coop_giveAmount string "1"
+thread coopReplace::coop_give
+
+local.other item dollar 1
+
 local.cashtaken = 1
 unlockachievement "ACH_SIN_BANK"
 
 thread cash1_dialog_thread
 
 $dollar1 remove
-*1 item dollar 1
 
 goto teller2_close_ready
 
@@ -2469,6 +2527,18 @@ pause
 battle_hc01_activate:
 local.self definestate activate battle_hc01_activate2
 
+
+//[coop] chrissstrahl - wait for cinematic end (entity will be removed then) before the cops should talk
+parm.waitRemove string $start_mancini
+thread coopMain::waitForRemove
+waitForThread parm.previousthread
+
+//[coop] chrissstrahl - test
+//spawn blueprints itemname "hans" scale 30 origin "480 -832 250"
+//spawn SecurityL1Card itemname l1card thread GotL1SecurityCard
+//$player1 give "hans"
+
+
 thread hc_heavy_resistance_dialog_thread
 
 trigger $battle_hc02
@@ -3459,6 +3529,14 @@ end // jc_clear_bank_out_dialog_thread
 // quarter_dialog_thread:
 /////////////////////////////////////////////////////////////////////////////
 quarter_dialog_thread:
+
+//[coop] chrissstrahl - exclude player that picked it up
+//parm.playerClosestOrigin string "-1364.00 436.00 408.00"
+//thread coopMain::playerClosest
+//parm.coop_giveExclude string parm.playerClosest
+parm.coop_give string "coin"
+parm.coop_giveAmount string "1"
+thread coopReplace::coop_give
 
 thread dialog::blade_finds_quarter
 waitForThread parm.previousthread
@@ -5520,3 +5598,55 @@ Elevator_Init:
     goto elev_state_machine
   pause
 end
+
+
+
+
+//[coop] chrissstrahl - DETECT PLAYER SPAWN - REQUIRED
+//this fires everytime a player is spawned
+//without this the coop mod will not work correctly!
+coopInfoPlayerStartActivated:
+	thread coopMain::playerTargetnames
+end
+
+//[coop] chrissstrahl - executed each time a player has spawned
+//optional function
+coop_justSpawned:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+		
+//[coop] chrissstrahl - executed each time a player has died
+//optional function
+coop_justDied:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+
+//[coop] chrissstrahl - executed each time a player enters spectator mode
+//optional function
+coop_justBecameSpectator:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+
+//[coop] chrissstrahl - executed each time a player has entered the game (usually oce per level)
+//optional function
+coop_justEntered:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end	
+	
+//[coop] chrissstrahl - executed each time a player has disconnected
+//optional function
+coop_justLeft:
+	local.player string parm.playerEvent
+	//EXAMPLE: You can't do something with the player because the player has disconnected
+	//You can however still check stuff based on player targetname
+	//local.player ifstrequal "$player2" print "Player 2 has lost the will to fight\n"
+end
+
