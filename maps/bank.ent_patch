@@ -1,0 +1,9 @@
+//Chrissstrahl - TEST - Success
+//{ "classname" "info_player_deathmatch" "origin" "400 -909 240" "targetname" "dmSpawn1" }
+
+//{ "classname" "info_player_coop" "origin" "400 -909 240" "targetname" "coopSpawn1" }
+//{ "classname" "info_player_coop" "origin" "440 -909 240" "targetname" "coopSpawn2" }
+//{ "classname" "info_player_coop" "origin" "480 -909 240" "targetname" "coopSpawn3" }
+//{ "classname" "info_player_coop" "origin" "520 -909 240" "targetname" "coopSpawn4" }
+
+//I have not yet figured out how the remove command works, probably via targetname or entity number
