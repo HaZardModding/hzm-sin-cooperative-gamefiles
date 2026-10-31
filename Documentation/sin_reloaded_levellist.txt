@@ -1,0 +1,67 @@
+intro		Over Freeport City Bank
+bank		Freeport City Bank
+abandon		Abandoned Buildings
+csite		Construction Zone
+subway		Abandoned Subway
+chem1		SinTek Chemical Plant – Part 1
+chem2		SinTek Chemical Plant – Part 2
+whouse1		SinTek Warehouse – Part 1
+whouse2		SinTek Warehouse – Part 2
+biomecha	Biomech Factory – Part 1
+biomechb	Biomech Factory – Part 2
+silo		Missile Silo
+sewera		Freeport Sewers – Part 1
+aq1			Freeport Aqueducts
+sewerb		Freeport Sewers – Part 2
+dam			Freeport City Dam
+wworks1		Freeport Waterworks – Part 1
+wworks2		Freeport Waterworks – Part 2
+oilrig		SinTek Oilrig
+uwpass1		Underwater Passage – Part 1
+uwpass2		Underwater Passage – Part 2
+docks1		Hidden Docks – Part 1
+geo1		Geothermal Plant – Part 1
+geo2		Geothermal Plant – Part 2
+docks2		Hidden Docks – Part 2
+jungle		Jungle Pass – Part 1
+jungle2		Jungle Pass – Part 2
+gorge		Mountain Gorge
+area57		Containment Area 57
+biomass		Biomass Reclamation Center
+xeno1		Xenomorphic Laboratory – Part 1
+xeno2		Xenomorphic Laboratory – Part 2
+mansion1	Estate Sinclaire – Part 1
+mansion2	Estate Sinclaire – Part 2
+phoenix		Munt Phoenix
+thrall		Thrall Master
+
+
+2015intro_cin	Wages of Sin – Introduction Cinematic
+undergrd		Freeport Underground
+railroad		Further Underground
+druglab	The 	Secret Druglab
+club-day		Onethumb's Club (Day)
+club-night		Onethumb's Club (Night)
+vacant-day		The Vacant Building (Day)
+vacant-night	The Vacant Building (Night)
+daenzer-day		Daenzer Shipping (Day)
+daenzer-night	Daenzer Shipping (Night)
+sya-day			CRANE Shipyards – A Side (Day)
+sya-night		CRANE Shipyards – A Side (Night)
+syb-day			CRANE Shipyards – B Side (Day)
+syb-night		CRANE Shipyards – B Side (Night)
+syc-day			CRANE Shipyards – Part 3 (Day)
+syc-night		CRANE Shipyards – Part 3 (Night)
+ship-day		On the Water Front (Day)
+ship-night		On the Water Front (Night)
+paradox			Something of a Paradox
+ceremony		The Ceremony
+church			Manero's Tower
+casino1			Manero's Casino – Part 1
+casino2			Manero's Casino – Part 2
+penthouse		Manero's Penthouse
+museum			Mutation Facility
+spool			Breeding Facility
+nuke			Offshore Nuclear Power Plant
+ending			Wages of Sin – Ending Cinematic
+credits			Credits
