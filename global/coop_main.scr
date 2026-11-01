@@ -5,12 +5,8 @@ main:
 	//do not run twiche
 	level.coopRunning ifequal 1 end
 	level.coopRunning = 1
-	
-	//we might want to spawn our own spawnlocations in the future here or in mapname.ent_patch
-	//The first player will always spawn at info_player_start, regardless, he needs to be moved
-	//spawn info_player_coop"origin "400 -909 240" targetname "coopSpawn1"
-	
-	aliasscript global/coop_mom.scr coopMom
+
+	//aliasscript global/coop_mom.scr coopMom //disabled, currently researching and experimenting with it
 	aliasscript global/coop_replace.scr coopReplace
 	aliasscript global/coop_spawnlocations.scr coopPlayerSpawn
 	thread global/coop_variables.scr::main
@@ -27,10 +23,8 @@ main:
 	aliasscript local.currentLevelAlias coopCurrentLevel
 	
 	//try to run level specific coop setup
-	local.levelSetupThread string "coopCurrentLevel::"
-	local.levelSetupThread append "coop_levelSetup"
 	thread inMultiplayer
-	parm.inMultiplayer ifequal 1 thread local.levelSetupThread
+	parm.inMultiplayer ifequal 1 thread coopCurrentLevel::coop_levelSetup
 	
 	//handle players
 	thread coopWaitForPlayer
@@ -615,6 +609,8 @@ playerTargetnames:
 	local.triggerPos33 vector level.infoPlayerStartOrigin1
 	local.triggerPos33 vector_add "0 0 71"
 	
+	//The first player will always spawn at info_player_start and needs to be moved
+	//even if there are other spawn locations, unless they are inside bsp
 	spawn trigger_multiple origin level.infoPlayerStartOrigin1 targetname "coopInfoPlayerStartTrigger1" thread "coopInfoPlayerStartActivated"
 	$coopInfoPlayerStartTrigger1 setsize "0 0 0" "1 1 1" //was "1 1 20"
 	$coopInfoPlayerStartTrigger1 origin local.triggerPos33
@@ -1376,6 +1372,26 @@ waitForRemove:
 	parm.playerExistTrue ifequal 0 end
 	wait game.FRAMETIME
 	goto waitForRemove_loop
+end
+
+addNoRespawnZone:
+//specifies a zone in which a player may not respawn - hurt triggers, kill triggers, pits of death and so on
+//local.origin string parm.addNoRespawnZone
+//local.radius string parm.addNoRespawnZoneRadius
+//local.targetname string parm.addNoRespawnZoneTargetname
+//
+//spawn func_scriptorigin at the location of the area
+//set target value a vector, this allowes us to store and retrive 3 int values
+//set targetname +1 so we can iterate trough a sort of array
+//we can then check on each respawn, if the dynamic respawn location of the player
+//is within such a danger zone - then we move the player to predefined spawnspots
+//
+//getorigin, gettarget, vector_x, vector_y, vector_z, targetname
+//Reserve datastorage points: health, getcvar
+//
+//console.coopData1 = 123
+//console.coopData2 string "Some text"
+//console.coopData3 vector "100 200 300"
 end
 
 //triggered when any player spawns
