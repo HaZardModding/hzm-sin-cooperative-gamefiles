@@ -29,7 +29,8 @@ main:
 	//try to run level specific coop setup
 	local.levelSetupThread string "coopCurrentLevel::"
 	local.levelSetupThread append "coop_levelSetup"
-	thread local.levelSetupThread
+	thread inMultiplayer
+	parm.inMultiplayer ifequal 1 thread local.levelSetupThread
 	
 	//handle players
 	thread coopWaitForPlayer
