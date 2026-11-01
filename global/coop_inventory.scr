@@ -79,3 +79,17 @@ bank_alt:
 	parm.player use Magnum //this fixes player not spawning with a weapon in hand
 end
 
+abandon:
+	parm.player give Shotgun
+	parm.player give AssaultRifle
+	parm.player give Bullet10mm 100
+	parm.player give Bullet50mm 100
+	parm.player give ShotgunClip 50
+
+	parm.player give RiotHelmet 30
+	parm.player give FlakJacket 30
+	parm.player give FlakPants 30
+	//Chrissstrahl - added dual magnum and fixed next/prev-weapon selection not working upon map restart
+	parm.player give Magnum 2
+	parm.player use Magnum
+end
