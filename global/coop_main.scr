@@ -174,7 +174,7 @@ managePlayer4:
 //INTERNAL coop_main.scr USE ONLY!
 	local.player string parm.player
 	level.coopPlayer4Managing = 1
-	level.coopDebug ifgreaterequal 1 print "managePlayer4 Started\n"
+	level.coopDebug ifgreaterequal 1 print "Coop - managePlayer4 Started\n"
 
 	//loop it
 	managePlayer4_loop:
@@ -185,14 +185,14 @@ managePlayer4:
 	
 	wait game.FRAMETIME	
 	level.coopPlayer4Managing ifgreaterequal 1 goto managePlayer4_loop
-	level.coopDebug ifgreaterequal 1 print "managePlayer4 Terminated\n"
+	level.coopDebug ifgreaterequal 1 print "Coop - managePlayer4 Terminated\n"
 end
 
 managePlayer3:
 //INTERNAL coop_main.scr USE ONLY!
 	local.player string parm.player
 	level.coopPlayer3Managing = 1
-	level.coopDebug ifgreaterequal 1 print "managePlayer3 Started\n"
+	level.coopDebug ifgreaterequal 1 print "Coop - managePlayer3 Started\n"
 	
 	//loop it
 	managePlayer3_loop:
@@ -203,14 +203,14 @@ managePlayer3:
 	
 	wait game.FRAMETIME	
 	level.coopPlayer3Managing ifgreaterequal 1 goto managePlayer3_loop
-	level.coopDebug ifgreaterequal 1 print "managePlayer3 Terminated\n"
+	level.coopDebug ifgreaterequal 1 print "Coop - managePlayer3 Terminated\n"
 end
 
 managePlayer2:
 //INTERNAL coop_main.scr USE ONLY!
 	local.player string parm.player
 	level.coopPlayer2Managing = 1
-	level.coopDebug ifgreaterequal 1 print "managePlayer2 Started\n"
+	level.coopDebug ifgreaterequal 1 print "Coop - managePlayer2 Started\n"
 	
 	//loop it
 	managePlayer2_loop:
@@ -221,14 +221,14 @@ managePlayer2:
 	
 	wait game.FRAMETIME	
 	level.coopPlayer2Managing ifgreaterequal 1 goto managePlayer2_loop
-	level.coopDebug ifgreaterequal 1 print "managePlayer2 Terminated\n"
+	level.coopDebug ifgreaterequal 1 print "Coop - managePlayer2 Terminated\n"
 end
 
 managePlayer1:
 //INTERNAL coop_main.scr USE ONLY!
 	local.player string parm.player
 	level.coopPlayer1Managing = 1
-	level.coopDebug ifgreaterequal 1 print "managePlayer1 Started\n"
+	level.coopDebug ifgreaterequal 1 print "Coop - managePlayer1 Started\n"
 
 	//loop it
 	managePlayer1_loop:
@@ -239,7 +239,7 @@ managePlayer1:
 	wait game.FRAMETIME
 	
 	level.coopPlayer1Managing ifgreaterequal 1 goto managePlayer1_loop
-	level.coopDebug ifgreaterequal 1 print "managePlayer1 Terminated\n"
+	level.coopDebug ifgreaterequal 1 print "Coop - managePlayer1 Terminated\n"
 end
 
 managePlayer_checkAliveChange:
@@ -275,7 +275,7 @@ end
 
 playerSpectator:
 //INTERNAL coop_main.scr USE ONLY!
-	parm.print1 string "Player became spectator: "
+	parm.print1 string "Coop - Player became spectator: "
 	parm.print2 append parm.player
 	thread println
 	
@@ -296,7 +296,7 @@ end
 
 playerSpawned:
 //INTERNAL coop_main.scr USE ONLY!
-	parm.print1 string "Player was spawned: "
+	parm.print1 string "Coop - Player was spawned: "
 	parm.print2 append parm.player
 	thread println
 	
@@ -324,7 +324,7 @@ end
 
 playerDied:
 //INTERNAL coop_main.scr USE ONLY!
-	parm.print1 string "Player was killed: "
+	parm.print1 string "Coop - Player was killed: "
 	parm.print2 append parm.player
 	thread println
 	
@@ -472,7 +472,7 @@ end
 
 $player1Disconnected:
 //INTERNAL coop_main.scr USE ONLY!
-	print "$player1 Disconnected\n"
+	print "Coop - $player1 Disconnected\n"
     level.coopPlayer1Alive = 0
 	level.coopPlayer1Managing = 0
 	level.coopPlayer1MakeSolidAsapRunning = 0
@@ -480,7 +480,7 @@ end
 
 $player2Disconnected:
 //INTERNAL coop_main.scr USE ONLY!
-	print "$player2 Disconnected\n"
+	print "Coop - $player2 Disconnected\n"
     level.coopPlayer2Alive = 0
 	level.coopPlayer2Managing = 0
 	level.coopPlayer2MakeSolidAsapRunning = 0
@@ -488,7 +488,7 @@ end
 
 $player3Disconnected:
 //INTERNAL coop_main.scr USE ONLY!
-	print "$player3 Disconnected\n"
+	print "Coop - $player3 Disconnected\n"
     level.coopPlayer3Alive = 0
 	level.coopPlayer3Managing = 0
 	level.coopPlayer3MakeSolidAsapRunning = 0
@@ -496,7 +496,7 @@ end
 
 $player4Disconnected:
 //INTERNAL coop_main.scr USE ONLY!
-	print "$player4 Disconnected\n"
+	print "Coop - $player4 Disconnected\n"
     level.coopPlayer4Alive = 0
 	level.coopPlayer4Managing = 0
 	level.coopPlayer4MakeSolidAsapRunning = 0
@@ -523,6 +523,12 @@ playerMoveToSpawn:
 	parm.objectExistTrue ifequal 0 end
 	
 	level.coopDisableSpawnWarper ifequal 1 goto playerMoveToSpawn_predefined
+	
+	//check if player is in norepsawn zone - force prefedined spawnlocations
+	parm.inNoRespawnZone string local.player
+	parm.inNoRespawnZoneJustSpawned string "1"
+	thread inNoRespawnZone
+	parm.inNoRespawnZoneTrue ifequal 1 goto playerMoveToSpawn_predefined
 	
 	//move to last known pos
 	playerMoveToSpawn_restore:
@@ -763,10 +769,6 @@ objectExist:
 
     local.objectOrigin getorigin parm.objectExist
     local.vecLength vector_length local.objectOrigin
-    local.vecLength ifgreaterequal 1 goto objectExist_exist
-
-    local.objectOrigin getorigin parm.objectExist
-    local.vecLength vector_length local.objectOrigin
     local.vecLength ifequal 0 end
 
 	objectExist_exist:
@@ -854,7 +856,7 @@ playerClosest:
 	
 	playerClosest_end:
 	level.coopDebug iflessequal 0 end
-	parm.print1 string "playerClosest: "
+	parm.print1 string "Coop - ::playerClosest: "
 	parm.print2 string parm.playerClosest
 	parm.print3 string " - "
 	parm.print4 string parm.playersClosestDistance
@@ -862,20 +864,21 @@ playerClosest:
 	end
 	
 	playerClosest_existNot:
-	local.printOut string parm.playerClosestObject
-	local.printOut append "does not exist, playerClosest ending prematurley\n"
+	local.printOut string "Coop - ::playerClosest "
+	local.printOut append parm.playerClosestObject
+	local.printOut append " does not exist, ending prematurley\n"
 	print local.printOut
 end
 
 //checks if any player is within given distance of entity
-//Input: parm.playerWithinDistanceOfEntity, parm.playerWithinDistanceOfEntity_distance
-//Result: parm.playerWithinDistanceOfEntityTrue
-playerWithinDistanceOfEntity:
-	parm.playerWithinDistanceOfEntityTrue = 0
-	parm.playerClosestObject string parm.playerWithinDistanceOfEntity
+//Input: parm.playersWithinDistanceOfEntity, parm.playersWithinDistanceOfEntity_distance
+//Result: parm.playersWithinDistanceOfEntityTrue
+playersWithinDistanceOfEntity:
+	parm.playersWithinDistanceOfEntityTrue = 0
+	parm.playerClosestObject string parm.playersWithinDistanceOfEntity
 	thread playerClosest
 	parm.playerClosest ifstrequal "" end
-	parm.playersClosestDistance iflessequal parm.playerWithinDistanceOfEntity_distance parm.playerWithinDistanceOfEntityTrue = 1
+	parm.playersClosestDistance iflessequal parm.playersWithinDistanceOfEntity_distance parm.playersWithinDistanceOfEntityTrue = 1
 end
 
 //allow or disallow dropping weapons when players die
@@ -1119,6 +1122,85 @@ playerMakeSolidAsap:
 end
 
 // Generated by ChatGTP and updated by Chrissstrahl
+// parm.objectsTouching1      //first entity
+// parm.objectsTouching2      //second entity
+// parm.objectsTouching1Bbox  //positive bbox half-size (X Y Z)
+// parm.objectsTouching2Bbox  //positive bbox half-size (X Y Z)
+// parm.objectsTouching1Origin //allow to use origin instead of entity
+//
+// Result: parm.objectsTouching
+// 0 = not touching
+// 1 = touching
+//
+// Assumes bounding boxes are centered on their entity origins.
+// Bounding boxes are axis-aligned (AABB).
+// Touching edges count as touching.
+
+objectsTouching:
+    parm.objectsTouching = 0
+	
+	//allow a origin instead of a entity
+	local.vecOrigin vector parm.objectsTouching1Origin
+	local.lngt vector_length local.vecOrigin
+	local.origin1 vector local.vecOrigin
+	local.lngt ifgreaterequal 1 goto objectsTouching_checkEnt2
+	
+    parm.objectExist string parm.objectsTouching1
+    thread objectExist
+    parm.objectExistTrue iflessequal 0 end
+    // Get entity origin
+    local.origin1 getorigin parm.objectsTouching1
+	
+	objectsTouching_checkEnt2:
+
+    parm.objectExist string parm.objectsTouching2
+    thread objectExist
+    parm.objectExistTrue iflessequal 0 end
+	// Get entity origin
+    local.origin2 getorigin parm.objectsTouching2
+
+    // Calculate difference between origins
+    local.diff vector local.origin1
+    local.diff vector_subtract local.origin2
+
+    // Get positive bounding box sizes
+    local.bbox1 vector parm.objectsTouching1Bbox
+    local.bbox2 vector parm.objectsTouching2Bbox
+
+    // Combined extents of both bounding boxes
+    local.bbox vector local.bbox1
+    local.bbox vector_add local.bbox2
+
+    // Extract distance components
+    local.x vector_x local.diff
+    local.y vector_y local.diff
+    local.z vector_z local.diff
+
+    // Extract combined bounding box components
+    local.bboxX vector_x local.bbox
+    local.bboxY vector_y local.bbox
+    local.bboxZ vector_z local.bbox
+
+    // Check X axis
+    local.x ifgreater local.bboxX end
+    local.bboxX *= -1
+    local.x ifless local.bboxX end
+
+    // Check Y axis
+    local.y ifgreater local.bboxY end
+    local.bboxY *= -1
+    local.y ifless local.bboxY end
+
+    // Check Z axis
+    local.z ifgreater local.bboxZ end
+    local.bboxZ *= -1
+    local.z ifless local.bboxZ end
+
+    // All three axes overlap
+    parm.objectsTouching = 1
+end
+
+// Generated by ChatGTP and updated by Chrissstrahl
 // Checks whether two player bounding boxes overlap.
 // parm.playersTouching1 = first player
 // parm.playersTouching2 = second player
@@ -1180,16 +1262,13 @@ end
 entityDistance:
     parm.entityDistance = 99999
 
-    parm.objectExist string parm.entityDistance1
-    thread objectExist
-    parm.objectExistTrue iflessequal 0 end
-
-    parm.objectExist string parm.entityDistance2
-    thread objectExist
-    parm.objectExistTrue iflessequal 0 end
-
     local.origin1 getorigin parm.entityDistance1
+    local.vecLength1 vector_length local.origin1
+    local.vecLength1 ifequal 0 end
+
     local.origin2 getorigin parm.entityDistance2
+    local.vecLength2 vector_length local.origin2
+    local.vecLength2 ifequal 0 end
 
     local.diff vector local.origin1
     local.diff vector_subtract local.origin2
@@ -1208,7 +1287,7 @@ entitiesAll:
 	local.index += 1
 	local.index ifgreaterequal level.maxentities end
 	
-	local.printOut string "Entnum: *"
+	local.printOut string "Coop -  Entnum: *"
 	local.printOut append local.index
 	local.printOut append "\n"
 	print local.printOut
@@ -1376,11 +1455,147 @@ end
 
 addNoRespawnZone:
 //specifies a zone in which a player may not respawn - hurt triggers, kill triggers, pits of death and so on
-//local.origin string parm.addNoRespawnZone
-//local.radius string parm.addNoRespawnZoneRadius
-//local.targetname string parm.addNoRespawnZoneTargetname
-//
-//spawn func_scriptorigin at the location of the area
+//  USAGE:
+//  - parm.addNoRespawnZoneRadius string "150"				//to set a radius
+//  - parm.addNoRespawnZoneBoundingbox string "150 30 33"	//to set a boundingbox
+//  Limitations:
+//  - a zone can not be spawned at "0 0 0"
+	local.setOrigin vector parm.addNoRespawnZoneOrigin
+	local.lngt vector_length local.setOrigin
+	local.lngt iflessequal 0 goto addNoRespawnZone_missingOrigin
+
+	local.vecData vector "( 0 0 0 )"
+
+	local.temp = parm.addNoRespawnZoneRadius
+	local.temp ifnotequal 0 goto addNoRespawnZone_radiusHandle
+
+	local.temp vector parm.addNoRespawnZoneBoundingbox
+	local.lngt vector_length local.temp
+	local.lngt iflessequal 0 goto addNoRespawnZone_missingParameters
+	goto addNoRespawnZone_bboxHandle
+
+	addNoRespawnZone_radiusHandle:
+	local.zoneTypeName string " - radius: "
+	local.vecData vector_setz local.temp
+	goto addNoRespawnZone_spawn
+	
+	addNoRespawnZone_bboxHandle:
+	local.zoneTypeName string " - bbox: "
+	local.vecData vector local.temp
+	goto addNoRespawnZone_spawn
+	
+	//spawn actual data entity
+	addNoRespawnZone_spawn:
+	level.coopNoRespawnZoneIndex += 1
+	local.setTrgtname string "coopNoRespZone"
+	local.setTrgtname appendint level.coopNoRespawnZoneIndex
+	local.setTrgt string local.vecData
+	spawn "info_notnull" origin parm.addNoRespawnZoneOrigin targetname local.setTrgtname target local.setTrgt
+	
+	local.prt string "Coop - Added No-Respawn Zone "
+	local.prt append local.setTrgtname
+	local.prt append " - "
+	local.prt append local.setOrigin
+	local.prt append local.zoneTypeName
+	local.prt append local.setTrgt
+	local.prt append "\n"
+	print local.prt
+	parm.addNoRespawnZoneRadius string ""
+	parm.addNoRespawnZoneOrigin string ""
+	parm.addNoRespawnZoneBoundingbox string ""
+	end
+	
+	addNoRespawnZone_missingParameters:
+	print "::addNoRespawnZone was called incorrectly - You need at least one of the parameters to be set\n"
+	print "EXAMPLE:\n"
+	print "parm.addNoRespawnZoneRadius string 250 -or-\n"
+	print "parm.addNoRespawnZoneBoundingbox string \"100 150 80\"\n"
+	end
+	
+	addNoRespawnZone_missingOrigin:
+	print "::addNoRespawnZone was called incorrectly\n"
+	print "parm.addNoRespawnZoneOrigin needs to be set\n"
+end
+
+inNoRespawnZone:
+//check if player is in no-repspawn zone
+//  USAGE:
+//  - parm.inNoRespawnZone string "$player1"
+//  - parm.inNoRespawnZoneOrigin string "122 344 99"
+//	- parm.inNoRespawnZoneJustSpawned string "1" //optional - mark the player as just spawned, then the last know death position will be used
+    parm.inNoRespawnZoneTrue = 0
+    local.rounds = 0
+    local.player string parm.inNoRespawnZone
+
+    // Determine which origin to check
+    local.originToCheck vector parm.inNoRespawnZoneOrigin
+    local.lngt vector_length local.originToCheck
+    local.lngt ifgreaterequal 1 goto inNoRespawnZone_start
+
+    local.jstSpwn string parm.inNoRespawnZoneJustSpawned
+    local.jstSpwn ifstrequal 1 goto inNoRespawnZone_grabDeathPos
+
+    // Use current entity position
+    local.originToCheck getorigin local.player
+    goto inNoRespawnZone_start
+
+	inNoRespawnZone_grabDeathPos:
+    parm.player string local.player
+    thread getCoordForPlayer
+    local.originToCheck vector parm.getCoordForPlayer
+
+	inNoRespawnZone_start:
+    local.rounds += 1
+    local.rounds ifgreater level.coopNoRespawnZoneIndex end
+
+    parm.zoneEntity string "$coopNoRespZone"
+    parm.zoneEntity append local.rounds
+
+    // Read zone dimensions
+    local.vecData gettarget parm.zoneEntity
+
+    // Radius zones have X=0 and Y=0
+    local.x vector_x local.vecData
+    local.y vector_y local.vecData
+
+    local.x ifnotequal 0 goto inNoRespawnZone_bboxCheck
+    local.y ifnotequal 0 goto inNoRespawnZone_bboxCheck
+    goto inNoRespawnZone_radiusCheck
+
+	inNoRespawnZone_bboxCheck:
+    parm.objectsTouching1Origin vector local.originToCheck
+    parm.objectsTouching2 string parm.zoneEntity
+    parm.objectsTouching1Bbox string "32 32 72"
+    parm.objectsTouching2Bbox vector local.vecData
+
+    thread objectsTouching
+    parm.objectsTouching ifequal 1 goto inNoRespawnZone_inZone
+    goto inNoRespawnZone_start
+
+	inNoRespawnZone_radiusCheck:
+    // Calculate distance using the chosen origin
+    local.zoneOrigin getorigin parm.zoneEntity
+
+    local.diff vector local.originToCheck
+    local.diff vector_subtract local.zoneOrigin
+    local.distance vector_length local.diff
+
+    local.radius vector_z local.vecData
+    local.distance iflessequal local.radius goto inNoRespawnZone_inZone
+    goto inNoRespawnZone_start
+
+	inNoRespawnZone_inZone:
+    local.printOut string "Coop - "
+    local.printOut append local.player
+    local.printOut append " in No-Respawn-Zone: "
+    local.printOut append parm.zoneEntity
+    local.printOut append "\n"
+    print local.printOut
+
+    parm.inNoRespawnZoneTrue = 1
+end
+
+
 //set target value a vector, this allowes us to store and retrive 3 int values
 //set targetname +1 so we can iterate trough a sort of array
 //we can then check on each respawn, if the dynamic respawn location of the player
@@ -1392,32 +1607,11 @@ addNoRespawnZone:
 //console.coopData1 = 123
 //console.coopData2 string "Some text"
 //console.coopData3 vector "100 200 300"
-end
+
 
 //triggered when any player spawns
 testStuff:
 	//level.dugsfghjegfujdsgfACTIVE ifequal 1 end
 	//level.dugsfghjegfujdsgfACTIVE = 1
-	
-	end //disable test code for GitHub
-	thread coopMom::main
-	end	
-	
-	testStuff__spwLp:
-	parm.objectExist string "coop_specChecker1"
-	thread objectExist
-	print parm.objectExistTrue
-	print "\n"
-	wait game.FRAMETIME
-	goto testStuff__spwLp
-	
-	testStuff_inventoryCheckLoop:
-	local.item$count = 1
-	local.quartercount getitemcount *1 level.coopSpectatorCheckModel
-	local.quartercount ifequal 0 local.item$count = 0
-	parm.print1 string "Itemcount: "
-	parm.print2 string local.item$count
-	thread println
-	wait 2
-	goto testStuff_inventoryCheckLoop
+	//thread coopMom::main
 end
