@@ -21,6 +21,16 @@ main:
 	local.playerSpawnThread append level.map_name
 	thread local.playerSpawnThread
 	
+	local.currentLevelAlias string "maps/"
+	local.currentLevelAlias append level.map_name
+	local.currentLevelAlias append ".scr"
+	aliasscript local.currentLevelAlias coopCurrentLevel
+	
+	//try to run level specific coop setup
+	local.levelSetupThread string "coopCurrentLevel::"
+	local.levelSetupThread append "coop_levelSetup"
+	thread local.levelSetupThread
+	
 	//handle players
 	thread coopWaitForPlayer
 	
@@ -1372,6 +1382,7 @@ testStuff:
 	//level.dugsfghjegfujdsgfACTIVE ifequal 1 end
 	//level.dugsfghjegfujdsgfACTIVE = 1
 	
+	end //disable test code for GitHub
 	thread coopMom::main
 	end	
 	
