@@ -1,0 +1,2771 @@
+setdialogscript dialog/dialog_abandoned.scr
+
+// Mark as using new missioncon
+thread global/universal_script.scr::NewMisConSetup
+
+// Game Variables
+/////////////////////////////////////////////////////////////////////////////
+game.Abandon_ValveActivated = 0
+game.Abandon_HostageKilled = 0
+
+// Level Variables
+/////////////////////////////////////////////////////////////////////////////
+level.Skill getcvar skill
+level.PowerjuncState = 0
+level.BombState = 0
+level.BombEscaped = 0
+
+level.bum_message1 = 0
+
+level.BasementDoorLocked = 0
+
+level.MoneybagsCollected = 0
+
+level.dialog_cash_found = 0
+
+level.mancini_spotted1_thread = 0
+level.mancini_spotted1_said_killhim = 0
+
+// Mission Objective States - 0 not accomplished 1 = success 2 = fail 3 = not available
+level.PObjective1 = 0 // Pursue Mancini
+level.PObjective2 = 0 // Eliminate Hostile Forces
+level.SObjective1 = 0 // Recover Stolen Money Bags
+
+
+// Script Initialization
+/////////////////////////////////////////////////////////////////////////////
+thread init_thread
+
+// General
+thread swinginglight1_thread
+thread basementdoor_block_thread
+thread basementdoor_thread
+thread bridgefall_thread
+thread tablebreak_thread
+thread breaksteps1_thread
+thread alleyway_valve_thread
+thread floorbreak1_thread
+thread floorbreak2_thread
+thread floorbreak3_thread
+thread brickfall1_thread
+thread brickfall2_thread
+thread woodswing_thread
+thread woodpiece_thread
+thread woodhold_thread
+thread creak_sound1
+thread creak_sound2
+thread creak_sound3
+thread creak_sound4
+thread creak_sound5
+thread creak_sound6
+thread creak_sound7
+thread creak_sound8
+thread creak_sound9
+thread creak_sound10
+thread creak_sound11
+thread creak_sound12
+
+// Characters
+thread init_character_items_thread
+
+$shaft_thug01 thread shaft_thug01_thread
+$shaft_thug02 thread shaft_thug02_thread
+$shaft_thug03 thread shaft_thug03_thread
+$shaft_thug04 thread shaft_thug04_thread
+$shaft_thug05 thread shaft_thug05_thread
+$shaft_thug06 thread shaft_thug06_thread
+
+$gasmain_bum thread gasmain_bum_thread
+
+$bum01 thread bum01_thread
+$bum02 thread bum02_thread
+$bum03 thread bum03_thread
+
+$building1_thug01 thread building1_thug01_thread
+$building1_thug02 thread building1_thug02_thread
+$building1_thug10 thread building1_thug10_thread
+$building1_thug11 thread building1_thug11_thread
+$building1_thug12 thread building1_thug12_thread
+
+$trailer_thug01 thread trailer_thug01_thread
+$trailer_thug02 thread trailer_thug02_thread
+
+$mancinispotted1_thug01 thread mancinispotted1_thug01_thread
+$mancinispotted1_mancini thread mancinispotted1_mancini_thread
+$mancinispotted1_hostage thread mancinispotted1_hostage_thread
+
+$mancinispotted2_thug01 thread mancinispotted2_thug01_thread
+$mancinispotted2_mancini thread mancinispotted2_mancini_thread
+$mancinispotted2_hostage thread mancinispotted2_hostage_thread
+
+$building2_thug01 thread stand_ground_thread
+$building2_thug02 thread stand_ground_thread
+$building2_thug04 thread stand_ground_thread
+$building2_thug05 thread stand_ground_thread
+
+$building3_thug02 thread stand_ground_thread
+$building3_thug03 thread stand_ground_thread
+$building3_thug04 thread stand_ground_thread
+
+end // Script Initialization
+
+
+// init_thread:
+/////////////////////////////////////////////////////////////////////////////
+init_thread:
+
+$flickering_light1_ls lightstyle "Lmmmcmmcccmmmmmcmmmmccmmmmmmmcmccmmcmmmccmm"
+$flickering_light2_ls lightstyle "Lmmmcmmcccmmmmmcmmmmccmmmmmmmcmccmmcmmmccmm"
+
+$wheelbarrow time 0.1
+$wheelbarrow rotateYdown 15
+waitFor $wheelbarrow
+
+$cavein1_clip2 notsolid
+
+$cavein2_rubble1 time 0.1
+$cavein2_rubble1 moveUp 192
+waitFor $cavein2_rubble1
+
+$bomb_stairs1_clip time 0.1
+$bomb_stairs1_clip moveDown 32
+waitFor $bomb_stairs1_clip
+
+$propane_pipe1_steam hide
+
+$basmain_damaged notsolid
+$gasmain_fire hide
+
+$cavein1_roof1 setdamage 100
+$cavein1_roof2 setdamage 100
+$cavein1_roof3 setdamage 100
+$cavein1_roof4 setdamage 100
+$cavein1_roof5 setdamage 100
+$cavein1_floor1 setdamage 100
+$cavein1_floor2 setdamage 100
+$cavein1_floor3 setdamage 100
+$cavein1_floor4 setdamage 100
+$cavein1_floor5 setdamage 100
+
+
+thread abandon_start_misscomp_thread
+
+end // init_thread
+
+
+//===========================================================================
+//===========================================================================
+// GENERAL
+//===========================================================================
+//===========================================================================
+// flickering_light1_thread:
+/////////////////////////////////////////////////////////////////////////////
+flickering_light1_thread:
+
+$flickering_light1_ls lightstyle "c"
+
+end // flickering_light1_thread
+
+
+// flickering_light2_thread:
+/////////////////////////////////////////////////////////////////////////////
+flickering_light2_thread:
+
+$flickering_light2_ls lightstyle "c"
+
+end // flickering_light2_thread
+
+
+// trigger_shaft_thugs_thread:
+/////////////////////////////////////////////////////////////////////////////
+trigger_shaft_thugs_thread:
+
+trigger $shaft_thug04
+trigger $shaft_thug05
+thread thug_kill_lights_dialog_thread
+
+end // trigger_shaft_thugs_thread
+
+
+// powerjunc_thread:
+/////////////////////////////////////////////////////////////////////////////
+powerjunc_thread:
+
+// Only trigger once
+level.PowerjuncState ifnotequal 0 goto powerjunc_done
+level.PowerjuncState = 1
+
+// [XA] disabling this, since the music changes to 'surprise' just a few
+// seconds later when mancini drops the bomb. it's jarring having two so close.
+//music suspense normal
+
+trigger $powerjunc_explosion
+trigger $powerjunc_sparks
+trigger $powerjunc_snd1
+
+thread powerjunc_panel_thread
+
+$powerjunc_light1_model group light -Fullbright
+$powerjunc_ls1 lightstyle "c"
+
+$t32 remove
+$t31 remove
+$t30 remove
+$t29 remove
+$t28 remove
+$t27 remove
+$t26 remove
+$t25 remove
+trigger $lightsout_snd
+
+wait 2
+
+$powerjunc_ls2 lightstyle "Laaabbbcccdddeeefffggghhhiiijjjkkklllm"
+
+wait 3.7
+
+$powerjunc_ls2 lightstyle "m"
+
+powerjunc_done:
+
+end // powerjunc_thread
+
+
+// powerjunc_panel_thread:
+/////////////////////////////////////////////////////////////////////////////
+powerjunc_panel_thread:
+
+$powerjunc_panel shatter "0 0 0" 150 5 25 0.2 0
+
+$powerjunc_panel time 0.5
+$powerjunc_panel moveEast 128
+$powerjunc_panel moveNorth 32
+$powerjunc_panel moveDown 64
+$powerjunc_panel rotateXup 270
+$powerjunc_panel rotateYup 60
+waitFor $powerjunc_panel
+
+end // powerjunc_panel_thread
+
+
+// propane_pipe1_thread:
+/////////////////////////////////////////////////////////////////////////////
+propane_pipe1_thread:
+
+$propane_pipe1_steam show
+
+end // propane_pipe1_thread
+
+
+// cavein2_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein2_thread:
+
+thread powerjunc_thread
+thread bomb_brick_thread
+thread bomb_thread
+
+$cavein2_rubble1 setdamage 10000
+
+// [XA] disable some of the effects here, since the audio overlaps
+// with mancini's dialogue; this makes it a lot less noisy
+//trigger $cavein2_snd1
+//trigger $cavein2_snd2
+trigger $cavein2_explosion
+//trigger $cavein2_eq
+
+$cavein2_rubble1 shatter "0 0 0" 100 5 25 0.05 0
+
+$cavein2_rubble1 time 1
+$cavein2_rubble2 time 1
+$cavein2_rubble1 moveDown 256
+$cavein2_rubble2 rotateZup 30
+waitFor $cavein2_rubble2
+
+//$cavein2_rubble1 playsound environment/rockfall/impact2.wav 4
+
+end // cavein2_thread
+
+
+// bomb_brick_thread:
+/////////////////////////////////////////////////////////////////////////////
+bomb_brick_thread:
+
+$bomb_brick onuse bomb_brick_use
+pause
+
+bomb_brick_use:
+$bomb_brick nouse
+
+$bomb_brick playsound environment/levelsnds/whouse/manhole/mnhlcvr1.wav 2
+
+$bomb_brick time 1
+$bomb_brick moveSouth 24
+waitFor $bomb_brick
+
+$bomb_brick time 0.3
+$bomb_brick moveSouth 24
+$bomb_brick moveDown 32
+$bomb_brick rotateZup 105
+waitFor $bomb_brick
+
+$bomb_brick playsound impact/explosion/track65.wav 4
+
+$bomb_brick notsolid
+
+end // bomb_brick_thread
+
+
+// bomb_thread:
+/////////////////////////////////////////////////////////////////////////////
+bomb_thread:
+
+music surprise normal
+
+$bomb bind $bomb_parent
+wait game.FRAMETIME
+
+thread mancini_present_dialog_thread
+
+$bomb_parent jumpto $bomb_way1
+
+// Close and block the door
+thread basementdoor_closeandblock_thread
+
+// Have the bomb come down the stairs
+$bomb_parent rotateZ -240
+
+$bomb_parent time 0.3
+$bomb_parent moveto $bomb_way2
+waitFor $bomb_parent
+
+$bomb_parent time 0.3
+$bomb_parent moveto $bomb_way3
+waitFor $bomb_parent
+
+$bomb_parent time 0.3
+$bomb_parent moveto $bomb_way4
+waitFor $bomb_parent
+
+$bomb_parent playsound impact/debris/generic/gen1.wav 4
+
+$bomb_parent time 0.3
+$bomb_parent moveto $bomb_way5
+waitFor $bomb_parent
+
+$bomb_parent time 0.3
+$bomb_parent moveto $bomb_way6
+waitFor $bomb_parent
+
+$bomb_parent playsound impact/debris/generic/gen1.wav 4
+
+$bomb_parent rotateZ 0
+$bomb_parent rotateX -450
+$bomb_parent rotateY 180
+
+$bomb_parent time 0.4
+$bomb_parent moveto $bomb_way7
+waitFor $bomb_parent
+
+$bomb_parent time 0.4
+$bomb_parent moveto $bomb_way8
+waitFor $bomb_parent
+
+$bomb_parent playsound impact/debris/generic/gen1.wav 4
+$bomb_parent rotateX 0
+$bomb_parent rotateY 0
+
+thread bomb_ticking_sound_thread
+
+level.Skill ifequal 0 local.BombTime = 35
+level.Skill ifequal 1 local.BombTime = 20
+level.Skill ifgreaterequal 2 local.BombTime = 10
+
+wait local.BombTime
+
+// Blade has 5 seconds leff
+thread blade_imscrewed_dialog_thread
+wait 5
+
+// Blow blade up
+level.BombState = 1
+$bomb remove
+$bomb_remove remove
+
+$powerjunc_ls1 lightstyle "c"
+$powerjunc_ls2 lightstyle "a"
+
+trigger $bomb_eq
+trigger $bomb_explosion
+trigger $bomb_damage
+trigger $bomb_lights_sparks
+
+$bomb_hurt setdamage 10000
+
+$bomb_stairs1 setdamage 100
+$bomb_stairs1 time 1
+$bomb_stairs2 time 0.5
+$bomb_stairs1 moveUp 16
+$bomb_stairs1 moveNorth 64
+$bomb_stairs1 rotateZup 35
+$bomb_stairs1 rotateYdown 5
+$bomb_stairs2 rotateXdown 30
+waitFor $bomb_stairs2
+
+$bomb_stairs1 notsolid
+
+$bomb_stairs1_clip time 0.1
+$bomb_stairs1_clip moveUp 32
+waitFor $bomb_stairs1_clip
+
+$bomb_hurt setdamage 0
+
+end // bomb_thread
+
+
+// bomb_ticking_sound_thread:
+/////////////////////////////////////////////////////////////////////////////
+bomb_ticking_sound_thread:
+
+bomb_ticking_sound_loop:
+$bomb_parent playsound environment/computer/smllbeep/smallbp4.wav 1
+wait 1
+
+level.BombState ifequal 1 goto bomb_ticking_sound_done
+goto bomb_ticking_sound_loop
+
+bomb_ticking_sound_done:
+
+end // bomb_ticking_sound_thread:
+
+
+// basementdoor_closeandblock_thread:
+/////////////////////////////////////////////////////////////////////////////
+basementdoor_closeandblock_thread:
+
+level.BasementDoorLocked = 1
+
+$basementdoor_block1 time 1.5
+$basementdoor_block2 time 1.5
+$basementdoor time 1.5
+$basementdoor_block1 rotateXdown 55
+$basementdoor_block2 rotateXdown 60
+$basementdoor rotateXdownto 0
+waitFor $basementdoor
+
+end // basementdoor_closeandblock_thread
+
+
+// basementdoor_block_thread:
+/////////////////////////////////////////////////////////////////////////////
+basementdoor_block_thread:
+local.BlockersLeft = 2
+
+BasementdoorBlockersReady:
+local.BlockersLeft ifequal 0 goto BasementdoorBlockersGone
+
+$basementdoor_block1 ondamage BasementdoorBlock1Damaged
+$basementdoor_block2 ondamage BasementdoorBlock2Damaged
+pause
+
+BasementdoorBlock1Damaged:
+$basementdoor_block1 nodamage
+$basementdoor_block2 nodamage
+
+local.BlockersLeft -= 1
+
+
+$basementdoor_block1 playsound impact/debris/wood/wooddeb1.wav
+$basementdoor_block1 shatter "0 0 0" 50 5 25 0.1 0
+
+$basementdoor_block1 time 0.3
+$basementdoor_block1 moveEast 32
+$basementdoor_block1 moveSouth 128
+$basementdoor_block1 moveDown 160
+$basementdoor_block1 rotateXup 55
+$basementdoor_block1 rotateYdown 85
+waitFor $basementdoor_block1
+
+goto BasementdoorBlockersReady
+
+BasementdoorBlock2Damaged:
+$basementdoor_block1 nodamage
+$basementdoor_block2 nodamage
+
+local.BlockersLeft -= 1
+
+$basementdoor_block2 playsound impact/debris/wood/wooddeb1.wav
+$basementdoor_block2 shatter "0 0 0" 50 5 25 0.1 0
+
+$basementdoor_block2 time 0.3
+$basementdoor_block2 moveEast 16
+$basementdoor_block2 moveSouth 160
+$basementdoor_block2 moveDown 160
+$basementdoor_block2 rotateXup 60
+$basementdoor_block2 rotateYdown 80
+waitFor $basementdoor_block2
+
+goto BasementdoorBlockersReady
+
+BasementdoorBlockersGone:
+level.BasementDoorLocked = 0
+
+end // basementdoor_block_thread
+
+
+// basementdoor_thread:
+/////////////////////////////////////////////////////////////////////////////
+basementdoor_thread:
+
+$basementdoor setdamage 0
+$basementdoor time 0.1
+$basementdoor moveDown 64
+$basementdoor rotateXupto 120
+waitFor $basementdoor
+
+// Basement door is locked
+basementdoor_locked:
+$basementdoor onuse basementdoorlocked_sequence
+pause
+
+basementdoorlocked_sequence:
+$basementdoor nouse
+
+level.BasementDoorLocked ifequal 0 goto basementdoor_open
+
+$basementdoor playsound impact/carboard/c-hit.wav 2
+$basementdoor time 0.3
+$basementdoor rotateXup 1
+waitFor $basementdoor
+
+$basementdoor playsound impact/carboard/c-hit.wav 2
+$basementdoor time 0.3
+$basementdoor rotateXdown 1
+waitFor $basementdoor
+
+goto basementdoor_locked
+
+
+// Basement door is unlocked
+basementdoor_close:
+$basementdoor nouse
+$basementdoor onblock basementdoor_open
+
+$basementdoor time 1.5
+$basementdoor rotateXdownto 0
+waitFor $basementdoor
+
+$basementdoor onuse basementdoor_open
+pause
+
+basementdoor_open:
+$basementdoor nouse
+$basementdoor onblock basementdoor_close
+
+$basementdoor time 1.5
+$basementdoor rotateXupto 120
+waitFor $basementdoor
+
+$basementdoor onuse basementdoor_close
+pause
+
+goto basementdoor_close
+
+end // basementdoor_thread
+
+
+// building0_thread:
+/////////////////////////////////////////////////////////////////////////////
+building0_thread:
+
+trigger $spawn_building0_thug01
+wait game.FRAMETIME
+$building0_thug01 thread building0_thug01_thread
+
+end // building0_thread
+
+
+// building1_thread:
+/////////////////////////////////////////////////////////////////////////////
+building1_thread:
+
+trigger $building1_thug10
+trigger $building1_thug11
+trigger $building1_thug12
+
+end // building1_thread
+
+
+// bridgefall_thread:
+/////////////////////////////////////////////////////////////////////////////
+bridgefall_thread:
+
+$bridgefall1 ontouch BridgeFall
+$bridgefall2 ontouch BridgeFall
+pause
+
+BridgeFall:
+$bridgefall1 notouch
+$bridgefall2 notouch
+
+music suprise normal
+
+$bridgefall1 playsound impact/wood/woodmix5.wav 4
+
+$bridgefall1 time 0.2
+$bridgefall2 time 0.2
+$bridgefall1 moveDown 2
+$bridgefall2 moveDown 1
+$bridgefall1 rotateYup 1
+$bridgefall2 rotateYdown 2
+waitFor $bridgefall2
+
+wait 0.4
+
+$bridgefall1 time 0.6
+$bridgefall2 time 0.6
+$bridgefall1 moveNorth 24
+$bridgefall2 moveSouth 24
+$bridgefall1 moveDown 190
+$bridgefall2 moveDown 191
+$bridgefall1 rotateYup 15
+$bridgefall2 rotateYdown 30
+waitFor $bridgefall2
+
+$bridgefall2 playsound impact/explosion/track65.wav 4
+
+end // bridgefall_thread
+
+
+// copter1_thread:
+/////////////////////////////////////////////////////////////////////////////
+copter1_thread:
+
+$copter1 minlight 1
+$copter1_rotors minlight 1
+$copter1 lightoffset 120
+$copter1_rotors lightoffset 120
+
+$copter1 bind $copter1_parent
+$copter1_rotors bind $copter1_parent
+
+$copter1 playsound vehicle/helicopt/flyloop.wav 1
+wait 1
+
+$copter1 playsound vehicle/helicopt/flyloop.wav 2
+wait 1
+
+$copter1 playsound vehicle/helicopt/flyloop.wav 3
+wait 1
+
+$copter1 playsound vehicle/helicopt/flyloop.wav 4.0
+
+$copter1_rotors rotateY 540
+$copter1_parent followpath $copter1_path1
+waitFor $copter1_parent
+
+$copter1 stopsound
+
+$copter1_rotors remove
+$copter1 remove
+$copter1_parent remove
+
+end // copter1_thread
+
+
+// gasmain_thread:
+/////////////////////////////////////////////////////////////////////////////
+gasmain_thread:
+
+// [XA] swap non-functional 'action' music trigger for new 'mystery' track
+music mystery
+
+thread blade_smell_gas_dialog_thread
+wait 8
+
+// make the steam sound a bit louder
+trigger $gasmain_snd2
+wait 5
+
+trigger $gasmain_sparks1
+wait 1.3
+
+$basmain_damaged solid
+trigger $gasmain_snd1
+trigger $gasmain_snd2
+trigger $gasmain_snd3
+trigger $gasmain_explosion
+trigger $gasmain_sparks2
+trigger $gasmain_damage
+$gasmain_gas remove
+$gasmain_fire show
+$gasmain_fire_hurt setdamage 20
+
+thread gasmain_rubble1_thread
+thread gasmain_rubble2_thread
+thread gasmain_clip1_thread
+
+$gasmain_ls1 lightstyle "Lmmmcmmcccmmmmmcmmmmccmmmmmmmcmccmmcmmmccmm"
+
+music normal
+
+end // gasmain_thread
+
+
+// gasmain_rubble1_thread:
+/////////////////////////////////////////////////////////////////////////////
+gasmain_rubble1_thread:
+
+$gasmain_rubble1 time 0.5
+$gasmain_rubble1 moveWest 144
+$gasmain_rubble1 rotateXdown 400
+waitFor $gasmain_rubble1
+
+end // gasmain_rubble1_thread
+
+
+// gasmain_rubble2_thread:
+/////////////////////////////////////////////////////////////////////////////
+gasmain_rubble2_thread:
+
+$gasmain_rubble2 time 0.6
+$gasmain_rubble2 moveWest 144
+$gasmain_rubble2 rotateXdown 200
+$gasmain_rubble2 rotateYup 60
+waitFor $gasmain_rubble2
+
+end // gasmain_rubble2_thread
+
+// gasmain_clip1_thread:
+/////////////////////////////////////////////////////////////////////////////
+gasmain_clip1_thread:
+
+$gasmain_clip1 setdamage 10000
+$gasmain_clip1 time 0.5
+$gasmain_clip1 moveWest 144
+waitFor $gasmain_clip1
+
+end // gasmain_clip1_thread
+
+
+// tablebreak_thread:
+/////////////////////////////////////////////////////////////////////////////
+tablebreak_thread:
+
+$woodfall ontrigger woodfall_sequence
+pause
+
+woodfall_sequence:
+$woodfall notrigger
+
+$woodfall playsound environment/woodcreak/smcreak1.wav 4
+$woodfall setdamage 50
+$woodfall time 1
+$woodfall rotateXup 90
+waitFor $woodfall
+
+$woodfall playsound impact/crates/crate.wav 4
+$woodfall time .1
+$table1 time .3
+$table2 time .3
+$table3 time .3
+$table1 rotateXdown 30
+$table2 rotateZdown 45
+$table3 rotateZup 45
+$woodfall rotateXup 7
+waitFor $woodfall
+
+$table1 shatter "0 0 0" 40 2 20 0.25 0
+$table2 shatter "0 0 0" 40 2 20 0.25 0
+$table3 shatter "0 0 0" 40 2 20 0.25 0
+
+end // tablebreak_thread
+
+
+// mancinispotted1_start_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancinispotted1_start_thread:
+
+level.mancini_spotted1_thread = parm.currentthread
+$cavein1_clip1 notsolid
+
+$cavein1_clip1 time 0.1
+$cavein1_clip1 moveUp 128
+$cavein1_clip1 moveWest 256
+waitFor $cavein1_clip1
+
+thread mancini_survived_dialog_thread1
+waitForThread parm.previousthread
+
+level.mancini_spotted1_said_killhim = 1
+thread mancini_survived_dialog_thread2
+thread mancinispotted1_move_mancini_and_hostage
+wait 1
+
+thread thug_yougotit_dialog_thread
+trigger $mancinispotted1_thug01
+wait 1
+$mancinispotted1_thug01 solid
+
+thread cavein1_sequence1_thread
+level.mancini_spotted1_thread = 0
+end // mancinispotted1_start_thread
+
+mancinispotted1_move_mancini_and_hostage:
+trigger $mancinispotted1_hostage
+wait 0.5
+
+trigger $mancinispotted1_mancini
+$mancinispotted1_mancini notsolid
+$mancinispotted1_thug01 notsolid
+//wait 0.5
+end
+
+mancinispotted1_skip:
+level.mancini_spotted1_said_killhim ifequal 1 end
+level.mancini_spotted1_thread ifnotequal 0 terminate level.mancini_spotted1_thread
+level.mancini_spotted1_thread ifnotequal 0 mancini_spotted1_thread = 0
+
+thread mancini_survived_dialog_thread2
+thread mancinispotted1_move_mancini_and_hostage
+wait 1
+
+thread thug_yougotit_dialog_thread
+trigger $mancinispotted1_thug01
+wait 1
+$mancinispotted1_thug01 solid
+
+thread cavein1_sequence1_thread
+end
+
+// cavein1_sequence1_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein1_sequence1_thread:
+
+//trigger $cavein1_explosion
+trigger $cavein1_seq1_snd1
+wait 0.2
+
+$cavein1_clip1 solid
+
+thread cavein1_seq1_roof1_thread
+thread cavein1_seq1_roof2_thread
+thread cavein1_seq1_roof3_thread
+thread cavein1_seq1_roof4_thread
+thread cavein1_seq1_roof5_thread
+thread cavein1_sequence2_thread
+wait 5
+
+$cavein1_clip2 solid
+
+end // cavein1_sequence1_thread
+
+
+// cavein1_seq1_roof1_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein1_seq1_roof1_thread:
+
+$cavein1_roof1 setdamage 10000
+$cavein1_roof1 time 0.5
+$cavein1_roof1 moveDown 136
+$cavein1_roof1 moveNorth 16
+$cavein1_roof1 moveWest 12
+$cavein1_roof1 rotateXup 360
+$cavein1_roof1 rotateYdown 60
+$cavein1_roof1 rotateZdown 180
+waitFor $cavein1_roof1
+
+end // cavein1_seq1_roof1_thread
+
+
+// cavein1_seq1_roof2_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein1_seq1_roof2_thread:
+
+$cavein1_roof2 setdamage 10000
+$cavein1_roof2 time 0.6
+$cavein1_roof2 moveDown 128
+$cavein1_roof2 moveNorth 16
+$cavein1_roof2 moveWest 16
+$cavein1_roof2 rotateXdown 200
+$cavein1_roof2 rotateYdown 90
+waitFor $cavein1_roof2
+
+end // cavein1_seq1_roof2_thread
+
+
+// cavein1_seq1_roof3_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein1_seq1_roof3_thread:
+
+$cavein1_roof3 setdamage 10000
+$cavein1_roof3 time 0.6
+$cavein1_roof3 moveDown 136
+$cavein1_roof3 moveNorth 24
+$cavein1_roof3 moveWest 48
+$cavein1_roof3 rotateXdown 360
+$cavein1_roof3 rotateYdown 90
+waitFor $cavein1_roof3
+
+end // cavein1_seq1_roof3_thread
+
+
+// cavein1_seq1_roof4_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein1_seq1_roof4_thread:
+
+$cavein1_roof4 setdamage 10000
+$cavein1_roof4 time 1.0
+$cavein1_roof4 moveDown 112
+$cavein1_roof4 moveWest 12
+$cavein1_roof4 moveSouth 16
+$cavein1_roof4 rotateXup 240
+$cavein1_roof4 rotateZdown 10
+waitFor $cavein1_roof4
+
+end // cavein1_seq1_roof4_thread
+
+
+// cavein1_seq1_roof5_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein1_seq1_roof5_thread:
+
+$cavein1_roof5 setdamage 10000
+$cavein1_roof5 time 0.8
+$cavein1_roof5 moveDown 112
+$cavein1_roof5 moveNorth 24
+$cavein1_roof5 moveWest 20
+$cavein1_roof5 rotateXup 245
+$cavein1_roof5 rotateYup 30
+
+waitFor $cavein1_roof5
+
+end // cavein1_seq1_roof5_thread
+
+
+// cavein1_sequence2_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein1_sequence2_thread:
+
+$cavein1_trigger ontrigger Cavein1Sequence2
+$cavein1_trigger ondamage Cavein1Sequence2
+
+Cavein1Teeter:
+trigger $cavein1_trigger_snd1
+
+$cavein1_trigger time 1.5
+$cavein1_trigger rotateXup 1
+$cavein1_trigger rotateZup 1
+waitFor $cavein1_trigger
+
+$cavein1_trigger time 1.5
+$cavein1_trigger rotateXdown 1
+$cavein1_trigger rotateZdown 1
+waitFor $cavein1_trigger
+
+goto Cavein1Teeter
+
+Cavein1Sequence2:
+$cavein1_trigger_snd1 remove
+$cavein1_trigger notrigger
+$cavein1_trigger nodamage
+
+trigger $cavein1_seq2_snd1
+
+thread cavein1_seq2_trigger_thread
+wait 0.3
+
+$cavein1_barrels damage 1000
+
+thread cavein1_seq2_floor1_thread
+thread cavein1_seq2_floor2_thread
+thread cavein1_seq2_floor3_thread
+thread cavein1_seq2_floor4_thread
+thread cavein1_seq2_floor5_thread
+thread cavein1_seq2_roof1_thread
+thread cavein1_seq2_roof2_thread
+thread cavein1_seq2_roof3_thread
+thread cavein1_seq2_roof4_thread
+thread cavein1_seq2_roof5_thread
+
+$cavein1_clip1 remove
+$cavein1_clip2 setdamage 1000
+$cavein1_clip2 time 1
+$cavein1_clip2 moveDown 160
+waitFor $cavein1_clip2
+
+$cavein1_roof1 notsolid
+$cavein1_roof2 notsolid
+$cavein1_roof3 notsolid
+$cavein1_roof4 notsolid
+$cavein1_roof5 notsolid
+$cavein1_floor2 notsolid
+$cavein1_floor3 notsolid
+$cavein1_floor4 notsolid
+$cavein1_floor5 notsolid
+
+end // thread cavein1_sequence2_thread
+
+
+// cavein1_seq2_trigger_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein1_seq2_trigger_thread:
+
+$cavein1_trigger setdamage 1000
+$cavein1_trigger time 0.8
+$cavein1_trigger moveEast 64
+$cavein1_trigger moveDown 8
+$cavein1_trigger rotateXdown 85
+waitFor $cavein1_trigger
+
+end // cavein1_seq2_trigger_thread
+
+
+// cavein1_seq2_floor1_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein1_seq2_floor1_thread:
+
+$cavein1_floor1 setdamage 1000
+$cavein1_floor1 time 0.8
+$cavein1_floor1 moveDown 96
+$cavein1_floor1 rotateXup 30
+waitFor $cavein1_floor1
+
+end // cavein1_seq2_floor1_thread
+
+
+// cavein1_seq2_floor2_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein1_seq2_floor2_thread:
+
+$cavein1_floor2 setdamage 1000
+$cavein1_floor2 time 1.0
+$cavein1_floor2 moveDown 200
+$cavein1_floor2 moveEast 32
+$cavein1_floor2 rotateXdown 270
+waitFor $cavein1_floor2
+
+end // cavein1_seq2_floor2_thread
+
+
+// cavein1_seq2_floor3_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein1_seq2_floor3_thread:
+
+$cavein1_floor3 setdamage 1000
+$cavein1_floor3 time 0.9
+$cavein1_floor3 moveDown 96
+$cavein1_floor3 moveEast 16
+$cavein1_floor3 rotateXup 30
+$cavein1_floor3 rotateYup 10
+$cavein1_floor3 rotateZup 15
+waitFor $cavein1_floor3
+
+end // cavein1_seq2_floor3_thread
+
+
+// cavein1_seq2_floor4_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein1_seq2_floor4_thread:
+
+$cavein1_floor4 notsolid
+
+$cavein1_floor4 time 0.5
+$cavein1_floor4 moveDown 192
+$cavein1_floor4 rotateXdown 360
+waitFor $cavein1_floor4
+
+end // cavein1_seq2_floor4_thread
+
+
+// cavein1_seq2_floor5_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein1_seq2_floor5_thread:
+
+$cavein1_floor5 notsolid
+
+$cavein1_floor5 time 0.5
+$cavein1_floor5 moveDown 192
+$cavein1_floor5 rotateXdown 720
+$cavein1_floor5 rotateZdown 360
+waitFor $cavein1_floor5
+
+end // cavein1_seq2_floor5_thread
+
+
+// cavein1_seq2_roof1_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein1_seq2_roof1_thread:
+
+$cavein1_roof1 setdamage 20
+$cavein1_roof1 time 0.8
+$cavein1_roof1 moveDown 152
+$cavein1_roof1 moveSouth 16
+$cavein1_roof1 moveEast 16
+$cavein1_roof1 rotateYup 90
+waitFor $cavein1_roof1
+
+$cavein1_roof1 time 0.4
+$cavein1_roof1 moveDown 48
+$cavein1_roof1 moveSouth 16
+$cavein1_roof1 moveEast 128
+$cavein1_roof1 rotateYup 180
+waitFor $cavein1_roof1
+
+end // cavein1_seq2_roof1_thread
+
+
+// cavein1_seq2_roof2_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein1_seq2_roof2_thread:
+
+$cavein1_roof2 setdamage 20
+$cavein1_roof2 time 0.9
+$cavein1_roof2 moveDown 152
+$cavein1_roof2 moveNorth 8
+$cavein1_roof2 moveEast 16
+waitFor $cavein1_roof2
+
+$cavein1_roof2 time 0.3
+$cavein1_roof2 moveDown 48
+$cavein1_roof2 moveNorth 8
+$cavein1_roof2 moveEast 88
+$cavein1_roof2 rotateXdown 45
+waitFor $cavein1_roof2
+
+end // cavein1_seq2_roof2_thread
+
+
+// cavein1_seq2_roof3_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein1_seq2_roof3_thread:
+
+$cavein1_roof3 setdamage 20
+$cavein1_roof3 time 0.8
+$cavein1_roof3 moveDown 152
+$cavein1_roof3 moveEast 64
+waitFor $cavein1_roof3
+
+$cavein1_roof3 time 0.4
+$cavein1_roof3 moveDown 48
+$cavein1_roof3 moveEast 64
+waitFor $cavein1_roof3
+
+end // cavein1_seq2_roof3_thread
+
+
+// cavein1_seq2_roof4_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein1_seq2_roof4_thread:
+
+
+$cavein1_roof4 setdamage 20
+$cavein1_roof4 time 0.8
+$cavein1_roof4 moveDown 144
+$cavein1_roof4 moveEast 32
+$cavein1_roof4 rotateXdown 30
+waitFor $cavein1_roof4
+
+$cavein1_roof4 time 0.3
+$cavein1_roof4 moveDown 56
+$cavein1_roof4 moveEast 96
+$cavein1_roof4 rotateXdown 20
+waitFor $cavein1_roof4
+
+end // cavein1_seq2_roof4_thread
+
+
+// cavein1_seq2_roof5_thread:
+/////////////////////////////////////////////////////////////////////////////
+cavein1_seq2_roof5_thread:
+
+$cavein1_roof5 setdamage 20
+$cavein1_roof5 time 0.8
+$cavein1_roof5 moveDown 144
+$cavein1_roof5 moveEast 64
+$cavein1_roof5 rotateXup 270
+waitFor $cavein1_roof5
+
+$cavein1_roof5 time 0.3
+$cavein1_roof5 moveDown 48
+$cavein1_roof5 moveEast 144
+$cavein1_roof5 rotateXup 150
+waitFor $cavein1_roof5
+
+end // cavein1_seq2_roof5_thread
+
+
+// mancinispotted2_start_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancinispotted2_start_thread:
+
+thread mancini_get_going_dialog_thread
+wait 1
+
+trigger $mancinispotted2_hostage
+wait 0.5
+
+trigger $mancinispotted2_mancini
+trigger $mancinispotted2_thug01
+wait 2
+
+thread jc_getting_away_dialog_thread
+
+
+end // mancinispotted2_start_thread
+
+
+// swinginglight1_thread:
+/////////////////////////////////////////////////////////////////////////////
+swinginglight1_thread:
+
+swinginglight1_loop:
+$swinginglight1 time 2
+$swinginglight1 rotateZdown 3
+waitFor $swinginglight1
+
+$swinginglight1 time 3
+$swinginglight1 rotateZup 3
+waitFor $swinginglight1
+
+goto swinginglight1_loop
+
+end // swinginglight1_thread
+
+
+// breaksteps1_thread:
+/////////////////////////////////////////////////////////////////////////////
+breaksteps1_thread:
+
+$steps1 ontouch step1_sequence
+$steps1_clip ontouch step1_sequence
+pause
+
+step1_sequence:
+$steps1 notouch
+$steps1_clip notouch
+
+wait .2
+
+$steps1 playsound impact/wood/woodmix5.wav 4
+
+$steps1 time 0.7
+$steps1_clip time 0.7
+$steps1 moveDown 204
+$steps1 rotateXup 40
+$steps1 rotateZup 28
+$steps1_clip moveDown 204
+$steps1_clip moveWest 32
+waitFor $steps1_clip
+
+//$steps1 playsound impact/crates/crate.wav 4
+$stpes1 playsound impact/water/splash1.wav 4
+
+$steps1 notsolid
+
+end // breaksteps1_thread
+
+
+// skysound1_thread:
+/////////////////////////////////////////////////////////////////////////////
+skysound1_thread:
+
+$skysound1 playsound vehicle/helicopt/flyloop.wav 4.0
+
+trigger $building3_thug01
+
+$skysound1 speed 256
+$skysound1 moveto $skysound1_way1
+waitFor $skysound1
+wait 2
+
+$skysound1 playsound vehicle/helicopt/flyloop.wav 3
+wait 2
+
+$skysound1 playsound vehicle/helicopt/flyloop.wav 2
+wait 2
+
+$skysound1 playsound vehicle/helicopt/flyloop.wav 1
+wait 2
+
+$skysound1 playsound vehicle/helicopt/flyloop.wav .5
+
+end // skysound1_thread
+
+
+// alleyway_valve_thread:
+/////////////////////////////////////////////////////////////////////////////
+alleyway_valve_thread:
+
+$alleyway_valve onuse AlleywayValveSequence
+pause
+
+AlleywayValveSequence:
+$alleyway_valve nouse
+
+$alleyway_valve playsound environment/valvetrn/v3.wav
+
+$alleyway_valve time 1.5
+$alleyway_valve rotateXup 90
+waitFor $alleyway_valve
+
+trigger $watermain_snd1
+$alleyway_steam remove
+trigger $alleyway_steam_snd
+
+
+game.Abandon_ValveActivated = 1
+
+end // alleyway_valve_thread
+
+
+// floorbreak1_thread:
+/////////////////////////////////////////////////////////////////////////////
+floorbreak1_thread:
+
+$floorbreak1 ontouch floorbreak1_sequence
+$floorbreak1b ontouch floorbreak1_sequence
+pause
+
+floorbreak1_sequence:
+$floorbreak1 notouch
+$floorbreak1b notouch
+
+$floorbreak1 playsound impact/wood/woodmix5.wav 4
+
+$floorbreak1 time .4
+$floorbreak1b time .4
+
+$floorbreak1 moveDown 176
+$floorbreak1 moveNorth 16
+$floorbreak1 rotateYup 15
+$floorbreak1b moveDown 176
+$floorbreak1b moveSouth 16
+$floorbreak1b rotateYdown 30
+waitFor $floorbreak1b
+
+$floorbreak1 playsound impact/explosion/track65.wav 4
+
+end // floorbreak1_thread
+
+
+// floorbreak2_thread:
+/////////////////////////////////////////////////////////////////////////////
+floorbreak2_thread:
+
+$floorbreak2 ontouch floorbreak2_sequence
+pause
+
+floorbreak2_sequence:
+$floorbreak2 notouch
+
+music surprise normal
+
+$floorbreak2 playsound impact/wood/woodmix5.wav 4
+
+$floorbreak2 time 1.0
+$floorbreak2 moveDown 600
+$floorbreak2 rotateYup 30
+waitFor $floorbreak2
+
+$floorbreak2 playsound impact/water/fllntwtr.wav 4
+
+end // floorbreak2_thread
+
+
+// floorbreak3_thread:
+/////////////////////////////////////////////////////////////////////////////
+floorbreak3_thread:
+
+$floorbreak3 ontouch floorbreak3_sequence
+pause
+
+floorbreak3_sequence:
+$floorbreak3 notouch
+
+$floorbreak3 playsound impact/wood/woodmix5.wav 4
+
+$floorbreak3 time .5
+$floorbreak3 moveDown 192
+$floorbreak3 moveNorth 36
+$floorbreak3 rotateZdown 180
+waitFor $floorbreak3
+
+$floorbreak3 playsound impact/explosion/track65.wav 4
+
+$floorbreak3 time .2
+$floorbreak3 moveNorth 12
+$floorbreak3 moveUp 8
+$floorbreak3 rotateZdown 90
+waitFor $floorbreak3
+
+$floorbreak3 moveNorth 12
+$floorbreak3 moveDown 8
+$floorbreak3 rotateZdown 90
+waitFor $floorbreak3
+
+$floorbreak3 time .5
+$floorbreak3 moveDown 200
+$floorbreak3 rotateZdown 360
+waitFor $floorbreak3
+
+$floorbreak3 playsound impact/water/fllntwtr.wav 4
+
+end // floorbreak3_thread
+
+
+
+// brickfall1_thread:
+/////////////////////////////////////////////////////////////////////////////
+brickfall1_thread:
+
+$brickfall1 ontrigger brickfall1_sequence
+pause
+
+brickfall1_sequence:
+$brickfall1 notrigger
+
+$brickfall1 playsound impact/debris/rock/rockdeb1.wav
+
+$brickfall1 setdamage 20
+$brickfall1 time .4
+$brickfall1 moveDown 192
+$brickfall1 rotateYdown 180
+$brickfall1 rotateZdown 360
+waitFor $brickfall1
+
+$brickfall1 time .2
+$brickfall1 moveUp 32
+$brickfall1 moveWest 8
+$brickfall1 rotateZdown 90
+waitFor $brickfall1
+
+$brickfall1 time .2
+$brickfall1 moveDown 32
+$brickfall1 moveWest 8
+$brickfall1 rotateZdown 90
+waitFor $brickfall1
+
+$brickfall1 time .4
+$brickfall1 moveWest 8
+$brickfall1 moveDown 224
+$brickfall1 rotateXdown 360
+waitFor $brickfall1
+
+$brickfall1 time .2
+$brickfall1 moveUp 32
+$brickfall1 moveWest 12
+$brickfall1 rotateZdown 90
+waitFor $brickfall1
+
+$brickfall1 time .2
+$brickfall1 moveDown 32
+$brickfall1 moveWest 12
+$brickfall1 rotateZdown 90
+waitFor $brickfall1
+
+$brickfall1 playsound impact/debris/rock/rockdeb1.wav
+
+end // brickfall1_thread
+
+
+// brickfall2_thread:
+/////////////////////////////////////////////////////////////////////////////
+brickfall2_thread:
+
+$brickfall2 ontrigger brickfall2_sequence
+pause
+
+brickfall2_sequence:
+$brickfall2 notrigger
+
+$brickfall2 playsound impact/debris/rock/rockdeb1.wav
+
+$brickfall2 setdamage 20
+$brickfall2 time .5
+$brickfall2 moveDown 208
+$brickfall2 moveWest 8
+$brickfall2 moveSouth 8
+$brickfall2 rotateZup 360
+$brickfall2 rotateYdown 45
+waitFor $brickfall2
+
+$brickfall2 time .2
+$brickfall2 moveUp 32
+$brickfall2 moveSouth 8
+$brickfall2 rotateZdown 90
+waitFor $brickfall2
+
+$brickfall2 time .2
+$brickfall2 moveDown 32
+$brickfall2 moveSouth 8
+$brickfall2 rotateZdown 90
+waitFor $brickfall2
+
+$brickfall2 playsound impact/debris/rock/rockdeb1.wav
+
+end // brickfall2thread
+
+
+// woodhold_thread:
+/////////////////////////////////////////////////////////////////////////////
+woodhold_thread:
+
+$woodhold ontouch woodhold_sequence
+$woodhold ontrigger woodhold_sequence
+$woodhold ondamage woodhold_sequence
+pause
+
+woodhold_sequence:
+$woodhold notouch
+$woodhold notrigger
+$woodhold nodamage
+
+thread jc_watch_step_dialog_thread
+
+trigger $woodpiece
+
+$woodhold setdamage 10
+$woodhold phssound environment/woodcreak/crkngwds.wav 1.0
+$woodhold time .4
+$woodhold moveDown 48
+$woodhold rotateZdown 15
+$woodhold rotateXup 15
+$woodhold moveEast 6
+waitFor $woodhold
+
+$woodhold playsound impact/explosion/track65.wav 4
+$woodhold time .8
+$woodhold rotateXup 15
+$woodhold moveDown 300
+$woodhold moveEast 144
+$woodhold moveNorth 12
+waitFor $woodhold
+
+$woodhold time .3
+$woodhold rotateXup 40
+$woodhold moveEast 34
+$woodhold moveDown 8
+waitFor $woodhold
+
+$woodhold playsound impact/explosion/track65.wav 4
+
+end // woldhold_thread
+
+
+// woodpiece_thread:
+/////////////////////////////////////////////////////////////////////////////
+woodpiece_thread:
+
+$woodpiece ontrigger woodpiece_sequence
+pause
+
+woodpiece_sequence:
+$woodpiece notrigger
+
+$woodpiece setdamage 10
+$woodpiece time 1.0
+$woodpiece moveDown 368
+$woodpiece moveNorth 16
+$woodpiece rotateXdown 360
+waitFor $woodpiece
+$woodpiece playsound impact/water/fllntwtr.wav 1.0
+
+end // woodpiece_thread
+
+
+// woodswing_thread:
+/////////////////////////////////////////////////////////////////////////////
+woodswing_thread:
+
+$woodswing ontrigger woodswing_sequence
+pause
+
+woodswing_sequence:
+$woodswing notrigger
+
+wait .4
+
+$woodswing setdamage 10
+$woodswing phssound environment/woodcreak/crkngwds.wav 1.0
+$woodswing time .3
+$woodswing rotateXdown 15
+waitFor $woodswing
+
+$woodswing time .7
+$woodswing moveDown 134
+$woodswing moveWest 16
+$woodswing rotateYup 15
+waitFor $woodswing
+
+$woodswing playsound impact/explosion/track65.wav 4
+
+$woodswing time .3
+$woodswing rotateXup 15
+$woodswing moveDown 40
+waitFor $woodswing
+
+$woodswing playsound impact/explosion/track65.wav 4
+$woodswing time .3
+$woodswing rotateYup 15
+$woodswing rotateZup 45
+$woodswing moveUp 8
+$woodswing moveWest 8
+waitFor $woodswing
+
+$woodswing time .3
+$woodswing rotateYup 15
+$woodswing rotateZup 45
+$woodswing moveDown 18
+$woodswing moveWest 8
+waitFor $woodswing
+
+$woodswing playsound impact/explosion/track65.wav 4
+
+
+end // woodswing_thread
+
+
+// creak_sound1:
+/////////////////////////////////////////////////////////////////////////////
+creak_sound1:
+$sound1 notsolid trigger
+
+loop_sound1:
+$sound1 ontouch sound1_playsound
+pause
+
+sound1_playsound:
+$sound1 notouch
+
+$sound1 phssound "environment/woodcreak/smcreak1.wav"
+waitForSound "environment/woodcreak/smcreak1.wav"
+
+goto loop_sound1
+
+end // creak_sound1
+
+
+// creak_sound2:
+/////////////////////////////////////////////////////////////////////////////
+creak_sound2:
+$sound2 notsolid trigger
+
+loop_sound2:
+$sound2 ontouch sound2_playsound
+pause
+
+sound2_playsound:
+$sound2 notouch
+
+$sound2 phssound "environment/woodcreak/smcreak2.wav"
+waitForSound "environment/woodcreak/smcreak2.wav"
+
+goto loop_sound2
+
+end // creak_sound2
+
+
+// creak_sound3:
+/////////////////////////////////////////////////////////////////////////////
+creak_sound3:
+$sound3 notsolid trigger
+
+loop_sound3:
+$sound3 ontouch sound3_playsound
+pause
+
+sound3_playsound:
+$sound3 notouch
+
+$sound3 phssound "environment/woodcreak/smcreak3.wav"
+waitForSound "environment/woodcreak/smcreak3.wav"
+
+goto loop_sound3
+
+end // creak_sound3
+
+
+// creak_sound4:
+/////////////////////////////////////////////////////////////////////////////
+creak_sound4:
+$sound4 notsolid trigger
+
+loop_sound4:
+$sound4 ontouch sound4_playsound
+pause
+
+sound4_playsound:
+$sound4 notouch
+
+$sound4 phssound "environment/woodcreak/smcreak2.wav"
+waitForSound "environment/woodcreak/smcreak2.wav"
+
+goto loop_sound4
+
+end // creak_sound4
+
+
+// creak_sound5:
+/////////////////////////////////////////////////////////////////////////////
+creak_sound5:
+$sound5 notsolid trigger
+
+loop_sound5:
+$sound5 ontouch sound5_playsound
+pause
+
+sound5_playsound:
+$sound5 notouch
+
+$sound5 phssound "environment/woodcreak/smcreak1.wav"
+waitForSound "environment/woodcreak/smcreak1.wav"
+
+goto loop_sound5
+
+end // creak_sound5
+
+
+// creak_sound6:
+/////////////////////////////////////////////////////////////////////////////
+creak_sound6:
+$sound6 notsolid trigger
+
+loop_sound6:
+$sound6 ontouch sound6_playsound
+pause
+
+sound6_playsound:
+$sound6 notouch
+
+$sound6 phssound "environment/woodcreak/smcreak3.wav"
+waitForSound "environment/woodcreak/smcreak3.wav"
+
+goto loop_sound6
+
+end // creak_sound6
+
+
+// creak_sound7:
+/////////////////////////////////////////////////////////////////////////////
+creak_sound7:
+$sound7 notsolid trigger
+
+loop_sound7:
+$sound7 ontouch sound7_playsound
+pause
+
+sound7_playsound:
+$sound7 notouch
+
+$sound7 phssound "environment/woodcreak/smcreak1.wav"
+waitForSound "environment/woodcreak/smcreak1.wav"
+
+goto loop_sound7
+
+end // creak_sound7
+
+
+// creak_sound8:
+/////////////////////////////////////////////////////////////////////////////
+creak_sound8:
+local.touched_once = 0
+$sound8 notsolid trigger
+
+loop_sound8:
+$sound8 ontouch sound8_playsound
+pause
+
+sound8_playsound:
+$sound8 notouch
+
+local.touched_once ifequal 0 music suspense normal
+local.touched_once = 1
+
+$sound8 phssound "environment/woodcreak/smcreak2.wav"
+waitForSound "environment/woodcreak/smcreak2.wav"
+
+goto loop_sound8
+
+end // creak_sound8
+
+
+// creak_sound9:
+/////////////////////////////////////////////////////////////////////////////
+creak_sound9:
+$sound9 notsolid trigger
+
+loop_sound9:
+$sound9 ontouch sound9_playsound
+pause
+
+sound9_playsound:
+$sound9 notouch
+
+$sound9 phssound "environment/woodcreak/smcreak3.wav"
+waitForSound "environment/woodcreak/smcreak3.wav"
+
+goto loop_sound9
+
+end // creak_sound9
+
+
+// creak_sound10:
+/////////////////////////////////////////////////////////////////////////////
+creak_sound10:
+$sound10 notsolid trigger
+
+loop_sound10:
+$sound10 ontouch sound10_playsound
+pause
+
+sound10_playsound:
+$sound10 notouch
+
+$sound10 phssound "environment/woodcreak/smcreak1.wav"
+waitForSound "environment/woodcreak/smcreak1.wav"
+
+goto loop_sound10
+
+end // creak_sound10
+
+
+// creak_sound11:
+/////////////////////////////////////////////////////////////////////////////
+creak_sound11:
+$sound11 notsolid trigger
+
+loop_sound11:
+$sound11 ontouch sound11_playsound
+pause
+
+sound11_playsound:
+$sound11 notouch
+
+$sound11 phssound "environment/woodcreak/smcreak2.wav"
+waitForSound "environment/woodcreak/smcreak2.wav"
+
+goto loop_sound11
+
+end // creak_sound11
+
+
+// creak_sound12:
+/////////////////////////////////////////////////////////////////////////////
+creak_sound12:
+$sound12 notsolid trigger
+
+loop_sound12:
+$sound12 ontouch sound12_playsound
+pause
+
+sound12_playsound:
+$sound12 notouch
+
+$sound12 phssound "environment/woodcreak/smcreak3.wav"
+waitForSound "environment/woodcreak/smcreak3.wav"
+
+goto loop_sound12
+
+end // creak_sound12
+
+
+// building2_spawn1_thread:
+/////////////////////////////////////////////////////////////////////////////
+building2_spawn1_thread:
+
+wait game.FRAMETIME
+
+$building2_thug06 thread stand_ground_thread
+$building2_thug07 thread stand_ground_thread
+
+end // building2_spawn1_thread
+
+
+// moneybag_thread:
+/////////////////////////////////////////////////////////////////////////////
+moneybag_thread:
+local.BagsNeeded = 14
+
+level.Skill ifequal 1 local.BagsNeeded -= 3
+level.Skill ifequal 0 local.BagsNeeded -= 6
+
+level.MoneybagsCollected += 1
+
+level.MoneybagsCollected ifequal local.BagsNeeded thread stolen_money_recovered_misscomp_thread
+
+end // moneybag_thread
+
+
+//===========================================================================
+//===========================================================================
+// CHARACTERS
+//===========================================================================
+//===========================================================================
+// stand_ground_thread:
+/////////////////////////////////////////////////////////////////////////////
+stand_ground_thread:
+local.self ignoresounds
+
+local.attackmode = 1
+
+end // stand_ground_thread
+
+
+// init_character_items_thread:
+/////////////////////////////////////////////////////////////////////////////
+init_character_items_thread:
+
+// Shotgun dudes
+level.Skill iflessequal 1 $building1_thug10 item Health 50
+level.Skill ifgreaterequal 2 $building1_thug10 item Health 20
+level.Skill ifequal 0 $mancinispotted1_thug01 item Health 50
+level.Skill ifnotequal 0 $mancinispotted1_thug01 item Health 20
+level.Skill ifequal 0 $mancinispotted2_thug01 item Health 50
+level.Skill ifenotqual 0 $mancinispotted2_thug01 item Health 20
+
+$building3_thug02 item Health 50
+
+// Other guys
+$shaft_thug02 item Health 20
+$shaft_thug04 item Health 20
+$building2_thug03 item Health 20
+$building2_thug05 item Health 20
+
+$bum03 item Coin 1
+
+end // init_character_items_thread
+
+
+// shaft_thug01_thread:
+/////////////////////////////////////////////////////////////////////////////
+shaft_thug01_thread:
+
+level.Skill ifequal 0 local.self item Health 20
+
+local.attackmode = 0
+
+end // shaft_thug01_thread
+
+
+// shaft_thug02_thread:
+/////////////////////////////////////////////////////////////////////////////
+shaft_thug02_thread:
+
+local.attackmode = 0
+
+end // shaft_thug02_thread
+
+
+// shaft_thug03_thread:
+/////////////////////////////////////////////////////////////////////////////
+shaft_thug03_thread:
+
+local.attackmode = 0
+
+end // shaft_thug03_thread
+
+
+// shaft_thug04_thread:
+/////////////////////////////////////////////////////////////////////////////
+shaft_thug04_thread:
+
+local.self ignoresounds
+local.self definestate activate shaft_thug04_activate
+pause
+
+shaft_thug04_activate:
+local.self ignore activate
+
+local.self respondtosounds
+local.attackmode = 2
+local.self attackplayer
+
+end // shaft_thug04_thread
+
+
+// shaft_thug05_thread:
+/////////////////////////////////////////////////////////////////////////////
+shaft_thug05_thread:
+
+local.self ignoreall
+local.self definestate activate shaft_thug05_activate
+pause
+
+shaft_thug05_activate:
+local.self ignore activate
+
+wait 2
+
+local.self attack $powerjunc_target
+waitFor local.self
+
+local.self respondtoall
+local.attackmode = 2
+local.self attackplayer
+
+end // shaft_thug05_thread
+
+
+// shaft_thug06_thread:
+/////////////////////////////////////////////////////////////////////////////
+shaft_thug06_thread:
+
+local.self ignoreall
+local.self definestate activate shaft_thug06_activate
+pause
+
+shaft_thug06_activate:
+local.self ignore activate
+
+local.self respondtoall
+local.self attackplayer
+
+end // shaft_thug06_thread
+
+
+// building0_thug01_thread:
+/////////////////////////////////////////////////////////////////////////////
+building0_thug01_thread:
+
+local.attackmode = 2
+local.self attackplayer
+
+end // building0_thug01_thread
+
+
+// gasmain_bum_thread:
+/////////////////////////////////////////////////////////////////////////////
+gasmain_bum_thread:
+
+local.self ignoreall
+local.self anim twitch1
+local.self respondto pain
+local.self definestate use gasmain_bum_use
+pause
+
+gasmain_bum_use:
+local.self ignore use
+local.self respondto pain
+
+level.bum_message1 ifequal 0 thread blade_getout_dialog_thread
+level.bum_message1 ifequal 0 level.bum_message1 = 1
+
+local.self runto $gasmain_bum_node1
+waitFor local.self
+
+local.self turnto 180
+waitFor local.self
+
+local.self ignoreall
+
+local.self definestate use gasmain_bum_use2
+//note from Rohit - the twitch animation seems to reset the use thread once it finishes
+//local.self anim twitch1
+waitFor local.self
+
+end // gasmain_bum_thread
+
+gasmain_bum_use2:
+local.self ignore use
+parm.bum string "$gasmain_bum"
+thread dialog::bum_staying
+waitForThread parm.previousthread
+end
+
+// bum01_thread:
+/////////////////////////////////////////////////////////////////////////////
+bum01_thread:
+
+local.self anim warm1
+
+local.self ignoreall
+local.self respondto pain
+local.self definestate use bum01_use
+pause
+
+bum01_use:
+local.self ignore use
+
+parm.bum string "$bum01"
+thread bum_leave_alone_dialog_thread
+wait 4
+end // bum01_thread
+
+
+// bum02_thread:
+/////////////////////////////////////////////////////////////////////////////
+bum02_thread:
+
+local.self ignoreall
+local.self respondto pain
+local.self anim sleep1
+
+end // bum02_thread
+
+
+// bum03_thread:
+/////////////////////////////////////////////////////////////////////////////
+bum03_thread:
+
+local.self anim warm1
+
+local.self ignoreall
+local.self respondto pain
+local.self definestate use bum03_use
+pause
+
+bum03_use:
+level.bum03_uses ifequal 1 goto bum03_use2
+level.bum03_uses = 1
+
+local.self ignore use
+parm.bum string "$bum03"
+thread bum_directions_dialog_thread
+waitForThread parm.previousthread
+wait 3
+end
+
+bum03_use2:
+local.self ignore use
+parm.bum string "$bum03"
+thread bum_leave_alone_dialog_thread
+waitForThread parm.previousthread
+wait 3
+end 
+
+// bum03_thread
+
+
+// building1_thug01_thread:
+/////////////////////////////////////////////////////////////////////////////
+building1_thug01_thread:
+
+local.self definestate killed building1_thug01_killed
+local.attackmode = 2
+pause
+
+building1_thug01_killed:
+local.self ignore killed
+
+level.Skill ifless 1 goto building1_thug01_done
+
+trigger $spawn_building1_thug03a
+wait game.FRAMETIME
+$building1_thug03 thread building1_thug03_thread
+
+building1_thug01_done:
+
+end // building1_thug01_thread
+
+
+// building1_thug02_thread:
+/////////////////////////////////////////////////////////////////////////////
+building1_thug02_thread:
+
+local.self definestate killed building1_thug02_killed
+local.attackmode = 2
+pause
+
+building1_thug02_killed:
+local.self ignore killed
+
+level.Skill ifless 2 goto building1_thug02_done
+
+trigger $spawn_building1_thug04a
+wait game.FRAMETIME
+$building1_thug04 thread building1_thug04_thread
+
+building1_thug02_done:
+
+end // building1_thug02_thread
+
+
+// building1_thug03_thread:
+/////////////////////////////////////////////////////////////////////////////
+building1_thug03_thread:
+
+local.attackmode = 2
+local.self attackplayer
+
+end // building1_thug03_thread
+
+
+// building1_thug04_thread:
+/////////////////////////////////////////////////////////////////////////////
+building1_thug04_thread:
+
+local.attackmode = 2
+local.self attackplayer
+
+end // building1_thug04_thread
+
+
+// building1_thug10_thread:
+/////////////////////////////////////////////////////////////////////////////
+building1_thug10_thread:
+
+local.self ignoresounds
+local.self definestate activate building1_thug10_activate
+pause
+
+building1_thug10_activate:
+local.self ignore activate
+
+local.self respondtosounds
+local.attackmode = 2
+local.self attackplayer
+
+end // building1_thug10_thread
+
+
+// building1_thug11_thread:
+/////////////////////////////////////////////////////////////////////////////
+building1_thug11_thread:
+
+local.self ignoresounds
+local.self definestate activate building1_thug11_activate
+pause
+
+building1_thug11_activate:
+local.self ignore activate
+
+local.self respondtosounds
+local.attackmode = 2
+local.self attackplayer
+
+end // building1_thug11_thread
+
+// building1_thug12_thread:
+/////////////////////////////////////////////////////////////////////////////
+building1_thug12_thread:
+
+local.self ignoresounds
+local.self definestate activate building1_thug12_activate
+pause
+
+building1_thug12_activate:
+local.self ignore activate
+
+local.self respondtosounds
+local.attackmode = 2
+local.self attackplayer
+
+end // building1_thug12_thread
+
+// trailer_thug01_thread:
+/////////////////////////////////////////////////////////////////////////////
+trailer_thug01_thread:
+
+local.self ignoresounds
+local.self definestate activate trailer_thug01_activate
+pause
+
+trailer_thug01_activate:
+local.self ignore activate
+
+local.attackmode = 2
+local.self attackplayer
+
+end // trailer_thug01_thread
+
+
+// trailer_thug02_thread:
+/////////////////////////////////////////////////////////////////////////////
+trailer_thug02_thread:
+
+local.self ignoresounds
+local.self definestate activate trailer_thug02_activate
+pause
+
+trailer_thug02_activate:
+local.self ignore activate
+
+local.attackmode = 2
+local.self attackplayer
+
+end // trailer_thug02_thread
+
+
+// mancinispotted1_thug01_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancinispotted1_thug01_thread:
+
+local.self ignoresounds
+local.self definestate activate mancinispotted1_thug01_activate
+local.self definestate killed mancinispotted1_thug01_killed
+pause
+
+mancinispotted1_thug01_activate:
+local.self ignore activate
+
+local.self runto $cavein1_thug01_node1
+waitFor local.self
+
+local.self runto $cavein1_thug01_node2
+waitFor local.self
+
+local.attackmode = 1
+
+end // mancinispotted1_thug01_thread
+
+mancinispotted1_thug01_killed:
+local.self ignore killed
+
+trigger $spawn_mancinispotted1_thug02a
+wait game.FRAMETIME
+$mancinispotted1_thug02 thread mancinispotted1_thug02_thread
+
+end // mancinispotted1_thug01_thread
+
+
+// mancinispotted1_thug02_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancinispotted1_thug02_thread:
+
+local.self ignoreall
+local.self definestate activate mancinispotted1_thug02_activate
+pause
+
+mancinispotted1_thug02_activate:
+local.self ignore activate
+
+local.self respondtoall
+local.self attackplayer
+
+end // mancinispotted1_thug02_thread
+
+
+// mancinispotted1_hostage_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancinispotted1_hostage_thread:
+
+// Flee no matter what
+local.self ignoreall
+local.self respondto pain
+local.self definestate activate mancinispotted1_hostage_activate
+local.self definestate killed mancinispotted1_hostage_killed
+pause
+
+mancinispotted1_hostage_activate:
+local.self ignore activate
+
+local.self playsound misc/civfem/helpmeee.wav
+
+
+local.self runto $mancinispotted1_escapenode
+waitFor local.self
+
+local.self remove
+pause
+
+mancinispotted1_hostage_killed:
+local.self ignoreall
+
+$mancinispotted2_hostage remove
+game.Abandon_HostageKilled = 1
+
+end // mancinispotted1_hostage_thread
+
+
+// mancinispotted1_mancini_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancinispotted1_mancini_thread:
+local.self nodamage
+local.self notsolid
+
+// Flee no matter what
+local.self ignoreall
+local.self definestate activate mancinispotted1_mancini_activate
+pause
+
+mancinispotted1_mancini_activate:
+local.self ignore activate
+
+thread mancinispotted1_mancini_autoremove_thread
+
+local.self runto $mancinispotted1_escapenode
+waitFor local.self
+
+local.self remove
+
+end // mancinispotted1_mancini_thread
+
+
+// mancinispotted1_mancini_autoremove_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancinispotted1_mancini_autoremove_thread:
+
+wait 10
+$mancinispotted1_mancini remove
+
+end // mancinispotted1_mancini_autoremove_thread
+
+
+// mancinispotted2_thug01_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancinispotted2_thug01_thread:
+
+local.self ignoreall
+local.self definestate activate mancinispotted2_thug01_activate
+pause
+
+mancinispotted2_thug01_activate:
+local.self ignore activate
+
+local.self respondtoall
+local.attackmode = 2
+local.self attackplayer
+
+end // mancinispotted2_thug01_thread
+
+
+// mancinispotted2_hostage_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancinispotted2_hostage_thread:
+
+local.self anim crouch_idle
+
+local.self ignoreall
+local.self definestate activate mancinispotted2_hostage_activate
+local.self definestate killed mancinispotted2_hostage_killed
+pause
+
+mancinispotted2_hostage_activate:
+local.self ignore activate
+
+local.self playsound misc/civfem/scream.wav
+
+local.self runto $mancinispotted2_escapenode
+waitFor local.self
+
+local.self remove
+
+end // mancinispotted2_hostage_thread
+
+mancinispotted2_hostage_killed:
+local.self ignore killed
+
+game.Abandon_HostageKilled = 1
+
+end // mancinispotted2_hostage_thread
+
+
+// mancinispotted2_mancini_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancinispotted2_mancini_thread:
+local.self nodamage
+
+local.self ignoreall
+local.self definestate activate mancinispotted2_mancini_activate
+pause
+
+mancinispotted2_mancini_activate:
+local.self ignore activate
+
+local.self runto $mancinispotted2_escapenode
+waitFor local.self
+
+local.self remove
+
+end // mancinispotted2_mancini_thread
+
+
+//===========================================================================
+//===========================================================================
+// DIALOGS
+//===========================================================================
+//===========================================================================
+// thug_kill_lights_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+thug_kill_lights_dialog_thread:
+
+parm.thug string "$shaft_thug05"
+thread dialog::thug_its_blade
+waitForThread parm.previousthread
+wait 2
+
+parm.thug string "$shaft_thug04"
+thread dialog::thug_kill_lights
+waitForThread parm.previousthread
+
+end // thug_kill_lights_dialog_thread
+
+
+// mancini_present_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancini_present_dialog_thread:
+
+thread dialog::mancini_bombs_blade
+waitForThread parm.previousthread
+
+thread dialog::blade_says_shit
+waitForThread parm.previousthread
+
+end // mancini_present_dialog_thread
+
+
+// blade_imscrewed_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+blade_imscrewed_dialog_thread:
+
+level.BombEscaped ifnotequal 0 goto blade_imscrewed_dialog_done
+
+thread dialog::blade_starts_panic
+waitForThread parm.previousthread
+
+blade_imscrewed_dialog_done:
+
+end // blade_imscrewed_dialog_thread
+
+
+// jc_get_out_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+jc_get_out_dialog_thread:
+
+level.BombEscaped ifnotequal 0 goto jc_get_out_done
+
+thread dialog::jc_get_out
+waitForThread parm.previousthread
+
+jc_get_out_done:
+
+end // jc_get_out_dialog_thread
+
+
+// blade_lives_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+blade_lives_dialog_thread:
+
+level.BombEscaped = 1
+
+music success normal
+
+thread dialog::blade_survives
+waitForThread parm.previousthread
+
+end // blade_lives_dialog_thread
+
+
+// jc_find_money_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+jc_find_money_dialog_thread:
+
+level.dialog_cash_found ifnotequal 0 goto jc_find_money_done
+
+thread dialog::jc_find_money
+waitForThread parm.previousthread
+
+jc_find_money_done:
+
+end // jc_find_money_dialog_thread
+
+
+// jc_fcb_happy_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+jc_fcb_happy_dialog_thread:
+
+level.dialog_cash_found = 1
+
+thread dialog::jc_fcb_happy
+waitForThread parm.previousthread
+
+end // jc_fcb_happy_dialog_thread
+
+
+/////////////////////////////////////////////////////////////////////////////
+mancini_survived_dialog_thread1:
+parm.mancini string "$mancinispotted1_mancini"
+thread dialog::mancini_how_survive
+waitForThread parm.previousthread
+end
+
+mancini_survived_dialog_thread2:
+parm.mancini string "$mancinispotted1_mancini"
+thread dialog::mancini_kill_him
+waitForThread parm.previousthread
+end
+
+// thug_yougotit_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+thug_yougotit_dialog_thread:
+
+parm.thug string "$mancinispotted1_thug01"
+thread dialog::thug_you_got_it
+waitForThread parm.previousthread
+
+end // thug_yougotit_dialog_thread
+
+
+// blade_smell_gas_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+blade_smell_gas_dialog_thread:
+
+thread dialog::blade_smell_gas
+waitForThread parm.previousthread
+
+end // blade_smell_gas_dialog_thread
+
+
+// blade_getout_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+blade_getout_dialog_thread:
+
+thread dialog::blade_get_out
+waitForThread parm.previousthread
+
+end // blade_getout_dialog_thread
+
+
+// thugs_stealing_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+thugs_stealing_dialog_thread:
+
+parm.thug string "$trailer_thug02"
+thread dialog::thug_take_myself
+waitForThread parm.previousthread
+
+trigger $trailer_thug01
+trigger $trailer_thug02
+
+end // thugs_stealing_dialog_thread
+
+
+// mancini_get_going_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+mancini_get_going_dialog_thread:
+
+parm.mancini string "$mancinispotted2_mancini"
+thread dialog::mancini_get_going
+waitForThread parm.previousthread
+
+end // mancini_get_going_dialog_thread
+
+
+// jc_getting_away_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+jc_getting_away_dialog_thread:
+
+thread dialog::jc_hes_getting_away
+waitForThread parm.previousthread
+
+end // jc_getting_away_dialog_thread
+
+
+// bum_leave_alone_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+bum_leave_alone_dialog_thread:
+
+thread dialog::bum_leave_alone
+waitForThread parm.previousthread
+
+end // bum_leave_alone_dialog_thread
+
+
+// bum_directions_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+bum_directions_dialog_thread:
+
+parm.bum string "$bum03"
+thread dialog::bum_which_way
+waitForThread parm.previousthread
+wait 2
+
+parm.bum string "$bum03"
+thread dialog::bum_thata_way
+waitForThread parm.previousthread
+
+end // bum_directions_dialog_thread
+
+
+// jc_watch_step_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+jc_watch_step_dialog_thread:
+
+thread dialog::jc_watch_step
+waitForThread parm.previousthread
+
+end // jc_watch_step_dialog_thread
+
+
+// blade_crazy_place_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+blade_crazy_place_dialog_thread:
+
+thread dialog::blade_crazy_place
+waitForThread parm.previousthread
+
+end // blade_crazy_place_dialog_thread
+
+
+//===========================================================================
+//===========================================================================
+// MISSION COMPUTER
+//===========================================================================
+//===========================================================================
+// abandon_start_misscomp_thread:
+/////////////////////////////////////////////////////////////////////////////
+abandon_start_misscomp_thread:
+
+thread AbandonMissionComputer
+thread global/universal_script.scr::StatusUpdated
+
+end // abandon_start_misscomp_thread
+
+
+// stolen_money_recovered_misscomp_thread:
+/////////////////////////////////////////////////////////////////////////////
+stolen_money_recovered_misscomp_thread:
+
+level.SObjective1 = 1 // Recover Stolen Money Bags
+
+music success normal
+
+thread AbandonMissionComputer
+thread global/universal_script.scr::SObjectiveComplete
+
+end // stolen_money_recovered_misscomp_thread
+
+
+// AbandonMissionComputer:
+/////////////////////////////////////////////////////////////////////////////
+AbandonMissionComputer:
+thread global/universal_script.scr::NewMisConSetup
+
+parm.status = level.PObjective1
+parm.title string "\"m_pursue_mancini\""
+thread global/universal_script.scr::NewMisConPrimary
+
+parm.status = level.PObjective2
+parm.title string "\"m_eliminate_hostile_forces_1\""
+thread global/universal_script.scr::NewMisConPrimary
+
+parm.status = level.SObjective1
+parm.title string "\"m_recover_stolen_money_1_1\""
+thread global/universal_script.scr::NewMisConSecondary
+
+end // AbandonMissionComputer
+
+
+//---------------------------------------------------------------------------
+// Finished Level Update
+//---------------------------------------------------------------------------
+LevelComplete:
+
+// Clears any items in the player's inventory that need to be removed
+thread global/universal_script.scr::ClearInventory
+
+// P1 & 2 are the only objects that need to be set, anything else would be a bug
+level.PObjective1 = 1 // Pursue Mancini
+level.PObjective2 = 1 // Eliminate Hostile Forces
+
+// Fail the incomplete secondary objectives
+level.SObjective1 ifequal 0 level.SObjective1 = 2 // Recover Stolen Money Bags
+
+thread AbandonMissionComputer
+
+// Send over the information that Scott needs to load the proper intermission
+loadintermission "layouts/im_layouts/abandon_to_csite_cinema"
+thread global/universal_script.scr::CopyNewMisConToIntermission
+
+end
