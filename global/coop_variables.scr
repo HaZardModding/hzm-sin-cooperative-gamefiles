@@ -1,7 +1,10 @@
 //Contains variables for coop
 //Chrissstrahl - 2026.10.22
 
-main:	
+main:
+	level.coopDebug = 1
+	level.coopScreenprintWarningActive = 0
+	
 	level.maxClientsCvar getcvar "maxclients"
 	level.maxentities getcvar "maxentities"
 	local.temp getcvar "coop"
@@ -16,18 +19,14 @@ main:
 	//very likely have no effect on other users
 	level.devName string "ChristianStrahl"
 	
-	//make this accesible we might need to change that on certain levels
+	//make this accesible, because we might need to change that on certain levels
 	level.coopSpectatorCheckModel string "Blueprints"
-	level.coopSpectatorIndex = 0
 	
 	//set to 1 will make players always spawn at the predefined spawnlocations
 	level.coopDisableSpawnWarper = 0
 	
 	//set to 1 will make players drop their inventory when they die
 	level.coopEnablePlayerDrop = 1
-	
-	level.coopDebug = 1
-	level.coopScreenprintWarningActive = 0
 	
 	level.coopCamera string ""
 	level.coopCinematic = 0
@@ -78,5 +77,7 @@ main:
 	
 	level.coopReplaceFreezeplayer = 0
 	level.coopReplaceFreezeplayer = 0
+	
+	level.coopNoRespawnZoneIndex = 0
 end
 
