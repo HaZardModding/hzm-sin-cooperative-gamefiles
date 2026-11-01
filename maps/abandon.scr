@@ -2797,14 +2797,37 @@ end
 
 //[coop] chrissstrahl - spawn a trigger we can actually control, as long as the next level is not completed
 coop_levelSetup:
-	//removeclass "triggerchangelevel"
-	wait game.FRAMETIME
-	//spawn trigger_changelevel model "*242" origin "-2688 512 224" "map" "bank" targetname "coopLvlEnd" //"abandon$start1"
-	
-	//addNoRespawnZone
-	//354 -632 371 //fire
-	//354 -632 371 //fireW
-	//354 -632 371 //fire
+	waitforplayer
+	wait 5
+	//Spawn no-respawn zones, if the player dies there they will be moved to a predefines spawn location
+	//fire that kills player - gas leak
+	parm.addNoRespawnZoneBoundingbox string "40 40 60"
+	parm.addNoRespawnZoneOrigin string "340 -634 360"
+	thread coopMain::addNoRespawnZone
+	//fire that kills player - homeless secret cellar
+	parm.addNoRespawnZoneBoundingbox string "30 30 60"
+	parm.addNoRespawnZoneOrigin string "1323 -732 206"
+	thread coopMain::addNoRespawnZone
+	//fire that kills player - homeless secret burning barrel
+	parm.addNoRespawnZoneBoundingbox string "10 10 40"
+	parm.addNoRespawnZoneOrigin string "2340 -82 380"
+	thread coopMain::addNoRespawnZone
+	//fire that kills player - fire on a pipe in the area where the player climbs up to escape the bomb
+	parm.addNoRespawnZoneBoundingbox string "10 10 20"
+	parm.addNoRespawnZoneOrigin string "4 -47 250"
+	thread coopMain::addNoRespawnZone
+	//falling rock that kills or entraps player - bomb sequence
+	parm.addNoRespawnZoneBoundingbox string "100 100 100"
+	parm.addNoRespawnZoneOrigin string "-372 254 154"
+	thread coopMain::addNoRespawnZone
+	//bomb explosion room - bomb sequence
+	parm.addNoRespawnZoneBoundingbox string "220 220 50"
+	parm.addNoRespawnZoneOrigin string "30 300 160"
+	thread coopMain::addNoRespawnZone
+	//collapsing wood construction
+	parm.addNoRespawnZoneBoundingbox string "115 225 160"
+	parm.addNoRespawnZoneOrigin string "1260 100 390"
+	thread coopMain::addNoRespawnZone
 end
 
 //[coop] chrissstrahl - executed each time a player has spawned
