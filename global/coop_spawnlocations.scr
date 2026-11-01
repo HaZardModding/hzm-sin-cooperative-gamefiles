@@ -88,3 +88,37 @@ bank_alt:
 	level.coopPlayer4SpawnLocation string "-3502 1844 0"
 end
 
+
+abandon:
+	//used to spawn a trigger detecting players spawning (entering the server)
+	//move so they are no longer on the level where players can accidently run into them
+	$start1 origin "-2808 -404 0 320" //move info player start spawnlocation out of the way
+	level.infoPlayerStartOrigin1 string "-2808 -404 0 320"
+	level.infoPlayerStartPushDirection1 string "1"
+	
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 11 0"
+	level.coopPlayer2SpawnAngles string "0 351 0"
+	level.coopPlayer3SpawnAngles string "0 345 0"
+	level.coopPlayer4SpawnAngles string "0 8 0"
+	
+	//spawnspots
+	level.coopPlayer1SpawnLocation string "-2802 -483 210"
+	level.coopPlayer2SpawnLocation string "-2708 -390 253"
+	level.coopPlayer3SpawnLocation string "-2531 -360 174"
+	level.coopPlayer4SpawnLocation string "-2532 -488 174"
+end
+
+abandon_bomb:	
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 347 0"
+	level.coopPlayer2SpawnAngles string "0 355 0"
+	level.coopPlayer3SpawnAngles string "0 355 0"
+	level.coopPlayer4SpawnAngles string "0 321 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "-456 458 134"
+	level.coopPlayer2SpawnLocation string "-460 431 134"
+	level.coopPlayer3SpawnLocation string "-466 362 134"
+	level.coopPlayer4SpawnLocation string "-341 493 134"
+end
