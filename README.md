@@ -44,6 +44,8 @@ We are primarily looking for **scripters and playtesters** to help adapt additio
    `+set game coop +set coop 1`
 4. Launch SiN Reloaded, open the console, and enter:
    `coop 1;map bank`
+5. To see the Coop console messages open the console, and enter:
+`g_developer 128`
 
 # Legal Notice
 This is an independent, non-commercial fan project and is not affiliated with, endorsed by, or sponsored by Nightdive Studios, Atari, Slipgate Ironworks, 3D Realms, Ritual Entertainment, or any other companies involved in the development, publishing, marketing, or licensing of SiN Reloaded.
