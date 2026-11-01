@@ -5609,6 +5609,13 @@ coopInfoPlayerStartActivated:
 	thread coopMain::playerTargetnames
 end
 
+//[coop] chrissstrahl - spawn a trigger we can actually control, as long as the next level is not completed
+coop_levelSetup:
+	removeclass "triggerchangelevel"
+	wait game.FRAMETIME
+	spawn trigger_changelevel model "*242" origin "-2688 512 224" "map" "bank$start1" targetname "coopLvlEnd" //"abandon$start1"
+end
+
 //[coop] chrissstrahl - executed each time a player has spawned
 //optional function
 coop_justSpawned:
