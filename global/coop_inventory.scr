@@ -1,95 +1,100 @@
 //Contains variables for coop
 //Chrissstrahl - 2026.10.22
 chrissstrahl:
+	local.player string parm.player
 	//armor
-	parm.player give RiotHelmet 50
-	parm.player give FlakJacket 50
-	parm.player give FlakPants 50
+	local.player give RiotHelmet 50
+	local.player give FlakJacket 50
+	local.player give FlakPants 50
 	//gun
-	parm.player give silencer 1
-	parm.player give Magnum 2
-	parm.player give Shotgun
-	parm.player give AssaultRifle	
-	parm.player give Chaingun
-	parm.player give PulseRifle
-	parm.player give QuantumDestabilizer
-	parm.player give SpearGun
-	parm.player give SpiderMines 5000
-	parm.player give PlasmaBow
-	parm.player give Flamethrower
-	parm.player give ConcussionGun
-	parm.player give IP36
-	parm.player give StingerPack
+	local.player give silencer 1
+	local.player give Magnum 2
+	local.player give Shotgun
+	local.player give AssaultRifle	
+	local.player give Chaingun
+	local.player give PulseRifle
+	local.player give QuantumDestabilizer
+	local.player give SpearGun
+	local.player give SpiderMines 5000
+	local.player give PlasmaBow
+	local.player give Flamethrower
+	local.player give ConcussionGun
+	local.player give IP36
+	local.player give StingerPack
 	//parm.player give SniperRifle		
 	//items
-	parm.player give flashlight 999
-	parm.player give GlowStick 1000
-	parm.player give coin 999
+	local.player give flashlight 999
+	local.player give GlowStick 1000
+	local.player give coin 999
 	//bullets
-	parm.player give Spears 5000
-	parm.player give BulletPulse 5000
-	parm.player give Bullet10mm 1000
-	parm.player give Bullet50mm 1000
-	parm.player give BulletPulse 1000
+	local.player give Spears 5000
+	local.player give BulletPulse 5000
+	local.player give Bullet10mm 1000
+	local.player give Bullet50mm 1000
+	local.player give BulletPulse 1000
 	//parm.player give BulletSniper 1000
-	parm.player give ShotgunClip 5000
-	parm.player give Rockets 5000
-	parm.player give IlludiumModules 5000
+	local.player give ShotgunClip 5000
+	local.player give Rockets 5000
+	local.player give IlludiumModules 5000
 	
-	parm.player give Rockets 1000
-	parm.player give Spears 1000
-	parm.player give ShotgunClip 1000
-	parm.player give SpiderMines 1000
-	parm.player give FlakJacket 200
-	parm.player give FlakPants 200
-	parm.player give RiotHelmet 200
-	parm.player give BluePrints 1000
-	parm.player give ComLink 1000
-	parm.player give MoneyBag 1000
-	parm.player give PassCode 1000
-	parm.player give Chemsuit 1000
+	local.player give Rockets 1000
+	local.player give Spears 1000
+	local.player give ShotgunClip 1000
+	local.player give SpiderMines 1000
+	local.player give FlakJacket 200
+	local.player give FlakPants 200
+	local.player give RiotHelmet 200
+	local.player give BluePrints 1000
+	local.player give ComLink 1000
+	local.player give MoneyBag 1000
+	local.player give PassCode 1000
+	local.player give Chemsuit 1000
 end
 
 //contains weapons for part 2 of test level
 chrissstrahl_part2:
-	parm.player give QuantumDestabilizer
-	parm.player give SpearGun
-	parm.player give SpiderMines 5000
-	parm.player give PlasmaBow
-	parm.player give Flamethrower
+	local.player string parm.player
+	local.player give QuantumDestabilizer
+	local.player give SpearGun
+	local.player give SpiderMines 5000
+	local.player give PlasmaBow
+	local.player give Flamethrower
 end
 
 //bank
 bank:
-	parm.player give RiotHelmet 50
-	parm.player give FlakJacket 50
-	parm.player give FlakPants 50
+	local.player string parm.player
+	local.player give RiotHelmet 50
+	local.player give FlakJacket 50
+	local.player give FlakPants 50
 	//Chrissstrahl - added dual magnum and fixed next/prev-weapon selection not working upon map restart
-	parm.player give Magnum 2 //DUAL
-	parm.player use Magnum //this fixes player not spawning with a weapon in hand
+	local.player give Magnum 1
+	local.player use Magnum //this fixes player not spawning with a weapon in hand
 end
 
 //bank alternative
 bank_alt:
-	parm.player give RiotHelmet 100
-	parm.player give FlakJacket 100
-	parm.player give FlakPants 100
+	local.player string parm.player
+	local.player give RiotHelmet 100
+	local.player give FlakJacket 100
+	local.player give FlakPants 100
 	//Chrissstrahl - added dual magnum and fixed next/prev-weapon selection not working upon map restart
-	parm.player give Magnum 2 //DUAL
-	parm.player use Magnum //this fixes player not spawning with a weapon in hand
+	local.player give DualMagnum 1 //dual
+	local.player use DualMagnum //this fixes player not spawning with a weapon in hand
 end
 
 abandon:
-	parm.player give Shotgun
-	parm.player give AssaultRifle
-	parm.player give Bullet10mm 100
-	parm.player give Bullet50mm 100
-	parm.player give ShotgunClip 50
+	local.player string parm.player
+	//local.player give Shotgun
+	local.player give AssaultRifle
+	local.player give Bullet10mm 100
+	local.player give Bullet50mm 100
+	local.player give ShotgunClip 50
 
-	parm.player give RiotHelmet 30
-	parm.player give FlakJacket 30
-	parm.player give FlakPants 30
-	//Chrissstrahl - added dual magnum and fixed next/prev-weapon selection not working upon map restart
-	parm.player give Magnum 2
-	parm.player use Magnum
+	local.player give RiotHelmet 30
+	local.player give FlakJacket 30
+	local.player give FlakPants 30
+	//Chrissstrahl - added dual magnum and fixed next/prev-weapon (with use) selection not working upon map restart
+	local.player give DualMagnum 1
+	local.player use DualMagnum
 end
