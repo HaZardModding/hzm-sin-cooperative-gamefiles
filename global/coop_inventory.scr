@@ -64,6 +64,9 @@ bank:
 	parm.player give RiotHelmet 50
 	parm.player give FlakJacket 50
 	parm.player give FlakPants 50
+	//Chrissstrahl - added dual magnum and fixed next/prev-weapon selection not working upon map restart
+	parm.player give Magnum 2 //DUAL
+	parm.player use Magnum //this fixes player not spawning with a weapon in hand
 end
 
 //bank alternative
@@ -71,5 +74,8 @@ bank_alt:
 	parm.player give RiotHelmet 100
 	parm.player give FlakJacket 100
 	parm.player give FlakPants 100
+	//Chrissstrahl - added dual magnum and fixed next/prev-weapon selection not working upon map restart
+	parm.player give Magnum 2 //DUAL
+	parm.player use Magnum //this fixes player not spawning with a weapon in hand
 end
 
