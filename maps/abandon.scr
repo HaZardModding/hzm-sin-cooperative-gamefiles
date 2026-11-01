@@ -1,3 +1,7 @@
+//[coop] chrissstrahl - START COOP MOD - REQUIRED
+aliasscript global/coop_main.scr coopMain
+thread coopMain::main
+
 setdialogscript dialog/dialog_abandoned.scr
 
 // Mark as using new missioncon
@@ -374,6 +378,9 @@ waitFor $bomb_parent
 $bomb_parent playsound impact/debris/generic/gen1.wav 4
 $bomb_parent rotateX 0
 $bomb_parent rotateY 0
+
+//[coop] chrissstrahl - update spawns and move players that are outside of the bomb area
+thread coop_bombSequence
 
 thread bomb_ticking_sound_thread
 
@@ -1922,7 +1929,7 @@ level.Skill ifgreaterequal 2 $building1_thug10 item Health 20
 level.Skill ifequal 0 $mancinispotted1_thug01 item Health 50
 level.Skill ifnotequal 0 $mancinispotted1_thug01 item Health 20
 level.Skill ifequal 0 $mancinispotted2_thug01 item Health 50
-level.Skill ifenotqual 0 $mancinispotted2_thug01 item Health 20
+level.Skill ifnotequal 0 $mancinispotted2_thug01 item Health 20 //[cop] chrissstrahl - fixed typo in og code
 
 $building3_thug02 item Health 50
 
@@ -2769,3 +2776,75 @@ loadintermission "layouts/im_layouts/abandon_to_csite_cinema"
 thread global/universal_script.scr::CopyNewMisConToIntermission
 
 end
+
+//[coop] chrissstrahl - move players inside the bomb blast radius if they are to far away
+coop_bombSequence:
+	//update spawn locations
+	thread coopPlayerSpawn::abandon_bomb
+	
+	//moves players to their spawn spots if they are further away than X units from location "( 1 2 3 )"
+	parm.playerMoveOrigin vector "( 231.86 -200.52 352.00 )" //$bomb location
+	parm.playerMoveMaxDistance = 728 //Units to the rock entity that falls down and blocks the exit back into the tunnel
+	thread coopMain::playerMove
+end
+
+//[coop] chrissstrahl - DETECT PLAYER SPAWN - REQUIRED
+//this fires everytime a player is spawned
+//without this the coop mod will not work correctly!
+coopInfoPlayerStartActivated:
+	thread coopMain::playerTargetnames
+end
+
+//[coop] chrissstrahl - spawn a trigger we can actually control, as long as the next level is not completed
+coop_levelSetup:
+	//removeclass "triggerchangelevel"
+	wait game.FRAMETIME
+	//spawn trigger_changelevel model "*242" origin "-2688 512 224" "map" "bank" targetname "coopLvlEnd" //"abandon$start1"
+	
+	//addNoRespawnZone
+	//354 -632 371 //fire
+	//354 -632 371 //fireW
+	//354 -632 371 //fire
+end
+
+//[coop] chrissstrahl - executed each time a player has spawned
+//optional function
+coop_justSpawned:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+		
+//[coop] chrissstrahl - executed each time a player has died
+//optional function
+coop_justDied:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+
+//[coop] chrissstrahl - executed each time a player enters spectator mode
+//optional function
+coop_justBecameSpectator:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+
+//[coop] chrissstrahl - executed each time a player has entered the game (usually oce per level)
+//optional function
+coop_justEntered:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end	
+	
+//[coop] chrissstrahl - executed each time a player has disconnected
+//optional function
+coop_justLeft:
+	local.player string parm.playerEvent
+	//EXAMPLE: You can't do something with the player because the player has disconnected
+	//You can however still check stuff based on player targetname
+	//local.player ifstrequal "$player2" print "Player 2 has lost the will to fight\n"
+end
+
