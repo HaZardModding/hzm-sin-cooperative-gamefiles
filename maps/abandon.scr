@@ -2798,7 +2798,7 @@ end
 
 //[coop] chrissstrahl - move spawn locations for players inside the building up to level 2
 //a trigger was spawned during coop to start this - no mp check needed
-coop_anoyingRopeBuildingEnter:
+coop_anoyingRopeBuildingLevel2:
 	//update spawn locations
 	thread coopPlayerSpawn::abandon_anoyingRopeBuildingLevel2
 end
@@ -2875,8 +2875,11 @@ coop_levelSetup:
 	//remove og level change trigger
 	removeclass "triggerchangelevel"
 	wait game.FRAMETIME
+	//clearsavegames
+	//map "bank"
+	//the asterix infront of the mapname is suppose to clearsaved games in the trigger_changelevel
 	//WARNING - the model number may change if the game gets updates!!!
-	spawn trigger_changelevel model "*47" origin "1960 592 192" "map" "bank" targetname "coopLvlEnd" //csite_cinema
+	spawn trigger_changelevel model "*47" origin "1960 592 192" "map" "*bank" targetname "coopLvlEnd" //thread "LevelComplete" //csite_cinema
 	
 	//spawn helper triggers to move spawnlocations and such things
 	spawn "trigger_once" origin "3074 59 520" thread "coop_anoyingRopeBuildingEnter" targetname "coopSpawnLocTrigger1"
