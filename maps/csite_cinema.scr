@@ -13,7 +13,11 @@ thread coopMain::main
 
 
 waitforplayercinematic
-cinematic
+
+//cinematic
+//[coop] chrissstrahl - notify coop about cinematic
+thread coopReplace::coop_cinematic
+
 skipthread skiplevel_thread
 setdialogscript dialog/dialog_csitecinema.scr
 waitforplayer
@@ -28,7 +32,11 @@ end
 cinematic_initialize_thread:
 
 freezeplayer
-cueplayer
+
+//cueplayer
+//[coop] chrissstrahl - unregister camera and cueplayer
+thread coopReplace::coop_cueplayer
+
 hud 0
 fadeout game.FRAMETIME 0 0 0
 wait game.FRAMETIME
@@ -56,6 +64,10 @@ end
 skiplevel_thread:
 releaseplayer
 
+	//noncinematic
+	//[coop] chrissstrahl - end cinematic and notify script
+	thread coopReplace::coop_noncinematic
+
 	//[coop] chrissstrahl - Load a level we do support instead
 	fadeout 3 0 0 0
 	thread coopMain::inMultiplayer
@@ -73,7 +85,12 @@ cinematic_thread:
 $mancini walkto $mancini_node777
 $start_cam follow $camstart $mancini 2
 wait 1
-cuecamera $start_cam
+
+//cuecamera $start_cam
+//[coop] chrissstrahl - register and cue camera
+parm.camera string $start_cam
+thread coopReplace::coop_cuecamera
+
 fadein 3 0 0 0
 waitFor $mancini
 $mancini anim "idle_giving_orders"
@@ -109,7 +126,11 @@ local.wait = parm.previousthread
 waitForThread local.wait
 
 $mancini_cam lookat $mancini
-cuecamera $mancini_cam
+
+//cuecamera $mancini_cam
+//[coop] chrissstrahl - register and cue camera
+parm.camera string $mancini_cam
+thread coopReplace::coop_cuecamera
 
 parm.mancini string $mancini
 thread dialog::mancini_not_my_fault
