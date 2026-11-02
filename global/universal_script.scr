@@ -10,13 +10,23 @@
 //------------------------------------------------------
 // NB: used for vacant-day/vacant-night
 already_got_it:
-*1 playsound player/blade/nope.wav
+//[coop] chrissstrahl - handle multiplayer
+level.coopInMultiplayer ifgreaterequal 1 goto already_got_it_multiplayer
+    *1 playsound player/blade/nope.wav
+	
+	//[coop] chrissstrahl - handle multiplayer - I am pretty sure this function is no longer in use
+	end
+	already_got_it_multiplayer:
+	print "Coop - universal_script.scr::already_got_it - called, but muted in coop\n"
 end
 
 // ------------------------------------------
 // Clear out the player's inventory
 // ------------------------------------------
 ClearInventory:
+//[coop] chrissstrahl - handle multiplayer
+level.coopInMultiplayer ifgreaterequal 1 goto ClearInventory_multiplayer
+
 *1 take BlueCard 1000
 *1 take OrangeCard 1000
 *1 take YellowCard 1000
@@ -34,12 +44,20 @@ ClearInventory:
 *1 take SecurityL1Card 1000
 *1 take SecurityOverrideCard 1000
 *1 take TerminalAccessCard 1000
+	
+	//[coop] chrissstrahl - handle multiplayer
+	end
+	ClearInventory_multiplayer:
+	thread global/coop_main.scr::clearInventory
 end
 
 // ------------------------------------------
 // Start a player with a new episode
 // ------------------------------------------
 NewEpisode:
+//[coop] chrissstrahl - handle multiplayer
+level.coopInMultiplayer ifgreaterequal 1 goto ClearInventory_multiplayer
+
 local.has_pulse = 0
 *1 ifhaspulserifleparts local.has_pulse = 1
 *1 health 100
@@ -66,6 +84,11 @@ local.has_pulse = 0
 *1 give fists
 local.has_pulse ifequal 1 *1 give PulseRifle
 *1 give Magnum
+
+	//[coop] chrissstrahl - handle multiplayer
+	end
+	NewEpisode_multiplayer:
+	thread global/coop_main.scr::newEpisode
 end
 
 // ------------------------------------------
@@ -77,6 +100,9 @@ StatusUpdated:
 end
 
 AutoSave:
+//[coop] chrissstrahl - handle multiplayer
+level.coopInMultiplayer ifgreaterequal 1 goto skip_autosave
+
 
 game.last_autosave_level ifstrnotequal level.map_name goto actually_autosave
 
