@@ -122,3 +122,73 @@ abandon_bomb:
 	level.coopPlayer3SpawnLocation string "-466 362 134"
 	level.coopPlayer4SpawnLocation string "-341 493 134"
 end
+
+abandon_bombEscaped:	
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 180 0"
+	level.coopPlayer2SpawnAngles string "0 180 0"
+	level.coopPlayer3SpawnAngles string "0 180 0"
+	level.coopPlayer4SpawnAngles string "0 180 0"
+	
+	//spawnspots
+	level.coopPlayer1SpawnLocation string "495 -60 440"
+	level.coopPlayer2SpawnLocation string "495 -100 440"
+	level.coopPlayer3SpawnLocation string "495 -140 440"
+	level.coopPlayer4SpawnLocation string "495 -180 440"
+end
+
+abandon_mancini:	
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 353 0"
+	level.coopPlayer2SpawnAngles string "0 1 0"
+	level.coopPlayer3SpawnAngles string "0 322 0"
+	level.coopPlayer4SpawnAngles string "0 43 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "1680 287 520"
+	level.coopPlayer2SpawnLocation string "1680 195 520"
+	level.coopPlayer3SpawnLocation string "1964 364 520"
+	level.coopPlayer4SpawnLocation string "1961 86 520"
+end
+
+abandon_anoyingRopeBuilding:	
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 192 0"
+	level.coopPlayer2SpawnAngles string "0 161 0"
+	level.coopPlayer3SpawnAngles string "0 52 0"
+	level.coopPlayer4SpawnAngles string "0 301 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "3150 111 538"
+	level.coopPlayer2SpawnLocation string "3151 16 538"
+	level.coopPlayer3SpawnLocation string "2746 22 538"
+	level.coopPlayer4SpawnLocation string "2736 431 538"
+end
+
+abandon_anoyingRopeBuildingLevel2:	
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 293 0"
+	level.coopPlayer2SpawnAngles string "0 293 0"
+	level.coopPlayer3SpawnAngles string "0 220 0"
+	level.coopPlayer4SpawnAngles string "0 235 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "2736 431 746"
+	level.coopPlayer2SpawnLocation string "2787 431 746"
+	level.coopPlayer3SpawnLocation string "3151 407 746"
+	level.coopPlayer4SpawnLocation string "3151 489 746"
+end
+
+abandon_crazyPlace:
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 117 0"
+	level.coopPlayer2SpawnAngles string "0 81 0"
+	level.coopPlayer3SpawnAngles string "0 148 0"
+	level.coopPlayer4SpawnAngles string "0 182 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "2671 688 746"
+	level.coopPlayer2SpawnLocation string "2480 688 746"
+	level.coopPlayer3SpawnLocation string "2671 859 746"
+	level.coopPlayer4SpawnLocation string "2671 951 746"
+end
