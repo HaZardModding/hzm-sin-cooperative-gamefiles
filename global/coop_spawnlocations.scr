@@ -192,3 +192,22 @@ abandon_crazyPlace:
 	level.coopPlayer3SpawnLocation string "2671 859 746"
 	level.coopPlayer4SpawnLocation string "2671 951 746"
 end
+
+csite_cinema:
+	//used to spawn a trigger detecting players spawning (entering the server)
+	//move so they are no longer on the level where players can accidently run into them
+	level.infoPlayerStartOrigin1 string "-1536 -552 912"
+	level.infoPlayerStartPushDirection1 string "1"
+	
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 180 0"
+	level.coopPlayer2SpawnAngles string "0 180 0"
+	level.coopPlayer3SpawnAngles string "0 180 0"
+	level.coopPlayer4SpawnAngles string "0 180 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "399 1040 562"
+	level.coopPlayer2SpawnLocation string "399 1040 562"
+	level.coopPlayer3SpawnLocation string "399 1040 562"
+	level.coopPlayer4SpawnLocation string "399 1040 562"
+end

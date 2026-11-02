@@ -98,3 +98,10 @@ abandon:
 	local.player give DualMagnum 1
 	local.player use DualMagnum
 end
+
+
+csite_cinema:
+	local.player string parm.player
+	//give weapons?
+	//You don't need weapons, you have ELEXIS!
+end
