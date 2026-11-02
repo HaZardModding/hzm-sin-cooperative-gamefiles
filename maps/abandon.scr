@@ -265,6 +265,9 @@ end // propane_pipe1_thread
 /////////////////////////////////////////////////////////////////////////////
 cavein2_thread:
 
+//[coop] chrissstrahl - update spawns and move players that are outside of the bomb area
+thread coop_bombSequence
+
 thread powerjunc_thread
 thread bomb_brick_thread
 thread bomb_thread
@@ -378,9 +381,6 @@ waitFor $bomb_parent
 $bomb_parent playsound impact/debris/generic/gen1.wav 4
 $bomb_parent rotateX 0
 $bomb_parent rotateY 0
-
-//[coop] chrissstrahl - update spawns and move players that are outside of the bomb area
-thread coop_bombSequence
 
 thread bomb_ticking_sound_thread
 
@@ -588,6 +588,10 @@ building0_thread:
 trigger $spawn_building0_thug01
 wait game.FRAMETIME
 $building0_thug01 thread building0_thug01_thread
+
+//[coop] chrissstrahl - move spawnlocations up out of the tunnels
+wait 10
+thread coopPlayerSpawn::abandon_bombEscaped
 
 end // building0_thread
 
@@ -1205,6 +1209,9 @@ end // cavein1_seq2_roof5_thread
 // mancinispotted2_start_thread:
 /////////////////////////////////////////////////////////////////////////////
 mancinispotted2_start_thread:
+
+//[coop] chrissstrahl - move spawnlocations
+thread coopPlayerSpawn::abandon_mancini
 
 thread mancini_get_going_dialog_thread
 wait 1
@@ -2702,6 +2709,9 @@ blade_crazy_place_dialog_thread:
 thread dialog::blade_crazy_place
 waitForThread parm.previousthread
 
+//[coop] chrissstrahl - move spawn locations for players inside the last building
+thread coop_crazyPlace
+
 end // blade_crazy_place_dialog_thread
 
 
@@ -2777,8 +2787,41 @@ thread global/universal_script.scr::CopyNewMisConToIntermission
 
 end
 
+
+
+//[coop] chrissstrahl - move spawn locations for players inside the building
+//a trigger was spawned during coop to start this - no mp check needed
+coop_anoyingRopeBuildingEnter:
+	//update spawn locations
+	thread coopPlayerSpawn::abandon_anoyingRopeBuilding
+end
+
+//[coop] chrissstrahl - move spawn locations for players inside the building up to level 2
+//a trigger was spawned during coop to start this - no mp check needed
+coop_anoyingRopeBuildingEnter:
+	//update spawn locations
+	thread coopPlayerSpawn::abandon_anoyingRopeBuildingLevel2
+end
+
+//[coop] chrissstrahl - move spawn locations for players inside last building
+//called from og script thread - check if multiplayer
+coop_crazyPlace:
+	//do only in multiplayer
+	thread coopMain::inMultiplayer
+	parm.inMultiplayer ifequal 0 end
+	
+	//update spawn locations
+	thread coopPlayerSpawn::abandon_crazyPlace
+end
+
+
 //[coop] chrissstrahl - move players inside the bomb blast radius if they are to far away
+//called from og script thread - check if multiplayer
 coop_bombSequence:
+	//do only in multiplayer
+	thread coopMain::inMultiplayer
+	parm.inMultiplayer ifequal 0 end
+
 	//update spawn locations
 	thread coopPlayerSpawn::abandon_bomb
 	
@@ -2828,6 +2871,18 @@ coop_levelSetup:
 	parm.addNoRespawnZoneBoundingbox string "115 225 160"
 	parm.addNoRespawnZoneOrigin string "1260 100 390"
 	thread coopMain::addNoRespawnZone
+	
+	//remove og level change trigger
+	removeclass "triggerchangelevel"
+	wait game.FRAMETIME
+	//WARNING - the model number may change if the game gets updates!!!
+	spawn trigger_changelevel model "*47" origin "1960 592 192" "map" "bank" targetname "coopLvlEnd" //csite_cinema
+	
+	//spawn helper triggers to move spawnlocations and such things
+	spawn "trigger_once" origin "3074 59 520" thread "coop_anoyingRopeBuildingEnter" targetname "coopSpawnLocTrigger1"
+	spawn "trigger_once" origin "3030 702 794" thread "coop_anoyingRopeBuildingLevel2" targetname "coopSpawnLocTrigger2"
+	$coopSpawnLocTrigger1 setsize "-50 -50 -20" "50 50 50"
+	$coopSpawnLocTrigger2 setsize "-300 -300 0" "300 300 30"
 end
 
 //[coop] chrissstrahl - executed each time a player has spawned
@@ -2871,3 +2926,36 @@ coop_justLeft:
 	//local.player ifstrequal "$player2" print "Player 2 has lost the will to fight\n"
 end
 
+//POINTS OF INTEREST - mostly trigger_once
+//ORIGIN - THREAD OR TARGET - DESCRIPTION
+//-80 416 192 - cavein2_thread - after the tunel when going in the room with the bomb
+//16 -64 416 - blade_lives_dialog_thread - esaping bomb blast
+//48 -64 416 - building0_thread - escaping the bomb - spawning enemies
+//-2256 -416 200 - "target" "shaft_thug01" - in the tunnel again, activating/triggering the first enemy
+//-1728 -400 264 - flickering_light1_thread - "targetname" "t35" - in middle of the tunnel where players start
+//-1776 -416 200 - shaft_thug02 - in middle of the tunnel where players start
+//-800 -416 200 - trigger_shaft_thugs_thread - at the end of the tunnel where players start
+//-1392 -416 200 - "target" "shaft_thug03" - tunnel activate enemy
+//-656 -368 264 - flickering_light2_thread - tunnel flickering light
+//188 96 612 - mancinispotted1_start_thread - first encounter on the walkway over to the next building
+//392 100 564 - mancinispotted1_skip - mancini running away, ceiling collapsing enemy activating
+//1624 96 576 - mancinispotted1_thug02 - after first encounter, shortly before second in wooden hallway
+//1824 248 572 - mancinispotted2_start_thread - second time, where the stairs breake away and you have to jump across
+//2488 256 616 - skysound1_thread - going trough the window after second encounter
+//2912 736 800 - spawn_building2_thug06 - anoying area where you climb the rope
+//2976 224 536 - "target" "woodhold" - on the other side of the anoying room with rope
+//1184 -216 372 - jc_find_money_dialog_thread - in the middle of the brick archway next to the dumpster
+//860 -96 528 - copter1_thread - makes the helicopter fly over - outside infront of the dumpster
+//2584 32 568 - "target" "building2_thug03" - activaing enemy, near windowsill that will break away one level up
+//2664 512 760 - "target" "brickfall1" - windowsill after mancini secound encounter crossing the wood plank following along the building
+//2664 -56 552 - brickfall2 - windowsill further along at the corner, where the edge breaks off
+//2664 352 824 - blade_crazy_place_dialog_thread - near the area where the windowsill part falls
+//864 -476 348 - jc_fcb_happy_dialog_thread - trigger inside the dumpster
+//1424 -320 736 - building1_thread - when the player goes up the big wood plank to reach the top of the building
+//1160 -808 596 - "target" "woodfall" - woodplank the player can make fall on the tale and chairs
+//624 -960 416 - thugs_stealing_dialog_thread - activating the enemies in the cargo compartment
+//
+// "model" "*47"
+// "origin" "1960 592 192"
+// "map" "csite_cinema"
+// "classname" "trigger_changelevel"
