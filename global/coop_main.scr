@@ -1424,13 +1424,15 @@ playerCinematic:
 //INTERNAL coop_main.scr USE ONLY!
 	local.player string parm.player
 	
+	//only during cinematic make notsolid
+	level.coopCinematic ifequal 1 local.player notsolid
+	level.coopCinematic ifequal 1 local.player hide
+	
+	//it looks like sometimes it glitches out, could just be because of tabbing out, but lets try a fix
+	wait game.FRAMETIME
+	
 	//cue camera if set, this makes the player view from the current cinematic cam
 	level.coopCamera ifstrnotequal "" cuecamera level.coopCamera	
-	
-	//only during cinematic make notsolid
-	level.coopCinematic ifless 1 end
-	local.player notsolid
-	local.player hide
 end
 
 inMultiplayer:
