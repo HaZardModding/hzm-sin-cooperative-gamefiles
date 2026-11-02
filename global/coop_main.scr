@@ -1596,6 +1596,80 @@ inNoRespawnZone:
 end
 
 
+//This is usually called in the LevelComplete thread of all the level scripts as far as I can tell
+clearInventory:
+	local.index = 0
+	
+	clearInventory_loop:
+    local.index += 1
+    local.index ifgreaterequal 5 end
+    local.player string "$player"
+    local.player append local.index
+	parm.playerExist string local.player
+	thread playerExist
+	parm.playerExistTrue ifequal 0 goto clearInventory_loop
+	local.player take BlueCard 1000
+	local.player take OrangeCard 1000
+	local.player take YellowCard 1000
+	local.player take GreenCard 1000
+	local.player take KeyRing 1000
+	local.player take ScubaGear 1000
+	local.player take u4sample 1000
+	local.player take IdentCard 1000
+	local.player take Hand 1000
+	local.player take MoneyBag 1000
+	//###
+	local.player take BlueCraneCard 1000
+	local.player take OrangeCraneCard 1000
+	local.player take CraneIdentityCard 1000
+	local.player take SecurityL1Card 1000
+	local.player take SecurityOverrideCard 1000
+	local.player take TerminalAccessCard 1000	
+    goto clearInventory_loop
+end
+
+//this is used in: chem1,docks1, oilrig, sewera and silo
+newEpisode:
+	local.index = 0
+	
+	newEpisode_loop:
+    local.index += 1
+    local.index ifgreaterequal 5 end
+    local.player string "$player"
+    local.player append local.index
+	parm.playerExist string local.player
+	thread playerExist
+	parm.playerExistTrue ifequal 0 goto newEpisode_loop
+	
+	local.has_pulse = 0
+	local.player ifhaspulserifleparts local.has_pulse = 1
+	local.player health 100
+	local.player take all
+	local.player take Bullet10mm 1000
+	local.player take Bullet50mm 1000
+	local.player take BulletPulse 1000
+	local.player take BulletSniper 1000
+	local.player take Rockets 1000
+	local.player take Spears 1000
+	local.player take ShotgunClip 1000
+	local.player take SpiderMines 1000
+	local.player take FlakJacket 200
+	local.player take FlakPants 200
+	local.player take RiotHelmet 200
+	local.player take BluePrints 1000
+	local.player take ComLink 1000
+	local.player take GlowStick 1000
+	local.player take MoneyBag 1000
+	local.player take PassCode 1000
+	local.player take Chemsuit 1000
+	local.player take silencer 1000
+	local.player take Hand 1000
+	local.player give fists
+	local.has_pulse ifequal 1 *1 give PulseRifle
+	local.player give Magnum
+	goto newEpisode_loop
+end
+
 //set target value a vector, this allowes us to store and retrive 3 int values
 //set targetname +1 so we can iterate trough a sort of array
 //we can then check on each respawn, if the dynamic respawn location of the player
