@@ -1,0 +1,588 @@
+// ------------------------------------------
+// ------------------------------------------
+// Universal script for all levels
+// ------------------------------------------
+// ------------------------------------------
+
+//------------------------------------------------------
+// Write some nonsense cause I have nothing better to do
+// 2015
+//------------------------------------------------------
+// NB: used for vacant-day/vacant-night
+already_got_it:
+*1 playsound player/blade/nope.wav
+end
+
+// ------------------------------------------
+// Clear out the player's inventory
+// ------------------------------------------
+ClearInventory:
+*1 take BlueCard 1000
+*1 take OrangeCard 1000
+*1 take YellowCard 1000
+*1 take GreenCard 1000
+*1 take KeyRing 1000
+*1 take ScubaGear 1000
+*1 take u4sample 1000
+*1 take IdentCard 1000
+*1 take Hand 1000
+*1 take MoneyBag 1000
+//###
+*1 take BlueCraneCard 1000
+*1 take OrangeCraneCard 1000
+*1 take CraneIdentityCard 1000
+*1 take SecurityL1Card 1000
+*1 take SecurityOverrideCard 1000
+*1 take TerminalAccessCard 1000
+end
+
+// ------------------------------------------
+// Start a player with a new episode
+// ------------------------------------------
+NewEpisode:
+local.has_pulse = 0
+*1 ifhaspulserifleparts local.has_pulse = 1
+*1 health 100
+*1 take all
+*1 take Bullet10mm 1000
+*1 take Bullet50mm 1000
+*1 take BulletPulse 1000
+*1 take BulletSniper 1000
+*1 take Rockets 1000
+*1 take Spears 1000
+*1 take ShotgunClip 1000
+*1 take SpiderMines 1000
+*1 take FlakJacket 200
+*1 take FlakPants 200
+*1 take RiotHelmet 200
+*1 take BluePrints 1000
+*1 take ComLink 1000
+*1 take GlowStick 1000
+*1 take MoneyBag 1000
+*1 take PassCode 1000
+*1 take Chemsuit 1000
+*1 take silencer 1000
+*1 take Hand 1000
+*1 give fists
+local.has_pulse ifequal 1 *1 give PulseRifle
+*1 give Magnum
+end
+
+// ------------------------------------------
+// Mission Status Computer 
+// ------------------------------------------
+StatusUpdated:
+  crucialdialog "i_computer" "m_mission_status_updated_tab" "mission_comp/update.wav" 1 5
+  waitForSound "mission_comp/update.wav" 1
+end
+
+AutoSave:
+
+game.last_autosave_level ifstrnotequal level.map_name goto actually_autosave
+
+local.time_diff = game.time
+local.time_diff -= game.last_autosave_time
+
+local.time_diff ifgreater 0 goto actually_autosave
+
+goto skip_autosave
+
+actually_autosave:
+  stuffcmd "autosave"
+
+  game.last_autosave_level string level.map_name
+  game.last_autosave_time = game.time
+  game.last_autosave_time += 60
+
+skip_autosave:
+
+end
+
+PObjectiveComplete:
+  thread AutoSave
+  music success
+  crucialdialog "i_computer" "m_primary_objective_completed" "mission_comp/mix1ima.wav" 1 5
+  waitForSound "mission_comp/mix1ima.wav" 1
+end
+
+PObjectiveCompleteNoMusic:
+  thread AutoSave
+  crucialdialog "i_computer" "m_primary_objective_completed" "mission_comp/mix1ima.wav" 1 5
+  waitForSound "mission_comp/mix1ima.wav" 1
+end
+
+SObjectiveComplete:
+  thread AutoSave
+  music success
+  crucialdialog "i_computer" "m_secondary_objective_completed" "mission_comp/mix1ima.wav" 1 5
+  waitForSound "mission_comp/mix1ima.wav" 1
+end
+
+SObjectiveCompleteNoMusic:
+  thread AutoSave
+  crucialdialog "i_computer" "m_secondary_objective_completed" "mission_comp/mix1ima.wav" 1 5
+  waitForSound "mission_comp/mix1ima.wav" 1
+end
+
+PObjectiveFailed:
+  thread AutoSave
+  music failure
+  crucialdialog "i_computer" "m_primary_objective_failed" "mission_comp/mix3ima.wav" 1 5
+  waitForSound "mission_comp/mix3ima.wav" 1
+end
+
+PObjectiveFailedNoMusic:
+  thread AutoSave
+  crucialdialog "i_computer" "m_primary_objective_failed" "mission_comp/mix3ima.wav" 1 5
+  waitForSound "mission_comp/mix3ima.wav" 1
+end
+
+SObjectiveFailed:
+  thread AutoSave
+  music failure
+  crucialdialog "i_computer" "m_secondary_objective_failed" "mission_comp/mix3ima.wav" 1 5
+  waitForSound "mission_comp/mix3ima.wav" 1
+end
+
+SObjectiveFailedNoMusic:
+  thread AutoSave
+  crucialdialog "i_computer" "m_secondary_objective_failed" "mission_comp/mix3ima.wav" 1 5
+  waitForSound "mission_comp/mix3ima.wav" 1
+end
+
+// new MissionCon; more data-driven, letting
+// the client handle rendering in different ways.
+
+level.misconid = 0
+
+NewMisConSetup:
+  %missioncon conlayout "newmiscon"
+  %missioncon conapplayoutquoted level.map_name
+end
+
+// parms
+// status: 0 not accomplished 1 = success 2 = fail 3 = not available
+// title: localized title string
+NewMisConPrimary:
+  parm.status ifequal 3 goto NewMisConPrimary_Skip
+
+  %missioncon conapplayout "primary"
+  %missioncon conapplayout parm.status
+  %missioncon conapplayout parm.title
+
+  NewMisConPrimary_Skip:
+end
+
+// parms
+// status: 0 not accomplished 1 = success 2 = fail 3 = not available
+// title: localized title string
+NewMisConSecondary:
+  parm.status ifequal 3 goto NewMisConSecondary_Skip
+
+  %missioncon conapplayout "secondary"
+  %missioncon conapplayout parm.status
+  %missioncon conapplayout parm.title
+
+  NewMisConSecondary_Skip:
+end
+
+CopyNewMisConToIntermission:
+  local.IMString getconsolelayout "missioncon"
+  intermissionlayout local.IMString
+end
+
+// ------------------------------------------
+// Blade finds a secret
+// ------------------------------------------
+secret: 
+  local.AchSecrets getcvar g_ach_secrets
+  local.AchSecrets ifequal 5 goto secretdoneach
+  local.AchSecrets += 1
+  forcesetcvar g_ach_secrets local.AchSecrets
+  local.AchSecrets ifnotequal 5 goto secretdoneach
+  unlockachievement "ACH_SIN_BONUS"
+
+  secretdoneach:
+
+  crucialdialogloc "i_computer" m_secrets_found 2 level.found_secrets level.total_secrets "mission_comp/mix1ima.wav" 1 5
+  waitForSound "mission_comp/secret.wav" 1
+end
+
+// ------------------------------------------
+// Blade finds a non needed item
+// ------------------------------------------
+blade_no_reason:
+  //Blade says "Hmm, no reason to go in there." when he finds a locked door
+  dialog "i_blade" "m_hmm_no_reason" "dialog/general/blade/noreas.wav" 1 5
+end
+
+// ---------------------------------------------------------------
+// Blade tries to use an item that needs a keycard he doesn't have
+// ---------------------------------------------------------------
+need_yellow_card:
+dialogsoundlow environment/computer/beeps/affirm3.wav
+end
+
+need_orange_card:
+dialogsoundlow environment/computer/beeps/affirm3.wav
+end
+
+need_green_card:
+dialogsoundlow environment/computer/beeps/affirm3.wav
+end
+
+need_blue_card:
+dialogsoundlow environment/computer/beeps/affirm3.wav
+end
+
+//###
+need_blue_crane_card:
+dialogsoundlow environment/computer/beeps/affirm3.wav
+end
+
+need_orange_crane_card:
+dialogsoundlow environment/computer/beeps/affirm3.wav
+end
+
+need_identity_crane_card:
+dialogsoundlow environment/computer/beeps/affirm3.wav
+end
+
+need_security_l1_card:
+dialogsoundlow environment/computer/beeps/affirm3.wav
+end
+
+need_security_override_card:
+dialogsoundlow environment/computer/beeps/affirm3.wav
+end
+
+need_terminal_access_card:
+dialogsoundlow environment/computer/beeps/affirm3.wav
+end
+
+//###
+
+// ------------------------------------------
+// Blade finds a locked door
+// ------------------------------------------
+locked_door:
+  //Blade says "Another locked door!" when he finds a locked door
+dialogsoundlow "dialog/general/blade/nlck.wav"
+end
+
+// ------------------------------------------
+// X-Files Type Intro Screen
+// ------------------------------------------
+XFilesScreen_Black:
+  freezeplayer
+  local.WaitTime = parm.WaitTime
+  local.TimeDate string parm.TimeDate
+  local.Location string parm.Location
+  local.Description string parm.Description
+  local.PrintString string "enable_fonts fullfill 0 0 0 1"
+  local.PrintString append "xl 8 yb 8 type 1 string \""
+  local.PrintString append local.TimeDate
+  local.PrintString append "\n"
+  local.PrintString append local.Location
+  local.PrintString append "\n"
+  local.PrintString append local.Description
+  local.PrintString append "\""
+  screenprint 3 "fullfill 0 0 0 1"
+  wait 1
+  screenprint local.WaitTime local.PrintString
+  local.WaitTime -= 1
+  wait local.WaitTime
+  releaseplayer
+end
+
+XFilesScreen:
+  local.WaitTime = parm.WaitTime
+  local.TimeDate string parm.TimeDate
+  local.Location string parm.Location
+  local.Description string parm.Description
+  local.PrintString string "enable_fonts xl 8 yb 8 type 1 string \""
+  local.PrintString append local.TimeDate
+  local.PrintString append "\n"
+  local.PrintString append local.Location
+  local.PrintString append "\n"
+  local.PrintString append local.Description
+  local.PrintString append "\""
+  screenprint local.WaitTime local.PrintString
+  local.WaitTime -= 1
+  wait local.WaitTime
+end
+
+// ------------------------------------------
+// Blade finds items
+// ------------------------------------------
+//this dialog is good for when Blade blows open a crate and finds guns/ammo, or any similar situation
+
+blade_finds_item1:
+  //Blade says "Alright!"
+//  dialog "i_blade" "Alright!" "dialog/general/blade/Alright.wav" 1 5
+dialogsoundlow "dialog/general/blade/Alright.wav"
+end
+
+blade_finds_item2:
+  //Blade says "Come to Papa!"
+//  dialog "i_blade" "Come to Papa!" "dialog/general/blade/Papa.wav" 1 5
+dialogsoundlow "dialog/general/blade/Papa.wav"
+end
+
+blade_finds_item3:
+  //Blade says "Score!"
+//  dialog "i_blade" "Score!" "dialog/general/blade/Score.wav" 1 5
+dialogsoundlow "dialog/general/blade/Score.wav"
+end
+
+// Jc reacts to what Blade finds
+blade_finds_item4:
+  //JC says "Rock the Casbah!"
+//  dialog "i_jc" "Rock the Casbah!" "dialog/general/jc/Paydirt.wav" 1 5
+dialogsoundlow "dialog/general/jc/Paydirt.wav"
+end
+
+blade_finds_item5:
+  //JC says "Jackpot!"
+//  dialog "i_jc" "Jackpot!" "dialog/general/jc/jackpot.wav" 1 5
+dialogsoundlow "dialog/general/jc/jackpot.wav"
+end
+
+// ------------------------------------------
+// Blade dies and JC calls after him
+// ------------------------------------------
+blade_ponders_item1:
+  //Blade says "Hmmm!"
+  dialog "i_blade" "m_hmmm" "dialog/bank/blade/hmm.wav" 1 5
+end
+
+blade_ponders_item2:
+  //Blade says "Hmmm, what�s that for?"
+  dialog "i_blade" "m_hmmm_whats_that_1" "dialog/geotherm/blade/whatthat.wav" 1 5
+end
+
+// ------------------------------------------
+// Blade dies and JC calls after him
+// ------------------------------------------
+jc_talks_blade_dies1:
+  // JC says "Blade!  Blade, talk to me!"
+//  dialog "i_jc" "Blade!  Blade, talk to me!" "dialog/general/jc/bldtlk.wav" 1 5
+dialogsound "dialog/general/jc/bldtlk.wav"
+end
+
+jc_talks_blade_dies2:
+  // JC says "Blade...Blade, come in Blade...talk to me!"
+//  dialog "i_jc" "Blade...Blade, come in Blade...talk to me!" "dialog/general/jc/cmn2.wav" 1 5
+dialogsound "dialog/general/jc/cmn2.wav"
+end
+
+jc_talks_blade_dies3:
+  // JC says "Blade?  Blade? Talk to me man!"
+//  dialog "i_jc" "Blade?  Blade? Talk to me man!" "dialog/chem/jc/talkme.wav" 1 5
+dialogsound "dialog/chem/jc/talkme.wav"
+end
+
+jc_talks_blade_dies4:
+  // JC says "Blade is down!  Repeat Blade is down!  Get some backup in there now!" 
+//  dialog "i_jc" "Blade is down!  Repeat Blade is down!  Get some backup in there now!" "dialog/general/jc/blddw2.wav" 1 5
+dialogsound "dialog/general/jc/blddw2.wav"
+
+end
+
+// ------------------------------------------
+// Blade sees Cool Shit happen in level
+// ------------------------------------------
+Blade_reacts_2_coolshit1:
+  // Blade says "OH SHIT!"
+//  dialog "i_blade" "OH SHIT!" "dialog/abandoned/blade/ohsht1.wav" 1 5
+end
+
+Blade_reacts_2_coolshit2:
+  // Blade says "Man, this is some pretty fubar�ed shit!"
+//  dialog "i_blade" "Man, this is some pretty fubar�ed shit!" "dialog/biomech/blade/fubar.wav" 1 5
+end
+
+Blade_reacts_2_coolshit3:
+  // Blade says "What THE!"
+//  dialog "i_blade" "What THE!" "dialog/intro/blade/whtth2.wav" 1 5
+end
+
+Blade_reacts_2_coolshit4:
+  // Blade says "Bring it on!"
+//  dialog "i_blade" "Bring it on!" "dialog/basehq/blade/bringon.wav" 1 5
+end
+
+Blade_reacts_2_coolshit5:
+  // Blade says "It�s demolition time!"
+  dialog "i_blade" "m_its_demolition_time_1" "dialog/hdocks/blade/demolit.wav" 1 5
+end
+
+// ------------------------------------------
+// JC sees Cool Shit happen in level
+// ------------------------------------------
+JC_reacts_2_coolshit1:
+  // JC says "Cause a little havoc why don�t you Blade!"
+//  dialog "i_jc" "Cause a little havoc why don�t you Blade!" "dialog/chem/jc/havoc.wav" 1 5
+end
+
+JC_reacts_2_coolshit2:
+  // JC says "SMOKIN�!"
+//  dialog "i_jc" "SMOKIN�!" "dialog/basehq/jc/smokin.wav" 1 5
+end
+
+JC_reacts_2_coolshit3:
+  // JC says "Boss you�re one bad-ass mother!"
+// dialog "i_jc" "Boss you�re one bad-ass mother!" "dialog/basehq/jc/badass.WAV" 1 5
+end
+
+JC_reacts_2_coolshit4:
+  // JC says "Damn Blade, you�re tearing this place apart!"
+  dialog "i_jc" "m_damn_blade_youre_1" "dialog/geotherm/jc/Tear.wav" 1 5
+end
+
+JC_reacts_2_coolshit5:
+  // JC says "Give em� fifty CC�s of Kick-ass bossman!"
+//  dialog "i_jc" "Give em� fifty CC�s of Kick-ass bossman!" "dialog/hdocks/jc/50cc.wav" 1 5
+end
+
+JC_reacts_2_coolshit6:
+  // JC says "TRASH IT! TRASH IT!! TRASH IT!"
+//  dialog "i_jc" "TRASH IT! TRASH IT!! TRASH IT!" "dialog/hdocks/jc/trash.wav" 1 5
+end
+
+// ------------------------------------------
+// JC berates Blade for killing innocents
+// ------------------------------------------
+blade_kills_innocent1:
+  // JC says "What are you blind DON'T shoot them!"
+//  dialog "i_jc" "What are you blind DON'T shoot them!" "dialog/general/jc/blind.wav" 1 5
+dialogloclow "i_jc" "m_innocent_kill_1" 0 "dialog/general/jc/blind.wav"
+end
+
+blade_kills_innocent2:
+  // JC says "Blade, what are doing? Those are friendlies!"
+//  dialog "i_jc" "Blade, what are doing? Those are friendlies!" "dialog/general/jc/friend1.wav" 1 5
+dialogloclow "i_jc" "m_innocent_kill_2" 0 "dialog/general/jc/friend1.wav"
+end
+
+blade_kills_innocent3:
+  // JC says "HEY! Easy does it PSYCHO!"
+//  dialog "i_jc" "HEY! Easy does it PSYCHO!" "dialog/general/jc/psycho.wav" 1 5
+dialogloclow "i_jc" "m_innocent_kill_3" 0 "dialog/general/jc/psycho.wav"
+end
+
+blade_kills_innocent4:
+  // JC says "BLADE! What are you doing?"
+//  dialog "i_jc" "BLADE! What are you doing?" "dialog/general/jc/whatdo.wav" 1 5
+dialogloclow "i_jc" "m_innocent_kill_4" 0 "dialog/general/jc/whatdo.wav"
+end
+
+blade_kills_innocent5:
+  // JC says "DAMN BLADE! Watch out?"
+//  dialog "i_jc" "DAMN BLADE! Watch out?" "dialog/general/jc/watch6.wav" 1 5
+dialogloclow "i_jc" "m_innocent_kill_5" 0 "dialog/general/jc/watch6.wav"
+end
+
+/////////////////////////////////////////////////////////////////////////////
+// smoothturn_thread:
+// Simulate a smooth moving turn for an object.
+// local.TurnTics = number of sub-turns to divide the motion into
+// parm.Object = script object to turn
+// parm.Radius = radius of the circle to turn on
+// parm.Angle = number of degrees to turn
+// parm.Speed = speed in units per sec to move
+// parm.Direction = [left/right] direction to turn
+// parm.YDistance = how far to move up or down while turning
+// parm.YDirection = [up/down/nop] tells if the object should slide on the Y
+// axis while turning.
+/////////////////////////////////////////////////////////////////////////////
+smoothturn_thread:
+  local.Pi = 3.1415926535
+  local.TurnTics = 50
+  local.Object string parm.Object
+  local.Angle = parm.Angle
+  local.Speed = parm.Speed
+  local.Counter = 0
+  local.TurnDirection string parm.Direction
+  local.YDistance = parm.YDistance
+  local.YDirection string parm.YDirection
+
+  // Find the circumference
+  local.TicDistance = local.Pi
+  local.TicDistance *= 2
+  local.TicDistance *= parm.Radius
+
+  // Find the ammount to divide the circumference by
+  local.AngleFactor = 360
+  local.AngleFactor /= local.Angle
+
+  // Total distance in units the object will travel
+  local.TicDistance /= local.AngleFactor
+
+  // We are givin the speed we wish the object to make the turn at, calculate the time
+  local.TicTime = local.TicDistance
+  local.TicTime /= local.Speed
+  local.TicTime /= local.TurnTics
+
+  // Distance and angle the object should move/turn in each itteration
+  local.TicDistance /= local.TurnTics
+  local.YDistance /= local.TurnTics
+  local.TicAngle = local.Angle
+  local.TicAngle /= local.TurnTics
+
+  // Turn the object
+  local.Object time local.TicTime
+
+smoothturn_loop:
+  local.Object moveForward local.TicDistance
+
+  local.TurnDirection ifstrequal "left" local.Object rotateYup local.TicAngle
+  local.TurnDirection ifstrequal "right" local.Object rotateYdown local.TicAngle
+
+  local.YDirection ifstrequal "up" local.Object moveUp local.YDistance
+  local.YDirection ifstrequal "down" local.Object moveDown local.YDistance
+
+  waitFor local.Object
+
+  local.Counter += 1
+  local.Counter ifless local.TurnTics goto smoothturn_loop
+end // smoothturn_thread
+
+//---------------------------------------------------------------------------
+// Returns a number with the specified Significant digits
+//---------------------------------------------------------------------------
+SigDigits:
+  local.OrigFloat = parm.OrigFloat
+  local.NumDigits = parm.NumDigits
+
+  local.NewFloat string ""
+  local.NewFloat appendint local.OrigFloat
+  local.NumDigits ifgreater 0 local.NewFloat append "."
+
+  local.OnDigit = 0
+  local.DigitPlace = 1
+
+GetDigit:
+  local.OnDigit ifequal local.NumDigits goto GotDigits
+  local.OnDigit += 1
+  local.TempVal = local.OrigFloat
+  local.TempVal *= local.DigitPlace
+  local.TempVal1 string ""
+  local.TempVal1 appendint local.TempVal
+  local.TempVal1 *= 10
+  local.DigitPlace *= 10
+  local.TempVal = local.OrigFloat
+  local.TempVal *= local.DigitPlace
+  local.TempVal2 string ""
+  local.TempVal2 appendint local.TempVal
+  local.TempVal2 -= local.TempVal1
+  local.NewFloat appendint local.TempVal2
+  goto GetDigit
+
+GotDigits:
+  parm.NewFloat string local.NewFloat
+end
+
+// ------------------------------------------
+// End of File
+// ------------------------------------------
