@@ -1,0 +1,359 @@
+//---------------------------------------------------------------
+// Cinematics and other very important stuff - CSite
+// As I'm writing this, DeathRow gets SPANKED by Clan 9...and I'd
+//---------------------------------------------------------------
+// really like to talk to some of the ppl who always told me that
+// there was almost NO chance that any clan could be better than
+// an American one...muahahahahaha!
+
+
+//[coop] chrissstrahl - START COOP MOD - REQUIRED
+aliasscript global/coop_main.scr coopMain
+thread coopMain::main
+
+
+waitforplayercinematic
+cinematic
+skipthread skiplevel_thread
+setdialogscript dialog/dialog_csitecinema.scr
+waitforplayer
+
+thread cinematic_initialize_thread
+local.waitforthread = parm.previousthread
+waitForThread local.waitforthread
+thread cinematic_thread
+end
+
+//---
+cinematic_initialize_thread:
+
+freezeplayer
+cueplayer
+hud 0
+fadeout game.FRAMETIME 0 0 0
+wait game.FRAMETIME
+$lookatme hide
+$lookatme notsolid
+$elexis notsolid
+$mancini notsolid
+$elexis thread ignore_thread
+$mancini thread ignore_thread
+$im_a_woodchopper_and_im_ok time .5
+waitFor $im_a_woodchopper_and_im_ok
+$rotors rotateY 360
+$start_cam moveto $camstart
+$start_cam lookat $lookatme
+$stupid_little_thing hide
+$stupid_little_thing time .1
+$stupid_little_thing rotateYdown 90
+$elexis skin elexis_base4
+waitFor $stupid_little_thing
+music normal normal
+end
+
+
+//---
+skiplevel_thread:
+releaseplayer
+
+	//[coop] chrissstrahl - Load a level we do support instead
+	fadeout 3 0 0 0
+	thread coopMain::inMultiplayer
+	local.multiplayer = parm.inMultiplayer
+	local.multiplayer ifequal 1 map "abandon$start1"
+	local.multiplayer ifequal 1 end
+
+map csite
+end
+
+
+//---
+cinematic_thread:
+
+$mancini walkto $mancini_node777
+$start_cam follow $camstart $mancini 2
+wait 1
+cuecamera $start_cam
+fadein 3 0 0 0
+waitFor $mancini
+$mancini anim "idle_giving_orders"
+wait .3
+$heli entitysound vehicle/helicopt/idleloop.wav 0.1 1
+$im_a_woodchopper_and_im_ok rotateYdown 100
+$im_a_woodchopper_and_im_ok playsound environment/doors/wood/wddrpn3.wav 3
+waitFor $im_a_woodchopper_and_im_ok
+$mancini walkto $mancini_node_888
+waitFor $mancini
+thread anim1_thread
+//thread anim666_thread
+$mancini walkto $mancini_node_666
+waitFor $mancini
+$mancini walkto $charlie_wont_let_me_pick_his_nose
+waitFor $mancini
+$mancini anim "csite_1_talk"
+parm.mancini string $mancini
+thread dialog::mancini_grovels
+local.wait = parm.previousthread
+waitForThread local.wait
+$mancini_cam orbit $mancini_cam_start $lookatme
+//thread cinematic2_thread
+
+
+
+//---
+cinematic2_thread:
+
+parm.elexis string $elexis
+thread dialog::elexis_berates_mancini
+local.wait = parm.previousthread
+waitForThread local.wait
+
+$mancini_cam lookat $mancini
+cuecamera $mancini_cam
+
+parm.mancini string $mancini
+thread dialog::mancini_not_my_fault
+local.wait = parm.previousthread
+waitForThread local.wait
+
+$elexis anim "csite_4_talking"
+$mancini anim "csite_4_down_idle"
+
+parm.elexis string $elexis
+thread dialog::elexis_failed_again
+local.wait = parm.previousthread
+waitForThread local.wait
+
+$elexis anim "csite_3_idle"
+$mancini anim "csite_3_down_talk"
+
+parm.mancini string $mancini
+thread dialog::mancini_but_elexis
+local.wait = parm.previousthread
+waitForThread local.wait
+
+$elexis anim "cine_talk2"
+$mancini anim "csite_4_down_idle"
+
+parm.elexis string $elexis
+thread dialog::elexis_bank_heist
+local.wait = parm.previousthread
+waitForThread local.wait
+
+$elexis anim "csite_3_idle"
+thread anim3_thread
+
+parm.mancini string $mancini
+thread dialog::mancini_nono
+local.wait = parm.previousthread
+waitForThread local.wait
+
+$elexis anim "csite_4_talking"
+
+parm.elexis string $elexis
+thread dialog::elexis_antics
+local.wait = parm.previousthread
+waitForThread local.wait
+
+thread anim4_thread
+thread anim5_thread
+
+thread music_thread
+parm.elexis string $elexis
+thread dialog::elexis_time_to_change
+local.wait = parm.previousthread
+waitForThread local.wait
+
+parm.elexis string $elexis
+parm.mancini string $mancini
+thread dialog::mancini_in_pain
+local.wait = parm.previousthread
+waitForThread local.wait
+
+//$mancini walkto $mancini_flee_node
+parm.mancini string $mancini
+thread dialog::mancini_get_away
+local.wait = parm.previousthread
+waitForThread local.wait
+fadeout 3 0 0 0
+wait 3
+thread LevelComplete
+map csite
+end
+
+
+//---
+LevelComplete:
+
+thread global/universal_script.scr::ClearInventory
+// Send over the information needed to load the proper intermission
+loadintermission "layouts/im_layouts/csite_cinema_to_csite"
+thread global/universal_script.scr::CopyNewMisConToIntermission
+end
+
+// Threads for character stuff with multiple waitFor stuff etc. that can't be done in the main
+// thread cause of waitFor and waitForThread mixups.
+
+//---
+music_thread:
+
+wait 1.8
+// [XA] fixed music trigger: use 'forcemusic' for action
+forcemusic action normal
+end
+
+
+//---
+anim1_thread:
+$elexis walkto $elexis_node_666
+waitFor $elexis
+$elexis walkto $he_wont_let_me_hump_his_leg_either
+waitFor $elexis
+$elexis anim "csite_2_bitchslap"
+$elexis playsound impact/slap.wav 4
+thread anim2_thread
+waitFor $elexis
+$elexis anim "csite_3_idle"
+$elexis turnto 180
+waitFor $elexis
+end
+
+
+//---
+//anim666_thread:
+
+parm.mancini string $mancini
+thread dialog::mancini_grovels
+local.wait = parm.previousthread
+waitForThread local.wait
+$mancini_cam orbit $mancini_cam_start $lookatme
+thread cinematic2_thread
+end
+
+
+//---
+anim2_thread:
+
+wait .2
+$mancini anim "csite_2_falldown"
+waitFor $mancini
+$mancini anim "csite_3_down_talk"
+end
+
+
+//---
+anim3_thread:
+
+wait .8
+$mancini anim "csite_5_standup"
+waitFor $mancini
+$mancini anim "csite_6_stand_idle"
+end
+
+
+//---
+anim4_thread:
+
+wait 1
+$mancini_cam follow $stupid_little_thing $lookatme
+wait .7
+$elexis attachmodel u4vial.def gun u4
+$u4 scale .4
+$elexis anim "csite_5_stab"
+waitFor $elexis
+$elexis anim "csite_3_idle"
+wait 2
+$elexis anim "csite_6_toss_turnaround"
+$mancini_cam follow $cam2_start $stupid_little_thing
+//$mancini_cam follow $cam2_start $im_a_woodchopper_and_im_ok
+$elexis walkto $kyles_mom_is_a_stupid_bitch
+waitFor $elexis
+end
+
+
+//---
+anim5_thread:
+
+wait 1.9
+$mancini anim "csite_7_stabbed"
+waitFor $mancini
+$mancini anim "csite_8_pain_loop"
+wait 14
+$mancini anim "csite_9_fall_turnaround"
+waitFor $mancini
+//$mancini runto $crawl_node1
+//waitFor $mancini
+//$mancini runto $crawl_node2
+//waitFor $mancini
+//$mancini runto $crawl_node3
+//waitFor $mancini
+$mancini runto $crawl_node4
+waitFor $mancini
+
+end
+
+
+// Savage Garden = good album
+//---
+ignore_thread:
+
+local.self ignoreall
+pause
+goto ignore_thread
+end
+
+
+
+//[coop] chrissstrahl - DETECT PLAYER SPAWN - REQUIRED
+//this fires everytime a player is spawned
+//without this the coop mod will not work correctly!
+coopInfoPlayerStartActivated:
+	thread coopMain::playerTargetnames
+end
+
+//[coop] chrissstrahl
+coop_levelSetup:
+	//there is nothing to do here
+end
+
+//[coop] chrissstrahl - executed each time a player has spawned
+//optional function
+coop_justSpawned:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+		
+//[coop] chrissstrahl - executed each time a player has died
+//optional function
+coop_justDied:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+
+//[coop] chrissstrahl - executed each time a player enters spectator mode
+//optional function
+coop_justBecameSpectator:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+
+//[coop] chrissstrahl - executed each time a player has entered the game (usually oce per level)
+//optional function
+coop_justEntered:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end	
+	
+//[coop] chrissstrahl - executed each time a player has disconnected
+//optional function
+coop_justLeft:
+	local.player string parm.playerEvent
+	//EXAMPLE: You can't do something with the player because the player has disconnected
+	//You can however still check stuff based on player targetname
+	//local.player ifstrequal "$player2" print "Player 2 has lost the will to fight\n"
+end
+
