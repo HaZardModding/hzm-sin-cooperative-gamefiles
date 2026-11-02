@@ -1,0 +1,5119 @@
+//***************************************************************************
+// Construction Site
+// Ritual Entertainment - Charlie Wiederhold
+//***************************************************************************
+
+setdialogscript dialog/dialog_csite.scr
+
+level.SkillLevel getcvar skill
+level.ram_too_slow_dialog_active = 0
+level.ram_door_use_dialog_active = 0
+level.ram_door_use_dialog_first = 1
+level.spawn_newcitynpcs_done = 0
+level.spawn_parkinggaragenpcs_done = 0
+level.spawn_officenpcs_done = 0
+level.parking_garage_exit_done = 0
+level.newcity_retreat_started = 0
+level.parking_garage_retreat_active = 0
+level.parking_garage_retreat_lane = 0
+level.office_escape_active = 0
+level.ram_hydrant1_active = 0
+level.ram_hydrant2_active = 0
+level.ram_hydrant1_broken = 0
+level.ram_hydrant2_broken = 0
+
+thread csite_init_thread
+
+thread drawer_thread
+thread cabinet1_thread
+thread cabinet5_thread
+thread cabinet8_thread
+thread cabinet12_thread
+
+thread large_barrel_thread
+thread beam_fall_thread
+thread flood1_thread
+thread pipe1_thread
+thread generator_thread
+thread generator_light_thread
+thread generator_shake_thread
+
+thread wood1_thread
+thread wood2_thread
+thread wood3_thread
+thread wood4_thread
+thread wood5_thread
+thread wood6_thread
+thread wood7_thread
+thread wood8_thread
+thread wood9_thread
+thread wood11_thread
+thread wood12_thread
+thread wood13_thread
+thread wood14_thread
+thread wood15_thread
+thread wood16_thread
+thread wood17_thread
+thread wood18_thread
+thread wood19_thread
+
+//-------------------------------------------------------
+//-------------------------------------------------------
+// Wieder Additions
+//-------------------------------------------------------
+//-------------------------------------------------------
+
+thread ValveInPool
+thread DumpsterThread
+thread Dumpster2Thread
+
+thread SpeedsPortal1
+thread Generator_Flicker
+thread Crane
+
+thread VatorDoorSetup
+thread VatorRope1
+thread VatorRope2
+
+$abandon_abo_water hide
+$abandon_abo_water notsolid
+$abandon_abo_water2 hide
+$abandon_abo_water2 notsolid
+$abandon_abo_clipper notsolid
+
+$vator_bubbles anim off
+game.Abandon_ValveActivated ifequal 0 goto SkippedSecretArea
+$vator_bubbles anim idle
+$abandon_abo_water show
+$abandon_abo_water solid
+$abandon_abo_water1 hide
+$abandon_abo_water1 notsolid
+$abandon_abo_water2 show
+$abandon_abo_water2 solid
+$abandon_abo_clipper solid
+parm.Door string "$abandon_abo_vator_door1"
+parm.StartAngle = -80
+parm.Speed = 2.5
+thread AbandonABO_VatorDoorSetup
+parm.Door string "$abandon_abo_vator_door2"
+parm.StartAngle = -45
+parm.Speed = 2
+thread AbandonABO_VatorDoorSetup
+thread AbandonABO_Box1
+thread AbandonABO_Box2
+thread AbandonABO_Box3
+thread AbandonABO_Box4
+thread AbandonABO_Box5
+thread AbandonABO_Box6
+thread AbandonABO_Box7
+thread AbandonABO_Lights
+SkippedSecretArea:
+
+thread CreakingBoard1
+thread CreakingBoard2
+
+//-------------------------------------------------------
+//-------------------------------------------------------
+// Wieder Character Additions
+//-------------------------------------------------------
+//-------------------------------------------------------
+
+game.Abandon_HostageKilled ifequal 1 $hostage_roof remove
+game.Abandon_HostageKilled ifequal 0 $hostage_roof thread AI_Hostage_Roof
+
+$mancini_jumping thread AI_Mancini_Jumping
+$mancini_tube thread AI_Mancini_Tube
+$mancini_ladder thread AI_Mancini_Ladder
+$mancini_final thread AI_Mancini_Final
+
+$hostage_vator thread AI_Hostage_Vator
+
+$thug_dumpster thread AI_Thug_Dumpster
+$thug_ledge1 thread AI_Thug_Ledge1
+$thug_ledge2 thread AI_Thug_Ledge2
+$thug1_roof1 thread AI_Thug1_Roof1
+$thug2_roof1 thread AI_Thug2_Roof1
+
+$csite_thug1 thread AI_CYard_Thug1
+$csite_thug2 thread AI_CYard_Thug2
+$csite_thug3 thread AI_CYard_Thug3
+$csite_worker1 thread AI_PushWorker
+
+$basement_thug6 item health 50
+$basement_thug7 item health 50
+level.SkillLevel ifless 2 $basement_thug1 remove
+level.SkillLevel ifless 2 $basement_thug2 remove
+level.SkillLevel ifgreaterequal 2 $basement_thug1 thread AI_Basement_Thug1
+level.SkillLevel ifgreaterequal 2 $basement_thug2 thread AI_Basement_Thug2
+$basement_thug_ambush thread AI_Basement_ThugAmbush
+parm.ThugNum = 3
+$basement_thug3 thread AI_Basement_Thugs
+parm.ThugNum = 4
+$basement_thug4 thread AI_Basement_Thugs
+parm.ThugNum = 5
+$basement_thug5 thread AI_Basement_Thugs
+parm.ThugNum = 6
+$basement_thug6 thread AI_Basement_Thugs
+parm.ThugNum = 7
+$basement_thug7 thread AI_Basement_Thugs
+
+$pool_thug1 item GlowStick 2
+
+$bum1 thread AI_Bum1
+$bum2 thread AI_Bum2
+
+$vator_thug1 thread AI_Vator_Thug1
+$vator_thug2 thread AI_Vator_Thug2
+$vator_thug3 thread AI_Vator_Thug3
+
+$t9 thread AI_OutsideThugs
+$end_thug3 thread AI_EndThugs
+
+$foreman thread AI_Foreman
+
+//------------------------------------------------------------
+//------------------------------------------------------------
+// joyeuse additions ;D
+//------------------------------------------------------------
+//------------------------------------------------------------
+thread atv_motion_monitor
+
+//dark water
+server lightstyle 167 "RmmmmmmmmmmmmmmGmmmmmmmmmmmmmmBllllllllllllllAqqqqqqqqqqqqqq"
+
+// Flickering fluorescent light beside the office entry doors.
+// The entry-door ram sequence turns this unique style off when the doors break.
+server lightstyle 168 "mmamammmmammamamaaamammma"
+
+// Numbered debris objects use box#_body and box#_explode.
+// Each box#_body needs an origin brush at the center of the intact object.
+// Increase this count when another numbered object is added to the map.
+level.rammable_shatter_count = 9
+thread rammable_shatter_setup_all
+
+// Guns cannot damage the hydrants. Nearby map triggers start the ATV probes.
+$ram_hydrant1 nodamage
+$ram_hydrant2 nodamage
+
+thread rocketcar_launcher_setup
+
+// Keep these gate values in sync with the tuned pre-refactor behavior.
+parm.ram_trigger string "$gate1_ram_trigger"
+parm.ram_piece1 string "$gate1_piece1"
+parm.ram_piece2 string "$gate1_piece2"
+parm.ram_piece1_height = 56
+parm.ram_piece2_height = 56
+parm.ram_piece1_stage1_move string "(64 -64 16)"
+parm.ram_piece2_stage1_move string "(64 16 32)"
+parm.ram_piece1_rotate string "(-405 -45 0)"
+parm.ram_piece2_rotate string "(-1800 18 0)"
+parm.ram_piece1_stage2_move string "(640 0 8)"
+parm.ram_piece2_stage2_move string "(384 0 8)"
+// Gate 1 uses far-edge origin brushes, so its contact radius must cover the gate depth.
+parm.ram_probe_range = 128
+// The ATV must reach this speed to break this pair.
+parm.ram_required_speed = 250
+// Set this above 0 to guarantee a minimum total forward travel distance.
+parm.ram_min_forward_distance = 0
+// Set this above 0 to limit total forward travel. A value of 0 disables the limit.
+parm.ram_max_forward_distance = 0
+parm.ram_break_target string "$gate1_ram_break"
+parm.ram_scare_group string "parking_garage"
+parm.ram_sound string "impact/wood/woodmix5.wav"
+parm.ram_sound_volume = 4
+thread rammable_pair_thread
+
+parm.ram_trigger string "$gate2_ram_trigger"
+parm.ram_piece1 string "$gate2_piece1"
+parm.ram_piece2 string "$gate2_piece2"
+parm.ram_piece1_height = 56
+parm.ram_piece2_height = 56
+parm.ram_piece1_stage1_move string "(64 -64 16)"
+parm.ram_piece2_stage1_move string "(64 16 32)"
+parm.ram_piece1_rotate string "(-408 -45 0)"
+parm.ram_piece2_rotate string "(-1800 18 0)"
+parm.ram_piece1_stage2_move string "(640 0 8)"
+parm.ram_piece2_stage2_move string "(384 0 8)"
+parm.ram_probe_range = 64
+parm.ram_required_speed = 250
+parm.ram_min_forward_distance = 0
+parm.ram_max_forward_distance = 0
+parm.ram_break_target string "$gate2_ram_break"
+parm.ram_scare_group string "parking_garage"
+parm.ram_sound string "impact/wood/woodmix5.wav"
+parm.ram_sound_volume = 4
+thread rammable_pair_thread
+
+// The exit doors use a separate profile so they can spread apart.
+parm.ram_trigger string "$ram_doorexit_trigger"
+parm.ram_piece1 string "$ram_doorexit_left"
+parm.ram_piece2 string "$ram_doorexit_right"
+parm.ram_piece1_height = 180
+parm.ram_piece2_height = 180
+parm.ram_piece1_stage1_move string "(144 64 16)"
+parm.ram_piece2_stage1_move string "(144 -64 16)"
+parm.ram_piece1_rotate string "(0 15 90)"
+parm.ram_piece2_rotate string "(0 -30 90)"
+parm.ram_piece1_stage2_move string "(1440 96 8)"
+parm.ram_piece2_stage2_move string "(1440 -96 8)"
+parm.ram_probe_range = 64
+parm.ram_required_speed = 550
+parm.ram_min_forward_distance = 500
+parm.ram_max_forward_distance = 0
+parm.ram_break_target string "$ram_doorexit_break"
+parm.ram_scare_group string ""
+parm.ram_sound string "impact/crash1.wav"
+parm.ram_sound_volume = 4
+thread rammable_pair_thread
+
+// The entry doors use the exit-door profile, but land on the level floor.
+parm.ram_trigger string "$ram_doorenter_trigger"
+parm.ram_piece1 string "$ram_doorenter_left"
+parm.ram_piece2 string "$ram_doorenter_right"
+parm.ram_piece1_height = 60
+parm.ram_piece2_height = 60
+parm.ram_piece1_stage1_move string "(144 24 16)"
+parm.ram_piece2_stage1_move string "(144 -38 16)"
+parm.ram_piece1_rotate string "(-90 15 0)"
+parm.ram_piece2_rotate string "(-90 -10 0)"
+parm.ram_piece1_stage2_move string "(1440 32 8)"
+parm.ram_piece2_stage2_move string "(1440 -57 8)"
+parm.ram_probe_range = 64
+parm.ram_required_speed = 550
+parm.ram_min_forward_distance = 0
+parm.ram_max_forward_distance = 360
+parm.ram_break_target string "$ram_doorenter_break"
+parm.ram_scare_group string "office"
+parm.ram_sound string "impact/crash1.wav"
+parm.ram_sound_volume = 4
+thread rammable_pair_thread
+
+thread kp_door_buzzer_thread
+
+// Paril poopy
+thread init_flashlight
+
+end
+
+//============================================================
+//============================================================
+
+csite_init_thread:
+
+$newcity_retreatdoors lock
+$office_door_escape lock
+
+level.PObjective1 = 0 // Continue Chasing Mancini
+level.PObjective2 = 0 // Eliminate Hostile Forces
+level.SObjective2 = 0 // Rescue Any Remaining Hostages
+level.SObjective1 = 0 // Find Incriminating Evidence
+
+level.PipeDown = 0
+level.DoorBroken = 0
+level.HostageCount = 0
+level.Hostage1Taunted = 0
+level.Hostage2Taunted = 0
+game.Abandon_HostageKilled ifequal 1 level.HostageCount += 1
+game.csite_HaveBlueprints = 0
+$open1 open
+
+$no_use_dozer nouse
+$no_use_dozer_2 nouse
+$no_use_dozer_3 nouse
+
+//breakable boards and propane tank
+$t2 health 1
+
+$door_break_portal close
+waitForPlayer
+
+wait 1
+thread joyeuse_inits
+thread dialog::jc_unused_subway
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+wait 1
+thread MissionComputer
+thread global/universal_script.scr::StatusUpdated
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+
+end
+
+//============================================================
+//============================================================
+
+drawer_thread:
+
+local.drawer_index = 1
+
+drawer_loop:
+
+parm.drawer string "$drawer"
+parm.drawer appendint local.drawer_index
+
+thread drawer_setup_thread
+
+local.drawer_index += 1
+local.drawer_index iflessequal 4 goto drawer_loop
+end
+
+drawer_setup_thread:
+local.drawer string parm.drawer
+local.drawer time 1
+
+drawer_start:
+local.drawer onpreciseuse drawer_open
+pause
+
+drawer_open:
+local.drawer nouse
+local.drawer playsound environment/cabinet/drawer/cab11.wav 1.0
+local.drawer moveEast 20
+waitFor local.drawer
+
+local.drawer onpreciseuse drawer_close
+pause
+
+drawer_close:
+local.drawer nouse
+local.drawer moveWest 20
+waitFor local.drawer
+local.drawer playsound environment/cabinet/drawer/cab12.wav 1.0
+goto drawer_start
+end
+
+
+
+
+
+desk_drawer_open:
+local.self time 1
+local.self moveForward 20
+waitFor local.self
+local.self dooropened
+end
+
+desk_drawer_close:
+local.self time 1
+local.self moveBackward 20
+waitFor local.self
+local.self doorclosed
+end
+
+
+
+//============================================================
+//============================================================
+
+cabinet1_thread:
+
+local.cabinet1_index = 1
+
+cabinet1_loop:
+
+parm.cabinet1 string "$cabinet"
+parm.cabinet1 appendint local.cabinet1_index
+
+thread cabinet1_setup_thread
+
+local.cabinet1_index += 1
+local.cabinet1_index iflessequal 4 goto cabinet1_loop
+end
+
+cabinet1_setup_thread:
+local.cabinet1 string parm.cabinet1
+local.cabinet1 time 1
+
+cabinet1_start:
+local.cabinet1 onuse cabinet1_open
+pause
+
+cabinet1_open:
+local.cabinet1 nouse
+local.cabinet1 playsound environment/cabinet/latch32.wav 1.0
+local.cabinet1 rotateYup 90
+waitFor local.cabinet1
+
+local.cabinet1 onuse cabinet1_close
+pause
+
+cabinet1_close:
+local.cabinet1 nouse
+local.cabinet1 rotateYdown 90
+waitFor local.cabinet1
+local.cabinet1 playsound environment/doors/metal/mtldrcl3.wav 1.0
+goto cabinet1_start
+end
+
+
+cabinet5_thread:
+
+local.cabinet5_index = 5
+
+cabinet5_loop:
+
+parm.cabinet5 string "$cabinet"
+parm.cabinet5 appendint local.cabinet5_index
+
+thread cabinet5_setup_thread
+
+local.cabinet5_index += 1
+local.cabinet5_index iflessequal 7 goto cabinet5_loop
+end
+
+cabinet5_setup_thread:
+local.cabinet5 string parm.cabinet5
+local.cabinet5 time 1
+
+cabinet5_start:
+local.cabinet5 onuse cabinet5_open
+pause
+
+cabinet5_open:
+local.cabinet5 nouse
+local.cabinet5 playsound environment/cabinet/latch32.wav 1.0
+local.cabinet5 rotateYdown 90
+waitFor local.cabinet5
+
+local.cabinet5 onuse cabinet5_close
+pause
+
+cabinet5_close:
+local.cabinet5 nouse
+local.cabinet5 rotateYup 90
+waitFor local.cabinet5
+local.cabinet5 playsound environment/doors/metal/mtldrcl3.wav 1.0
+goto cabinet5_start
+end
+
+
+
+cabinet8_thread:
+
+local.cabinet8_index = 8
+
+cabinet8_loop:
+
+parm.cabinet8 string "$cabinet"
+parm.cabinet8 appendint local.cabinet8_index
+
+thread cabinet8_setup_thread
+
+local.cabinet8_index += 1
+local.cabinet8_index iflessequal 11 goto cabinet8_loop
+end
+
+cabinet8_setup_thread:
+local.cabinet8 string parm.cabinet8
+local.cabinet8 time 1
+
+cabinet8_start:
+local.cabinet8 onuse cabinet8_open
+pause
+
+cabinet8_open:
+local.cabinet8 onblock cabinet8_close
+local.cabinet8 nouse
+local.cabinet8 playsound environment/cabinet/latch32.wav 1.0
+local.cabinet8 rotateYupto 90
+waitFor local.cabinet8
+
+local.cabinet8 onuse cabinet8_close
+pause
+
+cabinet8_close:
+local.cabinet8 onblock cabinet8_open
+local.cabinet8 nouse
+local.cabinet8 rotateYdownto 0
+waitFor local.cabinet8
+local.cabinet8 playsound environment/doors/metal/mtldrcl3.wav 1.0
+goto cabinet8_start
+
+local.cabinet8 ifstrequal "$cabinet11" local.cabinet8 notsolid
+local.cabinet8 ifstrequal "$cabinet11" local.cabinet8 solid
+
+end
+
+
+cabinet12_thread:
+
+local.cabinet12_index = 12
+
+cabinet12_loop:
+
+parm.cabinet12 string "$cabinet"
+parm.cabinet12 appendint local.cabinet12_index
+
+thread cabinet12_setup_thread
+
+local.cabinet12_index += 1
+local.cabinet12_index iflessequal 14 goto cabinet12_loop
+end
+
+cabinet12_setup_thread:
+local.cabinet12 string parm.cabinet12
+local.cabinet12 time 1
+
+cabinet12_start:
+local.cabinet12 onuse cabinet12_open
+pause
+
+cabinet12_open:
+local.cabinet12 nouse
+local.cabinet12 onblock cabinet12_close
+local.cabinet12 playsound environment/cabinet/latch32.wav 1.0
+local.cabinet12 rotateYdownto -90
+waitFor local.cabinet12
+
+local.cabinet12 onuse cabinet12_close
+pause
+
+cabinet12_close:
+local.cabinet12 nouse
+local.cabinet12 onblock cabinet12_open
+local.cabinet12 rotateYupto 0
+waitFor local.cabinet12
+local.cabinet12 playsound environment/doors/metal/mtldrcl3.wav 1.0
+goto cabinet12_start
+end
+
+//============================================================
+//============================================================
+
+
+wood1_thread:
+
+$wood1 time .5
+
+$wood1 ontouch wood1_sequence
+pause
+
+wood1_sequence:
+$wood1 notouch
+$wood1 notsolid
+$wood1 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood1 moveDown 200
+waitFor $wood1
+$wood1 playsound impact/explosion/track65.wav 1.0
+$wood1 notsolid
+end
+
+wood2_thread:
+
+$wood2 time .5
+
+$wood2 ontouch wood2_sequence
+pause
+
+wood2_sequence:
+$wood2 notouch
+$wood2 notsolid
+$wood2 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood2 moveDown 200
+waitFor $wood2
+$wood2 playsound impact/explosion/track65.wav 1.0
+end
+
+wood3_thread:
+
+$wood3 time .5
+
+$wood3 ontouch wood3_sequence
+pause
+
+wood3_sequence:
+$wood3 notouch
+$wood3 notsolid
+$wood3 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood3 moveDown 200
+$wood3 moveNorth 16
+$wood3 rotateYdown 30
+waitFor $wood3
+$wood3 playsound impact/explosion/track65.wav 1.0
+end
+
+wood4_thread:
+
+$wood4 time .5
+
+$wood4 ontouch wood4_sequence
+pause
+
+wood4_sequence:
+$wood4 notouch
+$wood4 notsolid
+$wood4 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood4 moveDown 200
+waitFor $wood4
+$wood4 playsound impact/explosion/track65.wav 1.0
+end
+
+wood5_thread:
+
+$wood5 time .5
+
+$wood5 ontouch wood5_sequence
+pause
+
+wood5_sequence:
+$wood5 notouch
+$wood5 notsolid
+$wood5 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood5 moveDown 200
+$wood5 moveWest 16
+$wood5 moveNorth 16
+$wood5 rotateYup 15
+waitFor $wood5
+$wood5 playsound impact/explosion/track65.wav 1.0
+end
+
+wood6_thread:
+
+$wood6 time .5
+
+$wood6 ontouch wood6_sequence
+pause
+
+wood6_sequence:
+$wood6 notouch
+$wood6 notsolid
+$wood6 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood6 moveDown 200
+
+waitFor $wood6
+$wood6 playsound impact/explosion/track65.wav 1.0
+end
+
+wood7_thread:
+
+$wood7 time .5
+
+$wood7 ontouch wood7_sequence
+pause
+
+wood7_sequence:
+$wood7 notouch
+$wood7 notsolid
+$wood7 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood7 moveDown 200
+$wood7 moveSouth 24
+waitFor $wood7
+$wood7 playsound impact/explosion/track65.wav 1.0
+end
+
+wood8_thread:
+
+$wood8 time .5
+
+$wood8 ontouch wood8_sequence
+pause
+
+wood8_sequence:
+$wood8 notouch
+$wood8 notsolid
+$wood8 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood8 moveDown 200
+waitFor $wood8
+$wood8 playsound impact/explosion/track65.wav 1.0
+end
+
+wood9_thread:
+
+$wood9 time .5
+
+$wood9 ontouch wood9_sequence
+pause
+
+wood9_sequence:
+$wood9 notouch
+$wood9 notsolid
+$wood9 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood9 moveDown 200
+$wood9 moveSouth 16
+$wood9 moveEast 16
+$wood9 rotateYup 20
+waitFor $wood9
+$wood9 playsound impact/explosion/track65.wav 1.0
+end
+
+wood10_thread:
+
+$wood10 time .5
+
+$wood10 ontouch wood10_sequence
+pause
+
+wood10_sequence:
+$wood10 notouch
+$wood10 notsolid
+$wood10 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood10 moveDown 200
+$wood10 moveWest 32
+waitFor $wood10
+$wood10 playsound impact/explosion/track65.wav 1.0
+end
+
+wood11_thread:
+
+$wood11 time .5
+
+$wood11 ontouch wood11_sequence
+pause
+
+wood11_sequence:
+$wood11 notouch
+$wood11 notsolid
+$wood11 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood11 moveDown 200
+$wood11 moveWest 32
+$wood11 rotateYup 10
+waitFor $wood11
+$wood11 playsound impact/explosion/track65.wav 1.0
+end
+
+wood12_thread:
+
+$wood12 time .5
+
+$wood12 ontouch wood12_sequence
+pause
+
+wood12_sequence:
+$wood12 notouch
+$wood12 notsolid
+$wood12 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood12 moveDown 200
+waitFor $wood12
+$wood12 playsound impact/explosion/track65.wav 1.0
+end
+
+wood13_thread:
+
+$wood13 time .5
+
+$wood13 ontouch wood13_sequence
+pause
+
+wood13_sequence:
+$wood13 notouch
+$wood13 notsolid
+$wood13 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood13 moveDown 200
+waitFor $wood13
+$wood13 playsound impact/explosion/track65.wav 1.0
+end
+
+wood14_thread:
+
+$wood14 time .5
+
+$wood14 ontouch wood14_sequence
+pause
+
+wood14_sequence:
+$wood14 notouch
+$wood14 notsolid
+$wood14 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood14 moveDown 200
+waitFor $wood14
+$wood14 playsound impact/explosion/track65.wav 1.0
+end
+
+wood15_thread:
+
+$wood15 time .5
+
+$wood15 ontouch wood15_sequence
+pause
+
+wood15_sequence:
+$wood15 notouch
+$wood15 notsolid
+$wood15 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood15 moveDown 200
+$wood15 moveWest 8
+$wood15 moveNorth 12
+waitFor $wood15
+$wood15 playsound impact/explosion/track65.wav 1.0
+end
+
+wood16_thread:
+
+$wood16 time .5
+
+$wood16 ontouch wood16_sequence
+pause
+
+wood16_sequence:
+$wood16 notouch
+$wood16 notsolid
+$wood16 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood16 moveDown 200
+waitFor $wood16
+$wood16 playsound impact/explosion/track65.wav 1.0
+end
+
+wood17_thread:
+
+$wood17 time .5
+
+$wood17 ontouch wood17_sequence
+pause
+
+wood17_sequence:
+$wood17 notouch
+$wood17 notsolid
+$wood17 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood17 moveDown 200
+waitFor $wood17
+$wood17 playsound impact/explosion/track65.wav 1.0
+end
+
+wood18_thread:
+
+$wood18 time .5
+
+$wood18 ontouch wood18_sequence
+pause
+
+wood18_sequence:
+$wood18 notouch
+$wood18 notsolid
+$wood18 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood18 moveDown 200
+$wood18 moveEast 8
+$wood18 moveNorth 16
+waitFor $wood18
+$wood18 playsound impact/explosion/track65.wav 1.0
+end
+
+wood19_thread:
+
+$wood19 time .5
+
+$wood19 ontouch wood19_sequence
+pause
+
+wood19_sequence:
+$wood19 notouch
+$wood19 notsolid
+$wood19 playsound environment/woodcreak/crkngwds.wav 1.0
+$wood19 moveDown 200
+$wood19 moveWest 32
+waitFor $wood19
+$wood19 playsound impact/explosion/track65.wav 1.0
+end
+
+
+//===================================
+//===================================
+//===================================
+//===================================
+
+
+
+large_barrel_thread:
+$brick_explode1 time .7
+$brick_explode2 time .7
+$brick_explode3 time .7
+$brick_explode4 time .7
+$brick_explode5 time .7
+$brick_explode6 time .7
+$brick_explode7 time .7
+$brick_explode8 time .7
+
+$large_barrel_portal close
+
+$large_barrels ondamage large_barrel_sequence
+pause
+
+large_barrel_sequence:
+$large_barrels nodamage
+$large_barrels trigger $barrel_explosion
+$large_barrels playsound impact/explosion/lrg1.wav 1.0
+$large_barrels shatter "0 0 0" 100 20 40 .1 0
+$large_barrels_nearby_boxes shatter "0 0 0" 100 20 40 0.1 0
+wait .1
+$large_barrels shatter "0 0 0" 100 20 40 .1 0
+$large_barrels_nearby_boxes shatter "0 0 0" 100 20 40 0.1 0
+$large_barrels_nearby_boxes remove
+$large_barrels remove
+$large_barrel_portal open
+wait .1
+
+$brick_explode1 moveWest 300
+$brick_explode1 rotateYdown 180
+$brick_explode1 rotateYdown 180
+
+$brick_explode2 shatter "0 0 0" 100 30 50 .5 0
+$brick_explode2 moveWest 256
+$brick_explode2 moveSouth 64
+$brick_explode2 rotateYup 180
+
+$brick_explode3 shatter "0 0 0" 100 30 50 .5 0
+$brick_explode3 moveWest 256
+$brick_explode3 moveDown 256
+$brick_explode3 moveNorth 64
+$brick_explode3 rotateYdown 180
+
+$brick_explode4 shatter "0 0 0" 100 30 50 .5 0
+$brick_explode4 moveWest 256
+$brick_explode4 moveDown 256
+$brick_explode4 moveSouth 64
+$brick_explode4 rotateYup 120
+
+$brick_explode5 moveWest 300
+$brick_explode5 moveDown 256
+$brick_explode5 moveNorth 32
+$brick_explode5 rotateYdown 120
+
+$brick_explode6 moveWest 300
+$brick_explode6 moveDown 256
+$brick_explode6 moveSouth 32
+$brick_explode6 rotateYup 180
+
+$brick_explode7 moveWest 256
+$brick_explode7 moveDown 64
+$brick_explode7 moveNorth 32
+$brick_explode7 rotateYdown 60
+
+$brick_explode8 moveWest 256
+$brick_explode8 moveDown 64
+$brick_explode8 moveSouth 32
+$brick_explode8 rotateYup 90
+
+waitFor $brick_explode8
+
+$brick_explode1 notsolid
+$brick_explode1 hide
+$brick_explode2 notsolid
+$brick_explode2 hide
+$brick_explode3 notsolid
+$brick_explode3 hide
+$brick_explode4 notsolid
+$brick_explode4 hide
+$brick_explode5 notsolid
+$brick_explode5 hide
+$brick_explode6 notsolid
+$brick_explode6 hide
+$brick_explode7 notsolid
+$brick_explode7 hide
+$brick_explode8 notsolid
+$brick_explode8 hide
+
+end
+
+//=======================================
+
+beam_fall_thread:
+
+$beam1 time 1
+$beam2 time 1
+
+$beam1 ontrigger beam_fall_sequence
+pause
+
+beam_fall_sequence:
+$beam1 playsound impact/metal.wav 4
+$beam1 notrigger
+$beam1 rotateXdown 42
+waitFor $beam1
+$beam1 playsound impact/metal.wav 4
+wait .2
+
+$beam1 time .5
+$beam2 time .5
+$beam2 rotateXdown 29
+$beam1 rotateXdown 15
+waitFor $beam2
+
+//$beam2 time 1
+
+$beam2 rotateXdown 30
+waitFor $beam2
+$beam1 playsound impact/metal.wav 4
+thread dialog::jc_wrecking_crew
+$beam1 notsolid
+$beam2 notsolid
+$beam1_clipper solid
+$beam2_clipper solid
+
+end
+
+//=======================================
+
+
+flood1_thread:
+
+level.ValveBroke = 0
+
+$beam_fall3 moveSouth 64
+$beam_fall4 moveSouth 64
+waitFor $beam_fall4
+
+$beam_fall3 rotateYupto 6
+$beam_fall4 rotateYupto 6
+waitFor $beam_fall4
+
+$flood1 time .5
+$flood2 time 2
+$flood2 moveDown 248
+waitFor $flood2
+$flood1 notsolid
+$flood1 hide
+$flood2 hide
+
+$beam_fall3 time 5
+
+$beam_fall4 time 5
+
+
+BeamWaiting_Loop:
+local.BeamRotation = 0
+$beam_fall3 phssound misc/metcreak.wav 4
+$beam_fall4 phssound misc/metcreak.wav 4
+$beam_fall3 rotateYupto 12
+$beam_fall4 rotateYupto 12
+waitFor $beam_fall4
+local.BeamRotation = 1
+$beam_fall3 phssound misc/metcreak.wav 4
+$beam_fall4 phssound misc/metcreak.wav 4
+$beam_fall3 rotateYdownto -12
+$beam_fall4 rotateYdownto -12
+waitFor $beam_fall4
+$beam_fall3 ondamage flood1_sequence
+$beam_fall4 ondamage flood1_sequence
+goto BeamWaiting_Loop
+
+flood1_sequence:
+$beam_fall3 nodamage
+$beam_fall4 nodamage
+
+$beam_fall3 time .3
+$beam_fall4 time .3
+
+$beam_fall3 moveDown 50
+$beam_fall4 moveDown 50
+waitFor $beam_fall4
+
+$beam_fall3 moveDown 150
+$beam_fall4 moveDown 150
+waitFor $beam_fall4
+
+$beam_fall3 moveDown 148
+$beam_fall4 moveDown 148
+waitFor $beam_fall4
+
+local.BeamRotation ifequal 0 $beam_fall3 rotate to 0 0 0
+local.BeamRotation ifequal 0 $beam_fall4 rotate to 0 0 0
+local.BeamRotation ifequal 1 $beam_fall3 rotate to 0 0 0
+local.BeamRotation ifequal 1 $beam_fall4 rotate to 0 0 0
+$beam_fall3 moveDown 732
+$beam_fall4 moveDown 732
+waitFor $beam_fall4
+
+$beam_fall4 playsound impact/metal.wav 4
+
+$beam_fall3 rotateZupto 9
+$beam_fall4 rotateZupto 8
+$beam_fall3 moveDown 4
+$beam_fall4 moveDown 4
+$beam_fall4 rotateXupto 30
+$beam_fall3 moveWest 16
+$beam_fall4 moveEast 32
+$valve1 rotateXupto 45
+waitFor $valve1
+level.PipeDown = 1
+level.ValveBroke = 1
+$beam_fall3 playsound impact/metal.wav 4
+
+trigger $valve_spray
+$flood1 show
+$flood1 moveSouth 24
+waitFor $flood1
+trigger $valve_spray_sound
+$flood2 show
+$flood2 moveUp 10
+waitFor $flood2
+$flood2 time 6
+$flood2 moveUp 32
+thread dialog::jc_swim_pool
+waitFor $flood2
+thread global/universal_script.scr::AutoSave
+$flood1 hide
+$flood2 time 16
+$flood2 moveUp 190
+wait 8
+trigger $spawn_pipethug
+wait game.FRAMETIME
+$pipethug thread AI_PipeThug
+end
+
+//=======================================
+
+door_break_thread:
+
+level.player_in_vehicle ifequal 0 goto door_do_not_break
+level.DoorBroken ifequal 1 goto door_do_not_break
+
+$door_break1 time .7
+$door_break2 time .7
+$door_break3 time .7
+$brick1 time .7
+$brick2 time .7
+$brick3 time .7
+$brick4 time .7
+$brick5 time .7
+$brick6 time .7
+$brick7 time .7
+$brick8 time .7
+$brick9 time .7
+$brick10 time .7
+$brick11 time .7
+$brick12 time .7
+$brick13 time .7
+$brick14 time .7
+$brick15 time .7
+$brick16 time .7
+
+door_break_sequence:
+level.DoorBroken = 1
+$door_break_portal open
+
+$door_break1 notsolid
+$door_break2 notsolid
+$door_break3 notsolid
+$Scaffold notsolid
+$brick1 notsolid
+$brick2 notsolid
+$brick3 notsolid
+$brick4 notsolid
+$brick5 notsolid
+$brick6 notsolid
+$brick7 notsolid
+$brick8 notsolid
+$brick9 notsolid
+$brick10 notsolid
+$brick11 notsolid
+$brick12 notsolid
+$brick13 notsolid
+$brick14 notsolid
+$brick15 notsolid
+$brick16 notsolid
+
+$brick4 hide
+
+$door_break3 playsound "environment/rockfall/hvyrckss.wav" 4
+$brick10 playsound "environment/rockfall/hvyrckss.wav" 4
+$brick5 playsound "environment/rockfall/hvyrckss.wav" 4
+$Scaffold hide
+$Scaffold shatter "0 0 0" 50 30 50 .5 0
+$door_break3 shatter "0 0 0" 50 30 50 .5 0
+$brick10 shatter "0 0 0" 50 30 50 .5 0
+$brick5 shatter "0 0 0" 50 30 50 .5 0
+
+$brick1 moveSouth 410
+$brick2 moveSouth 390
+$brick3 moveSouth 356
+$brick5 moveSouth 356
+$brick6 moveSouth 324
+$brick7 moveSouth 300
+$brick8 moveSouth 280
+$brick9 moveSouth 270
+$brick10 moveSouth 220
+$brick11 moveSouth 250
+$brick12 moveSouth 160
+$brick14 moveSouth 130
+$brick13 moveSouth 200
+$brick15 moveSouth 150
+$brick16 moveSouth 135
+
+$brick1 rotateZup 270
+$brick2 rotateZup 270
+$brick3 rotateZup 270
+$brick5 rotateZup 270
+$brick6 rotateZup 270
+$brick7 rotateZup 270
+$brick8 rotateZup 270
+$brick9 rotateZup 270
+$brick10 rotateZup 270
+$brick11 rotateZup 270
+$brick12 rotateZup 90
+$brick13 rotateZup 90
+$brick14 rotateZup 90
+$brick15 rotateZup 90
+
+$brick1 moveDown 98
+$brick2 moveDown 98
+$brick3 moveDown 92
+$brick5 moveDown 92
+$brick6 moveDown 74
+$brick7 moveDown 74
+$brick8 moveDown 68
+$brick9 moveDown 68
+$brick10 moveDown 46
+$brick11 moveDown 52
+$brick12 moveDown 38
+$brick13 moveDown 28
+$brick14 moveDown 22
+$brick15 moveDown 16
+
+$brick1 moveEast 16
+$brick3 moveEast 32
+$brick6 moveEast 48
+$brick8 moveEast 40
+$brick10 moveEast 64
+$brick13 moveEast 70
+$brick15 moveEast 96
+$brick16 moveEast 20
+       
+//$brick2 moveWest
+$brick5 moveWest 16
+$brick7 moveWest 16
+//$brick9 moveWest
+$brick11 moveWest 16
+$brick12 moveWest 16
+//$brick14 moveWest
+
+$brick16 rotateYdown 120
+$brick3 rotateYdown 120
+$brick6 rotateYdown 160
+$brick10 rotateYdown 130
+$brick13 rotateYdown 150
+
+$door_break3 rotateZup 90
+$door_break3 moveDown 32
+$door_break3 moveSouth 74
+
+$door_break2 rotateYdown 180
+$door_break2 rotateZup 90
+$door_break2 moveSouth 224
+$door_break2 moveDown 64
+
+$door_break1 rotateZup 90
+$door_break1 rotateYup 180
+$door_break1 moveSouth 180
+$door_break1 moveDown 68
+
+waitFor $door_break1
+thread dialog::jc_where_that_go
+
+door_do_not_break:
+
+end
+
+//====================================
+
+pipe1_thread:
+$pipe1_clip notsolid
+$pipe1 time 2
+$pipe1 setdamage 10000
+$pipe1 ontrigger pipe1_sequence
+pause
+
+pipe1_sequence:
+music suprise
+$pipe1 notrigger
+
+$pipe1 playsound "environment/rockfall/hvyrcks3.wav" 4
+$pipe1 rotateXdown 25
+$pipe1 moveWest 32
+waitFor $pipe1
+
+$pipe1 time .4
+
+$pipe1 moveWest 128
+$pipe1 moveDown 64
+waitFor $pipe1
+
+$pipe1 moveWest 236
+$pipe1 moveDown 160
+waitFor $pipe1
+
+$pipe1 time .3
+
+$pipe1 moveWest 88
+$pipe1 rotateXdown 15
+waitFor $pipe1
+
+$pipe1 rotateXup 50
+waitFor $pipe1
+
+$pipe1 time .4
+
+$pipe1 rotateXdown 10
+waitFor $pipe1
+
+$pipe1 playsound "environment/rockfall/sldngrck.wav" 4
+$pipe1 notsolid
+$pipe1_clip solid
+
+end
+
+
+//=============================================
+
+
+generator_thread:
+
+game.csite_generator ifequal 0 game.csite_generator = 1
+local.generator_speed = 0
+
+$basement_lights group light -Fullbright
+$generator1 time .1
+$generator2 time .1
+$generator3 time .1
+$generator4 time .1
+
+$generator_handle time .5
+$generator_handle rotateZdown 20
+waitFor $generator_handle
+
+$generator_handle onuse generator_sequence
+pause
+
+generator_sequence:
+// [XA] removing this since the music changes to "surprise" in a few
+// seconds; having two changes in a short timeframe is a bit jarring
+//music suspense
+$generator_handle nouse
+game.csite_generator = 2
+
+$generator_handle rotateZup 40
+waitFor $generator_handle
+
+$generator_handle playsound environment/levelsnds/csite/cnstlp7.wav 1.0
+
+$generator_handle trigger $generator1
+$generator_handle trigger $generator2
+generator_speed_up:
+$generator1 rotateZ local.generator_speed
+wait .2
+local.generator_speed += 20
+local.generator_speed iflessequal 360 goto generator_speed_up
+$generator_on lightstyle "Laammmmppzppzzp"
+
+Generator_WaitingLoop:
+$basement_lights group light +Fullbright
+level.SkillLevel ifequal 0 $generator_waiting_easy ontrigger Generator_BlowUp
+level.SkillLevel ifequal 1 $generator_waiting_medium ontrigger Generator_BlowUp
+level.SkillLevel ifgreaterequal 2 $generator_waiting_hard ontrigger Generator_BlowUp
+$generator1 shatter "0 0 0" 70 30 50 .1 0
+$generator2 shatter "0 0 0" 70 30 50 .1 0
+$generator1 playsound impact/explosion/lrg1.wav 1.0
+wait 4
+goto Generator_WaitingLoop
+
+Generator_BlowUp:
+
+$generator_handle trigger $generator2
+$generator1 playsound impact/comp_explode/cmpmx4.wav 1.0
+
+$generator1 time .7
+$generator2 time .7
+
+$generator1 rotateXdown 20
+$generator2 rotateXdown 20
+waitFor $generator2
+
+$generator_on lightstyle "La"
+$basement_lights group light -Fullbright
+$generator_handle trigger $generator_explode
+music surprise
+
+$generator1 time .5
+$generator2 time .5
+
+$generator1 moveDown 64
+$generator2 moveDown 64
+$generator1 rotateXdown 30
+$generator2 rotateXdown 30
+waitFor $generator2
+
+thread dialog::jc_scared_dark
+$generator_handle trigger $generator1
+
+$generator1 time 1
+$generator2 time 1
+
+$generator_handle stopsound
+
+$generator1 moveDown 400
+$generator2 moveDown 400
+$generator_floor moveDown 400
+waitFor $generator_floor
+
+$generator1 rotateZ 0
+
+$generator1 remove
+$generator2 remove
+$generator_floor remove
+
+end
+
+//===================
+
+generator_shake_thread:
+
+$generator2 ontrigger generator_shake_sequence
+pause
+
+generator_shake_sequence:
+$generator2 notrigger
+
+$generator2 ontrigger generator_shake_stop
+
+generator_shake_loop:
+$generator1 moveNorth 1
+$generator2 moveNorth 1
+$generator3 moveNorth 1
+$generator4 moveNorth 1
+waitFor $generator4
+$generator1 moveSouth 1
+$generator2 moveSouth 1
+$generator3 moveSouth 1
+$generator4 moveSouth 1
+waitFor $generator4
+goto generator_shake_loop
+
+
+generator_shake_stop:
+$generator2 notrigger
+end
+
+//===================
+
+generator_light_thread:
+
+$generator_light lightstyle "a"
+
+$generator1 ontrigger generator_light_sequence
+pause
+
+generator_light_sequence:
+$generator1 notrigger
+
+$generator_light lightstyle "Lfmfmfmfmfm"
+
+$generator1 ontrigger generator_light_off
+pause
+
+generator_light_off:
+$generator_light lightstyle "a"
+end
+
+
+//-------------------------------------------------------
+//-------------------------------------------------------
+// Wieder Additions
+//-------------------------------------------------------
+//-------------------------------------------------------
+
+//---------------------------------------
+// Csite Mission Computer Setup
+//---------------------------------------
+MissionComputer:
+//0 not accomplished 1 = success 2 = fail 3 = not available
+
+thread global/universal_script.scr::NewMisConSetup
+
+parm.status = level.PObjective1
+parm.title string "\"m_continue_chasing_mancini_1\""
+thread global/universal_script.scr::NewMisConPrimary
+
+parm.status = level.PObjective2
+parm.title string "\"m_eliminate_hostile_forces_1\""
+thread global/universal_script.scr::NewMisConPrimary
+
+parm.status = level.SObjective1
+parm.title string "\"m_find_incriminating_evidence_1\""
+thread global/universal_script.scr::NewMisConSecondary
+
+parm.status = level.SObjective2
+parm.title string "\"m_rescue_remaining_hostages_1\""
+thread global/universal_script.scr::NewMisConSecondary
+
+end
+
+//---------------------------------------------------------------------------
+// Finished Level Update
+// This is a pretty basic one. Some levels have ABOs that will affect which
+// one you load, what settings are, etc. However for the most part this is
+// how they all will look. I think you'll find that this is actually
+// easier than the mission computer. The distance between lines is also
+// 10 now for easy math. ;)
+//---------------------------------------------------------------------------
+LevelComplete:
+
+// Clears any items in the player's inventory that need to be removed
+thread global/universal_script.scr::ClearInventory
+
+// Any objectives that haven't been set to Success or Fail should be set
+// here. This usually is for things like "Eliminate All Hostile Forces"
+// All Objectives need to be set to Success or Fail by the end of the
+// map. This should be automatic for the most part but if you
+// Find any that aren't, we need to figure out what to do with them.
+level.PObjective1 = 1
+level.PObjective2 = 1
+level.SObjective1 ifnotequal 1 level.SObjective1 = 2
+level.SObjective2 ifnotequal 1 level.SObjective2 = 2
+
+thread MissionComputer
+
+// Send over the information that Scott needs to load the proper intermission
+loadintermission "layouts/im_layouts/csite_to_subway_cinema"
+thread global/universal_script.scr::CopyNewMisConToIntermission
+
+end
+
+//---------------------------------------------------------------------------
+// Near CSite Exit 1
+//---------------------------------------------------------------------------
+csite_exit1:
+game.csite_exit = 0
+end
+
+//---------------------------------------------------------------------------
+// Near CSite Exit 2
+//---------------------------------------------------------------------------
+csite_exit2:
+game.csite_exit = 1
+end
+
+//---------------------------------------------------------------------------
+// Using the Valve in the pool area
+//---------------------------------------------------------------------------
+ValveInPool:
+
+ValveLoop:
+$valve1 onuse ValveMessage
+pause
+
+ValveMessage:
+level.ValveBroke ifequal 0 goto ValveUseAndWait
+end
+
+ValveUseAndWait:
+$valve1 nouse
+thread dialog::blade_valve_stuck
+wait 4
+goto ValveLoop
+
+//---------------------------------------------------------------------------
+// Duke Secret Portal Open
+//---------------------------------------------------------------------------
+OpenDukeSecretPortal:
+$duke_secret_portal open
+end
+
+//---------------------------------------------------------------------------
+// Duke Secret Portal Close
+//---------------------------------------------------------------------------
+CloseDukeSecretPortal:
+$duke_secret_portal close
+end
+
+//---------------------------------------------------------------------------
+// JC Taunting Blade when he goes after the chick #1
+//---------------------------------------------------------------------------
+JCDoorTaunt1:
+
+level.Hostage1State ifequal 0 goto JCDoorTaunt1_Blade
+level.Hostage1Taunted ifequal 1 goto JCDoorTaunt1_Blade
+level.Hostage1Taunted = 1
+thread dialog::jc_what_thinking
+goto JCDoorTaunt1_End
+
+JCDoorTaunt1_Blade:
+thread global/universal_script.scr::blade_no_reason
+goto JCDoorTaunt1_End
+
+JCDoorTaunt1_End:
+
+end
+
+//---------------------------------------------------------------------------
+// The Crane
+//---------------------------------------------------------------------------
+Crane:
+$beam1_clipper notsolid
+$beam2_clipper notsolid
+$crane bind $crane_clip
+$crane_panel bind $crane_clip
+wait game.FRAMETIME
+
+$wreckingball bind $crane_clip
+wait game.FRAMETIME
+
+$crane ambientsound "vehicle/bulldoze/idle.wav"
+$crane_clip ambientsound "vehicle/bulldoze/idle.wav"
+$crane_panel ambientsound "vehicle/bulldoze/idle.wav"
+$crane_clip time 4
+$crane_clip rotateYup -30
+waitFor $crane_clip
+
+$crane_panel onuse MoveCrane
+pause
+
+MoveCrane:
+$crane_clip nouse
+$crane_panel nouse
+$crane ambientsound "vehicle/bulldoze/run.wav"
+$crane_clip ambientsound "vehicle/bulldoze/run.wav"
+$crane_panel ambientsound "vehicle/bulldoze/run.wav"
+$crane_clip rotateYup 120
+wait 3.2
+trigger $beam1
+wait 0.8
+$crane ambientsound "vehicle/bulldoze/idle.wav"
+$crane_clip ambientsound "vehicle/bulldoze/idle.wav"
+$crane_panel ambientsound "vehicle/bulldoze/idle.wav"
+
+end
+
+//---------------------------------------------------------------------------
+// Roof Hostage Is Safe
+//---------------------------------------------------------------------------
+RoofHostageSafe:
+
+level.HostageCount += 1
+level.HostageCount ifless 2 goto RoofHostageSafe_End
+level.SObjective2 = 1
+thread MissionComputer
+thread global/universal_script.scr::SObjectiveComplete
+goto RoofHostageSafe_End
+
+RoofHostageSafe_End:
+
+end
+
+//---------------------------------------------------------------------------
+// Vator Hostage Is Safe
+//---------------------------------------------------------------------------
+VatorHostageSafe:
+
+level.HostageCount += 1
+level.HostageCount ifless 2 goto VatorHostageSafe_End
+level.SObjective2 = 1
+thread MissionComputer
+thread global/universal_script.scr::SObjectiveComplete
+level.HostageCount ifequal 2 thread global/universal_script.scr::SObjectiveComplete
+goto VatorHostageSafe_End
+
+VatorHostageSafe_End:
+
+end
+
+//---------------------------------------------------------------------------
+// Opens the areaportal for the alternate exit
+//---------------------------------------------------------------------------
+altexit_open:
+//$door_break_portal open
+end
+
+//---------------------------------------------------------------------------
+// Closes the areaportal for the alternate exit
+//---------------------------------------------------------------------------
+altexit_close:
+//$door_break_portal close
+end
+
+//---------------------------------------------------------------------------
+// Control lids for first dumpster
+//---------------------------------------------------------------------------
+DumpsterThread:
+
+$dumpster_lid1 bind $dumpster
+$dumpster_lid2 bind $dumpster
+$dumpster_lid1 setdamage 0
+$dumpster_lid2 setdamage 0
+wait game.FRAMETIME
+
+$dumpster time 0.1
+$dumpster rotateYup 15
+waitFor $dumpster
+
+$dumpster ontrigger Dumpster_PopOpen
+pause
+
+Dumpster_PopOpen:
+$dumpster_lid1 playsound "environment/doors/metal/mtlcls3.wav" 2
+$dumpster_lid1 time 0.4
+$dumpster_lid1 rotateXdownto 245
+waitFor $dumpster_lid1
+
+$dumpster_lid1 playsound "environment/doors/metal/mtlclose.wav" 2
+local.Lid1 = 1
+local.Lid2 = 0
+$dumpster_lid1 time 0.8
+$dumpster_lid2 time 0.8
+goto Dumpster_Wait
+
+Dumpster_Wait:
+$dumpster_lid1 onuse Dumpster_Lid1_Move
+$dumpster_lid2 onuse Dumpster_Lid2_Move
+$dumpster_lid1 onblock Dumpster_Lid1_Move
+$dumpster_lid2 onblock Dumpster_Lid2_Move
+pause
+
+Dumpster_Lid1_Move:
+$dumpster_lid1 playsound "environment/doors/metal/mtlcls3.wav" 2
+$dumpster_lid1 nouse
+$dumpster_lid2 nouse
+local.Lid1 ifequal 0 $dumpster_lid1 rotateXdownto 245
+local.Lid1 ifequal 1 $dumpster_lid1 rotateXupto 0
+local.Lid1 *= -1
+local.Lid1 += 1
+waitFor $dumpster_lid1
+$dumpster_lid1 playsound "environment/doors/metal/mtlclose.wav" 2
+goto Dumpster_Wait
+
+Dumpster_Lid2_Move:
+$dumpster_lid2 playsound "environment/doors/metal/mtlcls3.wav" 2
+$dumpster_lid1 nouse
+$dumpster_lid2 nouse
+local.Lid2 ifequal 0 $dumpster_lid2 rotateXdownto 245
+local.Lid2 ifequal 1 $dumpster_lid2 rotateXupto 0
+local.Lid2 *= -1
+local.Lid2 += 1
+waitFor $dumpster_lid2
+$dumpster_lid2 playsound "environment/doors/metal/mtlclose.wav" 2
+goto Dumpster_Wait
+
+end
+
+//---------------------------------------------------------------------------
+// Control lids for second dumpster
+//---------------------------------------------------------------------------
+Dumpster2Thread:
+
+local.Lid1 = 1
+local.Lid2 = 0
+$dumpster2_lid1 time 0.8
+$dumpster2_lid2 time 0.8
+$dumpster2_lid1 rotateXup 130
+$dumpster2_lid1 setdamage 0
+$dumpster2_lid2 setdamage 0
+waitFor $dumpster2_lid1
+goto Dumpster2_Wait
+
+Dumpster2_Wait:
+$dumpster2_lid1 onuse Dumpster2_Lid1_Move
+$dumpster2_lid2 onuse Dumpster2_Lid2_Move
+$dumpster2_lid1 onblock Dumpster2_Lid1_Move
+$dumpster2_lid2 onblock Dumpster2_Lid2_Move
+pause
+
+Dumpster2_Lid1_Move:
+$dumpster2_lid1 playsound "environment/doors/metal/mtlcls3.wav" 2
+$dumpster2_lid1 nouse
+$dumpster2_lid2 nouse
+local.Lid1 ifequal 0 $dumpster2_lid1 rotateXupto 130
+local.Lid1 ifequal 1 $dumpster2_lid1 rotateXdownto 0
+local.Lid1 *= -1
+local.Lid1 += 1
+waitFor $dumpster2_lid1
+$dumpster2_lid1 playsound "environment/doors/metal/mtlclose.wav" 2
+goto Dumpster2_Wait
+
+Dumpster2_Lid2_Move:
+$dumpster2_lid2 playsound "environment/doors/metal/mtlcls3.wav" 2
+$dumpster2_lid1 nouse
+$dumpster2_lid2 nouse
+local.Lid2 ifequal 0 $dumpster2_lid2 rotateXupto 130
+local.Lid2 ifequal 1 $dumpster2_lid2 rotateXdownto 0
+local.Lid2 *= -1
+local.Lid2 += 1
+waitFor $dumpster2_lid2
+$dumpster2_lid2 playsound "environment/doors/metal/mtlclose.wav" 2
+goto Dumpster2_Wait
+
+end
+
+//---------------------------------------------------------------------------
+// Control portals in basement
+//---------------------------------------------------------------------------
+SpeedsPortal1:
+
+SpeedsPortal1_Loop:
+$generator_portal_open ontrigger SpeedsPortal1_Open
+$generator_portal_close ontrigger SpeedsPortal1_Close
+pause
+
+SpeedsPortal1_Open:
+$large_barrel_portal open
+goto SpeedsPortal1_Loop
+
+SpeedsPortal1_Close:
+$large_barrel_portal close
+goto SpeedsPortal1_Loop
+
+end
+
+//---------------------------------------------------------------------------
+// Control thread for Broken light
+//---------------------------------------------------------------------------
+Generator_Flicker:
+
+Generator_Flicker_Loop:
+local.TimeToWait randomint 20
+$generator_flicker lightstyle "Lc"
+wait local.TimeToWait
+$generator_flicker lightstyle "Lmmzmmz"
+trigger $generator_flicker_sparks
+wait 0.6
+goto Generator_Flicker_Loop
+
+end
+
+//---------------------------------------------------------------------------
+// Elevator Door Setup
+//---------------------------------------------------------------------------
+VatorDoorSetup:
+
+$vator_door1 time 0.1
+$vator_door1 moveDown 52
+wait 0.2
+
+$vator_door1 moveSouth 96
+wait 0.2
+
+$vator_door1 notsolid
+$vator_door1 rotateZdown 90
+$vator_door1 rotateYup 30
+$vator_door2 time 0.1
+$vator_door2 rotateYup 30
+wait game.FRAMETIME
+
+$vator_door2 time 1
+
+VatorDoor_Loop:
+$vator_door2 rotateYup 1
+waitFor $vator_door2
+$vator_door2 rotateYup 2
+waitFor $vator_door2
+$vator_door2 rotateYup 3
+waitFor $vator_door2
+$vator_door2 rotateYup 2
+waitFor $vator_door2
+$vator_door2 rotateYup 1
+waitFor $vator_door2
+$vator_door2 rotateYdown 1
+waitFor $vator_door2
+$vator_door2 rotateYdown 2
+waitFor $vator_door2
+$vator_door2 rotateYdown 3
+waitFor $vator_door2
+$vator_door2 rotateYdown 2
+waitFor $vator_door2
+$vator_door2 rotateYdown 1
+waitFor $vator_door2
+goto VatorDoor_Loop
+
+end
+
+//---------------------------------------------------------------------------
+// Elevator Rope 1
+//---------------------------------------------------------------------------
+VatorRope1:
+
+$vator_rope1 time 0.2
+
+VatorRope1_Loop:
+$vator_rope1 moveEast 1
+waitFor $vator_rope1
+$vator_rope1 moveEast 2
+waitFor $vator_rope1
+$vator_rope1 moveEast 3
+waitFor $vator_rope1
+$vator_rope1 moveEast 2
+waitFor $vator_rope1
+$vator_rope1 moveEast 1
+waitFor $vator_rope1
+$vator_rope1 moveWest 1
+waitFor $vator_rope1
+$vator_rope1 moveWest 2
+waitFor $vator_rope1
+$vator_rope1 moveWest 3
+waitFor $vator_rope1
+$vator_rope1 moveWest 2
+waitFor $vator_rope1
+$vator_rope1 moveWest 1
+waitFor $vator_rope1
+goto VatorRope1_Loop
+
+end
+
+//---------------------------------------------------------------------------
+// Elevator Rope 2
+//---------------------------------------------------------------------------
+VatorRope2:
+
+$vator_rope2 time 0.5
+
+VatorRope2_Loop:
+$vator_rope2 moveNorth 1
+waitFor $vator_rope2
+$vator_rope2 moveNorth 2
+waitFor $vator_rope2
+$vator_rope2 moveNorth 3
+waitFor $vator_rope2
+$vator_rope2 moveNorth 2
+waitFor $vator_rope2
+$vator_rope2 moveNorth 1
+waitFor $vator_rope2
+$vator_rope2 moveSouth 1
+waitFor $vator_rope2
+$vator_rope2 moveSouth 2
+waitFor $vator_rope2
+$vator_rope2 moveSouth 3
+waitFor $vator_rope2
+$vator_rope2 moveSouth 2
+waitFor $vator_rope2
+$vator_rope2 moveSouth 1
+waitFor $vator_rope2
+goto VatorRope2_Loop
+
+end
+
+//---------------------------------------------------------------------------
+// Abandon ABO Vator Door Setup
+//---------------------------------------------------------------------------
+AbandonABO_VatorDoorSetup:
+
+local.Door string parm.Door
+local.StartAngle = parm.StartAngle
+local.Speed = parm.Speed
+
+local.Door time local.Speed
+local.Door rotateYup local.StartAngle
+waitFor local.Door
+
+AbandonABO_VatorDoor_Loop:
+local.Door rotateYup 2
+waitFor local.Door
+local.Door rotateYup 4
+waitFor local.Door
+local.Door rotateYup 6
+waitFor local.Door
+local.Door rotateYup 4
+waitFor local.Door
+local.Door rotateYup 2
+waitFor local.Door
+local.Door rotateYdown 2
+waitFor local.Door
+local.Door rotateYdown 4
+waitFor local.Door
+local.Door rotateYdown 6
+waitFor local.Door
+local.Door rotateYdown 4
+waitFor local.Door
+local.Door rotateYdown 2
+waitFor local.Door
+goto AbandonABO_VatorDoor_Loop
+
+end
+
+//---------------------------------------------------------------------------
+// Abandon ABO Box 1
+//---------------------------------------------------------------------------
+AbandonABO_Box1:
+$abandon_abo_box1 solid
+
+wait .3
+
+AbandonABO_Box1_Loop:
+$abandon_abo_box1 time 2
+$abandon_abo_box1 moveUp 4
+waitFor $abandon_abo_box1
+$abandon_abo_box1 time 2
+$abandon_abo_box1 moveDown 4
+waitFor $abandon_abo_box1
+goto AbandonABO_Box1_Loop
+end
+
+//---------------------------------------------------------------------------
+// Abandon ABO Box 2
+//---------------------------------------------------------------------------
+AbandonABO_Box2:
+$abandon_abo_box2 solid
+
+wait .2
+
+AbandonABO_Box2_Loop:
+$abandon_abo_box2 time 3.5
+$abandon_abo_box2 moveUp 4
+waitFor $abandon_abo_box2
+$abandon_abo_box2 time 3.5
+$abandon_abo_box2 moveDown 4
+waitFor $abandon_abo_box2
+goto AbandonABO_Box2_Loop
+end
+
+//---------------------------------------------------------------------------
+// Abandon ABO Box 3
+//---------------------------------------------------------------------------
+AbandonABO_Box3:
+$abandon_abo_box3 solid
+
+wait .5
+
+AbandonABO_Box3_Loop:
+$abandon_abo_box3 time 3
+$abandon_abo_box3 moveUp 4
+waitFor $abandon_abo_box3
+$abandon_abo_box3 time 3
+$abandon_abo_box3 moveDown 4
+waitFor $abandon_abo_box3
+goto AbandonABO_Box3_Loop
+end
+
+//---------------------------------------------------------------------------
+// Abandon ABO Box 4
+//---------------------------------------------------------------------------
+AbandonABO_Box4:
+$abandon_abo_box4 solid
+waitFor $abandon_abo_box4
+
+wait .1
+
+AbandonABO_Box4_Loop:
+$abandon_abo_box4 time 4.5
+$abandon_abo_box4 moveUp 4
+waitFor $abandon_abo_box4
+$abandon_abo_box4 time 4.5
+$abandon_abo_box4 moveDown 4
+waitFor $abandon_abo_box4
+goto AbandonABO_Box4_Loop
+end
+
+//---------------------------------------------------------------------------
+// Abandon ABO Box 5
+//---------------------------------------------------------------------------
+AbandonABO_Box5:
+$abandon_abo_box5 solid
+
+wait .7
+
+AbandonABO_Box5_Loop:
+$abandon_abo_box5 time 2.5
+$abandon_abo_box5 moveUp 4
+waitFor $abandon_abo_box5
+$abandon_abo_box5 time 2.5
+$abandon_abo_box5 moveDown 4
+waitFor $abandon_abo_box5
+goto AbandonABO_Box5_Loop
+end
+
+//---------------------------------------------------------------------------
+// Abandon ABO Box 6
+//---------------------------------------------------------------------------
+AbandonABO_Box6:
+$abandon_abo_box6 solid
+
+wait .9
+
+AbandonABO_Box6_Loop:
+$abandon_abo_box6 time 3.5
+$abandon_abo_box6 moveUp 4
+waitFor $abandon_abo_box6
+$abandon_abo_box6 time 3.5
+$abandon_abo_box6 moveDown 4
+waitFor $abandon_abo_box6
+goto AbandonABO_Box6_Loop
+end
+
+//---------------------------------------------------------------------------
+// Abandon ABO Box 7
+//---------------------------------------------------------------------------
+AbandonABO_Box7:
+$abandon_abo_box7 solid
+
+wait .4
+
+AbandonABO_Box7_Loop:
+$abandon_abo_box7 time 4
+$abandon_abo_box7 moveUp 4
+waitFor $abandon_abo_box7
+$abandon_abo_box7 time 4
+$abandon_abo_box7 moveDown 4
+waitFor $abandon_abo_box7
+goto AbandonABO_Box7_Loop
+end
+
+//---------------------------------------------------------------------------
+// Abandon ABO Lights
+//---------------------------------------------------------------------------
+AbandonABO_Lights:
+
+$abandon_abo_lights lightstyle "Lffcfkcffkffcffcfcfcccfkcffc"
+AbandonABO_Lights_Loop:
+local.WaitTime randomint 10
+local.WaitTime += 6
+wait local.WaitTime
+goto AbandonABO_Lights_Loop
+
+end
+
+//---------------------------------------------------------------------------
+// Creaking Boards 1
+//---------------------------------------------------------------------------
+
+CreakingBoard1:
+
+CreakingBoard1_Loop:
+$boardcreak1 ontouch CreakingBoard1_PlaySound
+pause
+
+CreakingBoard1_PlaySound:
+$boardcreak1 notouch
+$boardcreak1 playsound "environment/woodcreak/smcreak1.wav"
+waitForSound "environment/woodcreak/smcreak1.wav"
+goto CreakingBoard1_Loop
+
+end
+
+//---------------------------------------------------------------------------
+// Creaking Boards 2
+//---------------------------------------------------------------------------
+
+CreakingBoard2:
+
+CreakingBoard2_Loop:
+$boardcreak2 ontouch CreakingBoard2_PlaySound
+pause
+
+CreakingBoard2_PlaySound:
+$boardcreak2 notouch
+$boardcreak2 playsound "environment/woodcreak/smcreak2.wav"
+waitForSound "environment/woodcreak/smcreak2.wav"
+goto CreakingBoard2_Loop
+
+end
+
+//---------------------------------------------------------------------------
+// Start Rocket Dude
+//---------------------------------------------------------------------------
+StartRocketDude:
+// This thread here just because I'm a dumbass and forgot to delete
+// the trigger calling it.
+end
+
+
+//-------------------------------------------------------
+//-------------------------------------------------------
+// Wieder Character Additions
+//-------------------------------------------------------
+//-------------------------------------------------------
+
+//---------------------------------------------------------------------------
+// Mancini Jumping
+//---------------------------------------------------------------------------
+AI_Mancini_Jumping:
+
+local.self ignoreall
+local.self definestate activate Mancini_Jump
+pause
+
+Mancini_Jump:
+music surprise
+local.self ignore activate
+thread dialog::mancini_get_me_out
+local.self runto $mancini_jump_end
+waitFor local.self
+local.self runto $mancini_escape
+waitFor local.self
+local.self remove
+end
+
+end
+
+//---------------------------------------------------------------------------
+// Mancini Tube
+//---------------------------------------------------------------------------
+AI_Mancini_Tube:
+
+local.self ignoreall
+local.self definestate activate Mancini_Tube_Activate
+pause
+
+Mancini_Tube_Activate:
+local.self ignore activate
+thread dialog::mancini_dont_let_thru
+wait 2
+local.self runto $mancini_tube_escape
+waitFor local.self
+local.self remove
+level.PipeDown ifequal 0 wait 4
+level.PipeDown ifequal 0 thread dialog::jc_way_into_pipe
+end
+
+end
+
+//---------------------------------------------------------------------------
+// Mancini Ladder
+//---------------------------------------------------------------------------
+AI_Mancini_Ladder:
+
+$mancini_door lock
+$weak_ladder time 1.5
+$weak_ladder rotateZup 17
+waitFor $weak_ladder
+
+local.self ignoreall
+local.self definestate activate Mancini_Ladder_Activate
+pause
+
+Mancini_Ladder_Activate:
+local.self ignore activate
+thread dialog::mancini_persistent
+local.self anim "csite_12_ladder_push"
+waitFor local.self
+local.self anim "idle"
+$weak_ladder rotateZup -107
+waitFor $weak_ladder
+$weak_ladder shatter "0 0 0" 30 50 75 .5 0
+wait game.FRAMETIME
+$weak_ladder remove
+thread dialog::jc_look_out_above
+local.self runto $mancini_ladder_1
+waitFor local.self
+local.self runto $mancini_ladder_2
+waitFor local.self
+local.self runto $mancini_fall_escape
+waitFor local.self
+local.self remove
+end
+
+end
+
+//---------------------------------------------------------------------------
+// Mancini Final
+//---------------------------------------------------------------------------
+AI_Mancini_Final:
+
+$end_thug1 hide
+$end_thug2 hide
+$end_thug3 hide
+local.self hide
+local.self ignoreall
+local.self definestate activate Mancini_Final_Activate
+pause
+
+Mancini_Final_Activate:
+// [XA] replace nonfunctional 'action' music trigger with 'surprise'
+music surprise
+// $end_thug1 show
+// $end_thug2 show
+// $end_thug3 show
+// local.self show
+local.self ignore activate
+thread dialog::mancini_blast_him
+local.self runto $mancini_final_flee1
+waitFor local.self
+local.self runto $mancini_final_flee2
+waitFor local.self
+local.self runto $mancini_final_flee3
+waitFor local.self
+local.self runto $mancini_final_flee4
+waitFor local.self
+music normal
+local.self remove
+end
+
+end
+
+//---------------------------------------------------------------------------
+// Thug in the dumpster
+//---------------------------------------------------------------------------
+AI_Thug_Dumpster:
+
+local.self ignoresounds
+local.self ignore sightenemy
+local.self definestate activate Thug_Dumpster_Attack
+pause
+
+Thug_Dumpster_Attack:
+local.self ignore activate
+local.self anim "opencan1"
+waitFor local.self
+local.self anim "idle1"
+local.self respondtoall
+local.self attack *1
+pause
+
+end
+
+//---------------------------------------------------------------------------
+// Spawned Pipe Thug
+//---------------------------------------------------------------------------
+AI_PipeThug:
+
+local.self item Health 50
+local.self definestate idle PipeThug_Idle
+local.self state idle
+pause
+
+PipeThug_Idle:
+local.self ignoreall
+local.self turnto 0
+waitFor local.self
+local.self runto $pipe_thug_node
+waitFor local.self
+local.self respondtoall
+local.self state standground
+end
+
+end
+
+//---------------------------------------------------------------------------
+// Thug on ledge 1
+//---------------------------------------------------------------------------
+AI_Thug_Ledge1:
+
+level.SkillLevel ifless 1 goto AI_Thug_Ledge1_Delete
+
+local.self ignoresounds
+local.self definestate activate Thug_Ledge1_Attack
+local.self definestate idle Thug_Ledge1_Idle
+local.self state idle
+pause
+
+Thug_Ledge1_Attack:
+local.self respondtoall
+local.self attack *1
+pause
+
+Thug_Ledge1_Idle:
+local.self walkto $thug_ledge1_node1
+waitFor local.self
+local.self turnto 180
+waitFor local.self
+wait 2
+local.self walkto $thug_ledge1_node2
+waitFor local.self
+local.self turnto 180
+waitFor local.self
+wait 2
+goto Thug_Ledge1_Idle
+
+AI_Thug_Ledge1_Delete:
+local.self remove
+
+end
+
+//---------------------------------------------------------------------------
+// Thug on ledge 2
+//---------------------------------------------------------------------------
+AI_Thug_Ledge2:
+
+level.SkillLevel ifless 2 goto AI_Thug_Ledge2_Delete
+
+local.self item Health 20
+local.self ignoresounds
+local.self definestate activate Thug_Ledge2_Attack
+local.self definestate idle Thug_Ledge2_Idle
+local.self state idle
+pause
+
+Thug_Ledge2_Attack:
+local.self respondtoall
+local.self attack *1
+pause
+
+Thug_Ledge2_Idle:
+local.self walkto $thug_ledge2_node2
+waitFor local.self
+local.self turnto 180
+waitFor local.self
+wait 2
+local.self walkto $thug_ledge2_node1
+waitFor local.self
+local.self turnto 180
+waitFor local.self
+wait 2
+goto Thug_Ledge2_Idle
+
+AI_Thug_Ledge2_Delete:
+local.self remove
+
+end
+
+//---------------------------------------------------------------------------
+// Thug 1 on roof 1
+//---------------------------------------------------------------------------
+AI_Thug1_Roof1:
+
+local.self item Health 50
+local.self painthreshold 0
+local.self ignoresounds
+local.self ignore sightenemy
+local.self definestate activate Thug1_Roof1_Attack
+local.self definestate pain Thug1_Roof1_Pain
+local.self definestate weaponsound Thug1_Roof1_Sound
+pause
+
+Thug1_Roof1_Attack:
+local.self ignore activate
+local.self respondto pain
+local.self runto $roof1_duck_node
+waitFor local.self
+local.self turnto 270
+waitFor local.self
+local.self respondtoall
+local.self attack *1
+pause
+
+Thug1_Roof1_Pain:
+local.self copystate pain default_pain
+local.self respondtoall
+local.self attack local.other
+pause
+
+Thug1_Roof1_Sound:
+local.self copystate pain default_pain
+local.self respondtoall
+local.self attack *1
+pause
+
+end
+
+//---------------------------------------------------------------------------
+// Thug 2 on roof 1
+//---------------------------------------------------------------------------
+AI_Thug2_Roof1:
+
+local.self painthreshold 0
+local.self ignoresounds
+local.self ignore sightenemy
+local.self definestate activate Thug2_Roof1_Attack
+local.self definestate pain Thug2_Roof1_Pain
+local.self definestate weaponsound Thug2_Roof1_Sound
+pause
+
+Thug2_Roof1_Attack:
+local.self ignore activate
+local.self respondto pain
+local.self runto $roof1_standground
+waitFor local.self
+local.self respondtoall
+local.self attack *1
+pause
+
+Thug2_Roof1_Pain:
+local.self copystate pain default_pain
+local.self respondtoall
+local.self attack local.other
+pause
+
+Thug2_Roof1_Sound:
+local.self copystate pain default_pain
+local.self respondtoall
+local.self attack *1
+pause
+
+end
+
+//---------------------------------------------------------------------------
+// Hostage On Roof
+//---------------------------------------------------------------------------
+AI_Hostage_Roof:
+
+level.Hostage1State = 0
+local.self ignoreall
+local.self respondto pain opendoor
+local.self definestate idle Hostage_Roof_Idle
+local.self definestate use Hostage_Roof_Saved
+local.self definestate killed Hostage_Roof_Killed
+local.self state idle
+pause
+
+Hostage_Roof_Idle:
+local.self anim "crouch_idle"
+waitFor local.self
+pause
+
+Hostage_Roof_Saved:
+thread blade_saved_female_dialog_thread
+level.Hostage1State = 1
+local.self ignore use
+local.self runto $roof_hostage_flee
+waitFor local.self
+local.self remove
+end
+
+Hostage_Roof_Killed:
+level.SObjective2 ifequal 2 goto Hostage_Roof_Killed_FailedAlready
+level.SObjective2 = 2
+thread MissionComputer
+thread global/universal_script.scr::SObjectiveFailed
+Hostage_Roof_Killed_FailedAlready:
+end
+
+end
+
+//---------------------------------------------------------------------------
+// Construction Yard Thug 1
+//---------------------------------------------------------------------------
+AI_CYard_Thug1:
+local.self item Health 20
+local.self painthreshold 0
+local.self ignore sightenemy
+local.self ignoresounds
+local.self definestate activate CYard_Thug1_Active
+local.self definestate pain CYard_Thug1_Pain
+local.self definestate weaponsound CYard_Thug1_Sound
+local.self definestate painsound CYard_Thug1_Sound
+local.self definestate deathsound CYard_Thug1_Sound
+local.self definestate breakingsound CYard_Thug1_Sound
+local.self definestate idle CYard_Thug1_Idle
+local.self state idle
+pause
+
+CYard_Thug1_Idle:
+local.self walkto $outside_porto1
+waitFor local.self
+wait 4
+local.self walkto $outside_porto3
+waitFor local.self
+wait 6
+local.self walkto $outside_porto2
+waitFor local.self
+wait 2
+local.self walkto $outside_porto3
+waitFor local.self
+wait 4
+goto CYard_Thug1_Idle
+
+CYard_Thug1_Active:
+local.self ignore activate
+local.self runto $thug1_scatter_spot
+waitFor local.self
+local.self respondtoall
+local.self attack *1
+pause
+
+CYard_Thug1_Pain:
+local.self respondtoall
+local.self attack local.other
+pause
+
+CYard_Thug1_Sound:
+local.self respondtoall
+local.self attack *1
+pause
+
+end
+
+//---------------------------------------------------------------------------
+// Construction Yard Thug 2
+//---------------------------------------------------------------------------
+AI_CYard_Thug2:
+local.self item Health 20
+local.self painthreshold 0
+local.self ignore sightenemy
+local.self ignoresounds
+local.self definestate activate CYard_Thug2_Active
+local.self definestate pain CYard_Thug2_Pain
+local.self definestate weaponsound CYard_Thug2_Sound
+local.self definestate painsound CYard_Thug2_Sound
+local.self definestate deathsound CYard_Thug2_Sound
+local.self definestate breakingsound CYard_Thug2_Sound
+pause
+
+CYard_Thug2_Active:
+local.self ignore activate
+local.self runto $thug2_scatter_spot
+waitFor local.self
+local.self respondtoall
+local.self attack *1
+pause
+
+CYard_Thug2_Pain:
+local.self respondtoall
+local.self attack local.other
+pause
+
+CYard_Thug2_Sound:
+local.self respondtoall
+local.self attack *1
+pause
+
+end
+
+//---------------------------------------------------------------------------
+// Construction Yard Thug 3
+//---------------------------------------------------------------------------
+AI_CYard_Thug3:
+level.SkillLevel ifless 2 goto AI_CYard_Thug3_Delete
+
+local.self item Health 20
+local.self painthreshold 0
+local.self ignore sightenemy
+local.self ignoresounds
+local.self definestate idle CYard_Thug3_Idle
+local.self definestate activate CYard_Thug3_Active
+local.self definestate pain CYard_Thug3_Pain
+local.self definestate weaponsound CYard_Thug3_Sound
+local.self definestate painsound CYard_Thug3_Sound
+local.self definestate deathsound CYard_Thug3_Sound
+local.self definestate breakingsound CYard_Thug3_Sound
+local.self state idle
+pause
+
+CYard_Thug3_Active:
+local.self ignore activate
+local.self runto $thug3_scatter_spot
+waitFor local.self
+local.self respondtoall
+local.self attack *1
+pause
+
+CYard_Thug3_Pain:
+local.self respondtoall
+local.self attack local.other
+pause
+
+CYard_Thug3_Sound:
+local.self respondtoall
+local.self attack *1
+pause
+
+CYard_Thug3_Idle:
+local.self walkto $thug3_node1
+waitFor local.self
+local.self walkto $thug3_node2
+waitFor local.self
+local.self walkto $thug3_node3
+waitFor local.self
+local.self walkto $thug3_node4
+waitFor local.self
+local.self walkto $thug3_node5
+waitFor local.self
+goto CYard_Thug3_Idle
+
+AI_CYard_Thug3_Delete:
+local.self remove
+
+end
+
+//---------------------------------------------------------------------------
+// Construction Worker Pusing a Box
+//---------------------------------------------------------------------------
+AI_PushWorker:
+
+local.self ignore sightenemy
+local.self definestate activate PushWorker_Activate
+local.self state idle
+pause
+
+PushWorker_Activate:
+music suspense
+wait 1
+thread global/universal_script.scr::AutoSave
+local.Box string "$pushbox1"
+local.self anim "push1"
+$pushbox1 time 1
+$pushbox1 moveBackward 32
+waitFor $pushbox1
+$pushbox1 moveBackward 32
+waitFor $pushbox1
+$pushbox1 moveBackward 32
+waitFor $pushbox1
+$pushbox1 moveBackward 32
+waitFor $pushbox1
+$pushbox1 moveBackward 32
+waitFor $pushbox1
+$pushbox1 moveBackward 32
+waitFor $pushbox1
+$pushbox1 moveBackward 32
+waitFor $pushbox1
+$pushbox1 moveBackward 32
+waitFor $pushbox1
+$pushbox1 moveBackward 32
+waitFor $pushbox1
+$pushbox1 moveBackward 32
+waitFor $pushbox1
+local.self anim "twitch1"
+wait 2
+local.self anim "twitch2"
+wait 2
+local.self walkto $cworker1_node1
+waitFor local.self
+local.self walkto $cworker1_box2
+waitFor local.self
+local.self turnto 180
+waitFor local.self
+local.Box string "$pushbox2"
+local.self anim "push1"
+$pushbox2 time 1
+$pushbox2 moveBackward 32
+waitFor $pushbox2
+$pushbox2 moveBackward 32
+waitFor $pushbox2
+$pushbox2 moveBackward 32
+waitFor $pushbox2
+$pushbox2 moveBackward 32
+waitFor $pushbox2
+local.self anim "twitch1"
+wait 2
+local.self anim "push1"
+$pushbox2 moveBackward 32
+waitFor $pushbox2
+$pushbox2 moveBackward 32
+waitFor $pushbox2
+$pushbox2 moveBackward 32
+waitFor $pushbox2
+$pushbox2 moveBackward 32
+waitFor $pushbox2
+local.self anim "twitch2"
+wait 2
+local.self anim "push1"
+$pushbox2 moveBackward 32
+waitFor $pushbox2
+$pushbox2 moveBackward 32
+waitFor $pushbox2
+$pushbox2 moveBackward 32
+waitFor $pushbox2
+$pushbox2 moveBackward 32
+waitFor $pushbox2
+local.self walkto $cworker1_node1
+waitFor local.self
+local.self walkto $cworker1_node2
+waitFor local.self
+local.self walkto $cworker1_node3
+waitFor local.self
+local.self anim "twitch2"
+waitFor local.self
+local.self walkto $cworker1_node4
+waitFor local.self
+local.self walkto $cworker1_node5
+waitFor local.self
+local.self walkto $cworker1_node6
+waitFor local.self
+local.self turnto 90
+waitFor local.self
+local.self anim "twitch2"
+waitFor local.self
+local.self anim "idle1"
+end
+
+end
+
+//---------------------------------------------------------------------------
+// Basement Thug 1
+//---------------------------------------------------------------------------
+AI_Basement_Thug1:
+//local.self ignoresounds
+//pause
+end
+
+//---------------------------------------------------------------------------
+// Basement Thug 2
+//---------------------------------------------------------------------------
+AI_Basement_Thug2:
+//local.self ignoresounds
+//pause
+end
+
+//---------------------------------------------------------------------------
+// Basement Thug Ambush
+//---------------------------------------------------------------------------
+AI_Basement_ThugAmbush:
+local.self item Health 50
+//local.self ignoresounds
+//pause
+end
+
+//---------------------------------------------------------------------------
+// Basement Thugs
+//---------------------------------------------------------------------------
+AI_Basement_Thugs:
+
+local.ThugNum = parm.ThugNum
+local.Node string "$basement_guy"
+local.Node appendint local.ThugNum
+local.Node append "_node"
+
+local.self ignoresounds
+local.self ignore sightenemy
+local.self definestate activate Basement_Thugs_Active
+pause
+
+Basement_Thugs_Active:
+local.self ignore activate
+local.ThugNum ifequal 3 local.self walkto local.Node
+local.ThugNum ifequal 4 local.self walkto local.Node
+local.ThugNum ifequal 5 local.self walkto local.Node
+local.ThugNum ifequal 6 local.self runto local.Node
+local.ThugNum ifequal 7 local.self runto local.Node
+waitFor local.self
+local.ThugNum ifequal 3 local.self turnto 0
+local.ThugNum ifequal 4 local.self turnto 270
+local.ThugNum ifequal 5 local.self turnto 270
+local.ThugNum ifequal 6 local.self turnto 0
+local.ThugNum ifequal 7 local.self turnto 0
+waitFor local.self
+local.self respondtoall
+local.self attack *1
+pause
+
+end
+
+//---------------------------------------------------------------------------
+// Bum 1
+//---------------------------------------------------------------------------
+AI_Bum1:
+
+local.self ignoreall
+local.self respondto pain killed use
+local.self definestate use Bum1_Use
+local.self definestate idle Bum1_Idle
+local.self state idle
+pause
+
+Bum1_Idle:
+local.self walkto $bum1_node1
+waitFor local.self
+local.self anim "twitch2"
+waitFor local.self
+local.self walkto $bum1_node2
+waitFor local.self
+local.self anim "idle1"
+waitFor local.self
+local.self walkto $bum1_node3
+waitFor local.self
+local.self walkto $bum1_node4
+waitFor local.self
+local.self anim "twitch2"
+local.self walkto $bum1_node3
+waitFor local.self
+local.self walkto $bum1_node2
+waitFor local.self
+local.self walkto $bum1_node1
+waitFor local.self
+local.self anim "idle1"
+waitFor local.self
+goto Bum1_Idle
+
+Bum1_Use:
+local.self ignore use
+parm.SaySomething = 0
+thread bum_say_something_thread
+$bum1 nouse 
+wait 4
+
+end
+
+//---------------------------------------------------------------------------
+// Bum 2
+//---------------------------------------------------------------------------
+AI_Bum2:
+
+local.self ignoreall
+local.self respondto pain killed use
+local.self definestate use Bum2_Use
+local.self definestate idle Bum2_Idle
+local.self state idle
+pause
+
+Bum2_Idle:
+local.self anim "idle1"
+
+pause
+
+Bum2_Use:
+
+local.self ignore use
+parm.SaySomething = 6
+thread bum_say_something_thread
+$bum2 nouse 
+wait 4
+
+end
+
+//---------------------------------------------------------------------------
+// Vator Thug 1
+//---------------------------------------------------------------------------
+AI_Vator_Thug1:
+local.self item Health 50
+local.self ignoresounds
+local.self definestate activate Vator_Thug1_Active
+pause
+
+Vator_Thug1_Active:
+local.self runto $vator_thug1_node
+waitFor local.self
+local.self respondtoall
+local.self attack *1
+pause
+
+end
+
+//---------------------------------------------------------------------------
+// Vator Thug 2
+//---------------------------------------------------------------------------
+AI_Vator_Thug2:
+local.self ignoresounds
+local.self definestate activate Vator_Thug2_Active
+pause
+
+Vator_Thug2_Active:
+local.self respondtoall
+local.self attack *1
+pause
+
+end
+
+//---------------------------------------------------------------------------
+// Vator Thug 3
+//---------------------------------------------------------------------------
+AI_Vator_Thug3:
+local.self item Health 20
+local.self ignoresounds
+local.self definestate activate Vator_Thug3_Active
+pause
+
+Vator_Thug3_Active:
+local.self respondtoall
+local.self attack *1
+pause
+
+end
+
+//---------------------------------------------------------------------------
+// Hostage near Vator
+//---------------------------------------------------------------------------
+AI_Hostage_Vator:
+
+local.self ignoreall
+local.self respondto pain opendoor
+local.self definestate idle Hostage_Vator_Idle
+local.self definestate use Hostage_Vator_Saved
+local.self definestate killed Hostage_Vator_Killed
+local.self state idle
+pause
+
+Hostage_Vator_Idle:
+local.self anim "crouch_idle"
+waitFor local.self
+pause
+
+Hostage_Vator_Saved:
+local.self ignore use
+thread blade_saved_female_dialog_thread
+local.self runto $vator_hostage_stage1
+waitFor local.self
+local.self runto $vator_hostage_stage2
+waitFor local.self
+local.self runto $vator_hostage_stage3
+waitFor local.self
+local.self runto $vator_hostage_flee
+waitFor local.self
+local.self remove
+end
+
+Hostage_Vator_Killed:
+level.SObjective2 ifequal 2 goto Hostage_Vator_Killed_FailedAlready
+level.SObjective2 = 2
+thread MissionComputer
+thread global/universal_script.scr::SObjectiveFailed
+Hostage_Vator_Killed_FailedAlready:
+end
+
+end
+
+//---------------------------------------------------------------------------
+// Thugs Outside
+//---------------------------------------------------------------------------
+AI_OutsideThugs:
+local.self health 20
+end
+
+//---------------------------------------------------------------------------
+// Thugs at the end
+//---------------------------------------------------------------------------
+AI_EndThugs:
+local.self health 50
+end
+
+//---------------------------------------------------------------------------
+// Foreman in the trailer
+//---------------------------------------------------------------------------
+AI_Foreman:
+local.self attachmodel blueprints.def gun blueprints
+local.self ignoreall
+local.self respondto pain
+local.self anim "sitting"
+local.self definestate killed Foreman_Killed
+local.self definestate activate Foreman_Scared
+local.self definestate use Foreman_Conversation
+local.self definestate idle Foreman_Waiting
+local.self state idle
+pause
+
+Foreman_Waiting:
+local.self anim "sitting"
+pause
+
+Foreman_Scared:
+local.self ignore activate
+local.self anim "getup"
+waitFor local.self
+thread dialog::blade_foreman_scared
+local.self anim "idle1"
+pause
+
+Foreman_Conversation:
+music suspense
+local.self anim "idle1"
+local.self ignore use
+cinematic
+hud 0
+freezeplayer
+$foreman_camera2 fixedposition
+$foreman_camera1 fixedposition
+cuecamera $foreman_camera1
+fadein 4 0 0 0
+wait 1.5
+thread dialog::blade_foreman
+waitForSound "dialog/csite/blade/vent1.wav" .3
+local.self anim "twitch2"
+waitForSound "dialog/csite/foreman/info1.wav" .3
+local.self anim "handitem"
+waitForSound "dialog/csite/foreman/take.wav" .1
+$blueprints hide
+local.self anim "twitch1"
+waitForSound "dialog/csite/blade/whtth1.wav" .3
+local.self anim "twitch2"
+waitForSound "dialog/csite/foreman/info2.wav" .1
+local.self anim "idle1"
+waitForSound "dialog/csite/foreman/plsgo.wav" .1
+hud 1
+fadein 4 0 0 0
+cueplayer
+noncinematic
+releaseplayer
+local.self respondto pain killed
+
+trigger $foreman_guards
+*1 item blueprints 1
+game.csite_HaveBlueprints = 1
+level.SObjective1 = 1
+thread MissionComputer
+thread global/universal_script.scr::SObjectiveComplete
+wait game.FRAMETIME
+$csite_thug1 thread AI_CYard_Thug1
+$csite_thug2 thread AI_CYard_Thug2
+$csite_thug3 thread AI_CYard_Thug3
+wait game.FRAMETIME
+trigger $csite_thug1
+trigger $csite_thug2
+trigger $csite_thug3
+pause
+
+Foreman_Killed:
+$blueprints hide
+$foreman_clip notsolid
+level.SObjective1 ifequal 0 level.SObjective1 = 2
+level.SObjective1 ifequal 2 thread MissionComputer
+level.SObjective1 ifequal 2 thread global/universal_script.scr::SObjectiveFailed
+level.SObjective1 ifequal 2 trigger $foreman_guards
+wait game.FRAMETIME
+trigger $csite_thug1
+trigger $csite_thug2
+trigger $csite_thug3
+end
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+// blade_saved_female_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+blade_saved_female_dialog_thread:
+
+local.Count randomint 2
+
+local.Count ifequal 0 thread dialog::blade_civfemale_rescue1
+local.Count ifequal 1 thread dialog::blade_civfemale_rescue2
+waitForThread parm.previousthread
+
+end
+
+// bum_leave_alone_dialog_thread:
+/////////////////////////////////////////////////////////////////////////////
+bum_say_something_thread:
+local.SaySomething = parm.SaySomething
+local.SaySomething ifequal 0 thread dialog::bum_whos_in_costume
+local.SaySomething ifequal 6 thread dialog::bum_staying
+waitForThread parm.previousthread
+end
+
+portapotty:
+thread dialog::worker_im_in_here_asshole
+waitForThread parm.previousthread
+end
+
+//---------------------------------------------------------------------------
+// [XA] new to Reloaded: add a mystery music trigger to stuck valve "puzzle"
+//---------------------------------------------------------------------------
+trigger_valve_music_on_thread:
+  music mystery
+end
+
+trigger_valve_music_off_thread:
+  music normal
+end
+
+
+
+
+
+
+
+
+
+
+//===========================================================================
+// joyeuse additions shamelessly stolen from gorge.scr
+// --------------------------------------------------------------------------
+
+joyeuse_inits:
+$elexis_figure anim pose
+$elexis_figure setframe 0
+$elexis_figure stopanim
+end
+
+atv_motion_monitor:
+
+level.atv_speed = 0
+level.atv_direction vector "(1 0 0)"
+// Raise each contact point to the authored height on the ATV.
+level.atv_probe_up = 28
+level.active_atv string "$atv_base"
+level.atv_primary_speed = 0
+level.atv_primary_speed_previous1 = 0
+level.atv_primary_speed_previous2 = 0
+level.atv_primary_direction vector "(1 0 0)"
+level.atv_primary_direction_previous1 vector "(1 0 0)"
+level.atv_primary_direction_previous2 vector "(1 0 0)"
+level.atv_backup_speed = 0
+level.atv_backup_speed_previous1 = 0
+level.atv_backup_speed_previous2 = 0
+level.atv_backup_direction vector "(1 0 0)"
+level.atv_backup_direction_previous1 vector "(1 0 0)"
+level.atv_backup_direction_previous2 vector "(1 0 0)"
+level.atv_next_breaking_sound = 0
+
+// Poll slowly while the player is on foot. One thread samples both ATVs only
+// while the player is using a vehicle.
+atv_motion_monitor_wait:
+
+wait 0.1
+level.player_in_vehicle ifequal 0 goto atv_motion_monitor_wait
+
+local.primary_previous_origin getorigin $atv_base
+local.backup_previous_origin getorigin $atv_base_backup
+level.atv_primary_speed = 0
+level.atv_primary_speed_previous1 = 0
+level.atv_primary_speed_previous2 = 0
+level.atv_backup_speed = 0
+level.atv_backup_speed_previous1 = 0
+level.atv_backup_speed_previous2 = 0
+
+wait game.FRAMETIME
+
+
+atv_motion_monitor_active_loop:
+
+level.player_in_vehicle ifequal 0 goto atv_motion_monitor_stopped
+
+// Sample the regular ATV.
+local.primary_current_origin getorigin $atv_base
+local.primary_delta vector local.primary_current_origin
+local.primary_delta vector_subtract local.primary_previous_origin
+local.primary_delta vector_setz 0
+level.atv_primary_speed_previous2 = level.atv_primary_speed_previous1
+level.atv_primary_direction_previous2 vector level.atv_primary_direction_previous1
+level.atv_primary_speed_previous1 = level.atv_primary_speed
+level.atv_primary_direction_previous1 vector level.atv_primary_direction
+level.atv_primary_speed vector_length local.primary_delta
+level.atv_primary_speed /= game.FRAMETIME
+level.atv_primary_speed iflessequal 0 goto atv_motion_monitor_primary_store
+level.atv_primary_direction vector local.primary_delta
+level.atv_primary_direction vector_normalize
+
+
+atv_motion_monitor_primary_store:
+
+local.primary_previous_origin vector local.primary_current_origin
+
+// Sample the backup ATV in the same thread.
+local.backup_current_origin getorigin $atv_base_backup
+local.backup_delta vector local.backup_current_origin
+local.backup_delta vector_subtract local.backup_previous_origin
+local.backup_delta vector_setz 0
+level.atv_backup_speed_previous2 = level.atv_backup_speed_previous1
+level.atv_backup_direction_previous2 vector level.atv_backup_direction_previous1
+level.atv_backup_speed_previous1 = level.atv_backup_speed
+level.atv_backup_direction_previous1 vector level.atv_backup_direction
+level.atv_backup_speed vector_length local.backup_delta
+level.atv_backup_speed /= game.FRAMETIME
+level.atv_backup_speed iflessequal 0 goto atv_motion_monitor_backup_store
+level.atv_backup_direction vector local.backup_delta
+level.atv_backup_direction vector_normalize
+
+
+atv_motion_monitor_backup_store:
+
+local.backup_previous_origin vector local.backup_current_origin
+
+// Keep speed and direction from the same frame. Use a three-frame peak so
+// contact cannot erase or turn the approach sample before a rammable checks it.
+local.primary_approach_speed = level.atv_primary_speed
+local.primary_approach_direction vector level.atv_primary_direction
+level.atv_primary_speed_previous1 ifgreater local.primary_approach_speed goto atv_motion_monitor_use_primary_previous1
+level.atv_primary_speed_previous2 ifgreater local.primary_approach_speed goto atv_motion_monitor_use_primary_previous2
+goto atv_motion_monitor_primary_selected
+
+
+atv_motion_monitor_use_primary_previous1:
+
+local.primary_approach_speed = level.atv_primary_speed_previous1
+local.primary_approach_direction vector level.atv_primary_direction_previous1
+level.atv_primary_speed_previous2 ifgreater local.primary_approach_speed goto atv_motion_monitor_use_primary_previous2
+goto atv_motion_monitor_primary_selected
+
+
+atv_motion_monitor_use_primary_previous2:
+
+local.primary_approach_speed = level.atv_primary_speed_previous2
+local.primary_approach_direction vector level.atv_primary_direction_previous2
+
+
+atv_motion_monitor_primary_selected:
+
+local.backup_approach_speed = level.atv_backup_speed
+local.backup_approach_direction vector level.atv_backup_direction
+level.atv_backup_speed_previous1 ifgreater local.backup_approach_speed goto atv_motion_monitor_use_backup_previous1
+level.atv_backup_speed_previous2 ifgreater local.backup_approach_speed goto atv_motion_monitor_use_backup_previous2
+goto atv_motion_monitor_both_selected
+
+
+atv_motion_monitor_use_backup_previous1:
+
+local.backup_approach_speed = level.atv_backup_speed_previous1
+local.backup_approach_direction vector level.atv_backup_direction_previous1
+level.atv_backup_speed_previous2 ifgreater local.backup_approach_speed goto atv_motion_monitor_use_backup_previous2
+goto atv_motion_monitor_both_selected
+
+
+atv_motion_monitor_use_backup_previous2:
+
+local.backup_approach_speed = level.atv_backup_speed_previous2
+local.backup_approach_direction vector level.atv_backup_direction_previous2
+
+
+atv_motion_monitor_both_selected:
+
+local.backup_approach_speed ifgreater local.primary_approach_speed goto atv_motion_monitor_select_backup
+
+level.active_atv string "$atv_base"
+level.atv_speed = local.primary_approach_speed
+level.atv_direction vector local.primary_approach_direction
+goto atv_motion_monitor_active_wait
+
+
+atv_motion_monitor_select_backup:
+
+level.active_atv string "$atv_base_backup"
+level.atv_speed = local.backup_approach_speed
+level.atv_direction vector local.backup_approach_direction
+goto atv_motion_monitor_active_wait
+
+
+atv_motion_monitor_active_wait:
+
+// Emit a silent AI sound event from the occupied ATV every 0.25 seconds.
+// The player origin follows the occupied vehicle and remains correct when
+// either ATV is stationary. No sound-file argument means no audible sound.
+game.time ifless level.atv_next_breaking_sound goto atv_motion_monitor_active_wait_done
+*1 breakingsound
+level.atv_next_breaking_sound = game.time
+level.atv_next_breaking_sound += 0.25
+
+
+atv_motion_monitor_active_wait_done:
+
+wait game.FRAMETIME
+goto atv_motion_monitor_active_loop
+
+
+atv_motion_monitor_stopped:
+
+level.atv_speed = 0
+level.atv_primary_speed = 0
+level.atv_primary_speed_previous1 = 0
+level.atv_primary_speed_previous2 = 0
+level.atv_backup_speed = 0
+level.atv_backup_speed_previous1 = 0
+level.atv_backup_speed_previous2 = 0
+goto atv_motion_monitor_wait
+
+
+rammable_shatter_setup_all:
+
+local.index = 1
+
+
+rammable_shatter_setup_loop:
+
+parm.ram_shatter_index = local.index
+thread rammable_shatter_thread
+
+local.index += 1
+local.index iflessequal level.rammable_shatter_count goto rammable_shatter_setup_loop
+
+end
+
+
+rammable_shatter_thread:
+
+// Copy the shared parameter before this thread pauses.
+local.index = parm.ram_shatter_index
+
+local.body string "$box"
+local.body appendint local.index
+local.body append "_body"
+
+local.break_target string "$box"
+local.break_target appendint local.index
+local.break_target append "_explode"
+
+// The script cannot read an arbitrary sound property from a script object.
+// Select the three authored material sounds here and play them from the body.
+local.break_sound string "impact/crates/crate.wav"
+local.index iflessequal 5 goto rammable_shatter_sound_cardboard
+local.index ifequal 6 goto rammable_shatter_sound_crate
+goto rammable_shatter_sound_selected
+
+
+rammable_shatter_sound_cardboard:
+
+local.break_sound string "impact/crates/crate5.wav"
+goto rammable_shatter_sound_selected
+
+
+rammable_shatter_sound_crate:
+
+local.break_sound string "impact/crates/crate6.wav"
+
+
+rammable_shatter_sound_selected:
+
+// The body's target property contains the required ATV speed.
+local.required_speed gettarget local.body
+local.required_speed ifstrequal "" local.required_speed = 250
+
+// Use this object's origin brush as its contact point. A vehicle probe must
+// come within this three-dimensional distance of that point.
+local.probe_target getorigin local.body
+local.probe_range = 48
+
+// These offsets match the authored points on both ATVs. The regular ATV's
+// side points differ by only one unit, which is below the contact tolerance.
+local.probe_front_1_forward = 59
+local.probe_front_1_side = -15
+local.probe_front_2_forward = 59
+local.probe_front_2_side = 13
+local.probe_back_1_forward = -65
+local.probe_back_1_side = -15
+local.probe_back_2_forward = -65
+local.probe_back_2_side = 13
+local.probe_wake_range = 384
+
+// The intact body blocks the player and shots, but shots cannot break it.
+local.body nodamage
+local.body setdamage 0
+
+
+rammable_shatter_wait:
+
+// Do no object-distance work while the player is on foot. While mounted, use
+// a slow coarse check until this object is close enough for frame probes.
+wait 0.1
+level.player_in_vehicle ifequal 0 goto rammable_shatter_wait
+
+
+rammable_shatter_probe_check:
+
+level.player_in_vehicle ifequal 0 goto rammable_shatter_wait
+local.active_atv string level.active_atv
+local.current_atv_origin getorigin local.active_atv
+
+// Return to the slow coarse check after the ATV leaves this object.
+local.wake_offset vector local.current_atv_origin
+local.wake_offset vector_subtract local.probe_target
+local.wake_distance vector_length local.wake_offset
+local.wake_distance ifgreater local.probe_wake_range goto rammable_shatter_wait
+
+local.current_atv_speed = level.atv_speed
+local.current_atv_direction vector level.atv_direction
+goto rammable_shatter_probe_active
+
+
+rammable_shatter_probe_wait:
+
+wait game.FRAMETIME
+level.player_in_vehicle ifequal 0 goto rammable_shatter_wait
+goto rammable_shatter_probe_check
+
+
+rammable_shatter_probe_active:
+
+// Rebuild the authored probe layout around the moving ATV. Use its travel
+// direction as the forward axis, so the same points work while reversing.
+local.current_probe_side vector_cross local.current_atv_direction "(0 0 1)"
+local.current_probe_side vector_normalize
+
+local.current_probe_vertical vector "(0 0 1)"
+local.current_probe_vertical vector_scale level.atv_probe_up
+
+// Use the closest of the two front and two rear probes. This makes contact
+// independent of the player's collision box.
+local.closest_probe_distance = 999999
+
+local.probe_position vector local.current_atv_origin
+local.probe_component vector local.current_atv_direction
+local.probe_component vector_scale local.probe_front_1_forward
+local.probe_position vector_add local.probe_component
+local.probe_component vector local.current_probe_side
+local.probe_component vector_scale local.probe_front_1_side
+local.probe_position vector_add local.probe_component
+local.probe_position vector_add local.current_probe_vertical
+local.probe_offset vector local.probe_position
+local.probe_offset vector_subtract local.probe_target
+local.probe_distance vector_length local.probe_offset
+local.probe_distance ifless local.closest_probe_distance local.closest_probe_distance = local.probe_distance
+
+local.probe_position vector local.current_atv_origin
+local.probe_component vector local.current_atv_direction
+local.probe_component vector_scale local.probe_front_2_forward
+local.probe_position vector_add local.probe_component
+local.probe_component vector local.current_probe_side
+local.probe_component vector_scale local.probe_front_2_side
+local.probe_position vector_add local.probe_component
+local.probe_position vector_add local.current_probe_vertical
+local.probe_offset vector local.probe_position
+local.probe_offset vector_subtract local.probe_target
+local.probe_distance vector_length local.probe_offset
+local.probe_distance ifless local.closest_probe_distance local.closest_probe_distance = local.probe_distance
+
+local.probe_position vector local.current_atv_origin
+local.probe_component vector local.current_atv_direction
+local.probe_component vector_scale local.probe_back_1_forward
+local.probe_position vector_add local.probe_component
+local.probe_component vector local.current_probe_side
+local.probe_component vector_scale local.probe_back_1_side
+local.probe_position vector_add local.probe_component
+local.probe_position vector_add local.current_probe_vertical
+local.probe_offset vector local.probe_position
+local.probe_offset vector_subtract local.probe_target
+local.probe_distance vector_length local.probe_offset
+local.probe_distance ifless local.closest_probe_distance local.closest_probe_distance = local.probe_distance
+
+local.probe_position vector local.current_atv_origin
+local.probe_component vector local.current_atv_direction
+local.probe_component vector_scale local.probe_back_2_forward
+local.probe_position vector_add local.probe_component
+local.probe_component vector local.current_probe_side
+local.probe_component vector_scale local.probe_back_2_side
+local.probe_position vector_add local.probe_component
+local.probe_position vector_add local.current_probe_vertical
+local.probe_offset vector local.probe_position
+local.probe_offset vector_subtract local.probe_target
+local.probe_distance vector_length local.probe_offset
+local.probe_distance ifless local.closest_probe_distance local.closest_probe_distance = local.probe_distance
+
+local.closest_probe_distance ifgreater local.probe_range goto rammable_shatter_probe_wait
+local.current_atv_speed ifless local.required_speed goto rammable_shatter_too_slow
+
+// The object can break only once.
+local.body notsolid
+
+// Shatter the full body, then remove its original brush geometry.
+// "(0 0 0)": Debris direction. Zero gives no directional bias.
+// 1: Launch power. This is not a distance.
+// 2: Minimum fragment size.
+// 3: Maximum fragment size.
+// 4: Amount to shatter. 1 means 100%, and 0.5 means 50%.
+// 5: Fragment thickness.
+local.body playsound local.break_sound 1
+local.body shatter "(0 0 0)" 100 24 48 0.5 16
+local.body remove
+
+// Map entities with this targetname can add smoke, sound, or other effects.
+trigger local.break_target
+
+end
+
+
+rammable_shatter_too_slow:
+
+// Ignore another probe contact until the ATV retreats and approaches again.
+local.failed_origin vector local.current_atv_origin
+local.failed_direction vector local.current_atv_direction
+
+thread rammable_too_slow_dialog
+
+
+rammable_shatter_retry_wait:
+
+wait game.FRAMETIME
+
+// Rearm if the player leaves the ATV.
+level.player_in_vehicle ifequal 0 goto rammable_shatter_wait
+
+// First require a 64-unit retreat from the rejected impact.
+local.active_atv string level.active_atv
+local.retry_origin getorigin local.active_atv
+local.retry_offset vector local.retry_origin
+local.retry_offset vector_subtract local.failed_origin
+local.retry_offset vector_setz 0
+local.retry_range vector_length local.retry_offset
+local.retry_range ifgreater local.probe_wake_range goto rammable_shatter_wait
+local.retry_distance vector_dot local.retry_offset local.failed_direction
+local.retry_distance ifgreater -64 goto rammable_shatter_retry_wait
+
+// Wait for the ATV to approach again in the original impact direction.
+rammable_shatter_retry_approach_wait:
+
+wait game.FRAMETIME
+level.player_in_vehicle ifequal 0 goto rammable_shatter_wait
+
+local.active_atv string level.active_atv
+local.retry_origin getorigin local.active_atv
+local.retry_offset vector local.retry_origin
+local.retry_offset vector_subtract local.failed_origin
+local.retry_offset vector_setz 0
+local.retry_range vector_length local.retry_offset
+local.retry_range ifgreater local.probe_wake_range goto rammable_shatter_wait
+
+local.retry_speed = level.atv_speed
+local.retry_speed ifless 50 goto rammable_shatter_retry_approach_wait
+
+local.retry_direction_dot vector_dot level.atv_direction local.failed_direction
+local.retry_direction_dot ifless 0.5 goto rammable_shatter_retry_approach_wait
+
+goto rammable_shatter_probe_check
+
+
+rammable_hydrant1_wake:
+
+level.ram_hydrant1_broken ifequal 1 end
+level.ram_hydrant1_active ifequal 1 end
+level.player_in_vehicle ifequal 0 end
+level.ram_hydrant1_active = 1
+
+local.hydrant_index = 1
+local.body string "$ram_hydrant1"
+local.ram_trigger string "$ram_hydrant1_trigger"
+local.break_target string "$hydrantspray1"
+goto rammable_hydrant_monitor_start
+
+
+rammable_hydrant2_wake:
+
+level.ram_hydrant2_broken ifequal 1 end
+level.ram_hydrant2_active ifequal 1 end
+level.player_in_vehicle ifequal 0 end
+level.ram_hydrant2_active = 1
+
+local.hydrant_index = 2
+local.body string "$ram_hydrant2"
+local.ram_trigger string "$ram_hydrant2_trigger"
+local.break_target string "$hydrantspray2"
+
+
+rammable_hydrant_monitor_start:
+
+local.required_speed = 250
+local.probe_range = 48
+local.probe_wake_range = 384
+local.probe_target getorigin local.body
+local.active_atv string level.active_atv
+
+
+rammable_hydrant_probe_check:
+
+local.current_atv_origin getorigin local.active_atv
+
+local.wake_offset vector local.current_atv_origin
+local.wake_offset vector_subtract local.probe_target
+local.wake_distance vector_length local.wake_offset
+local.wake_distance ifgreater local.probe_wake_range goto rammable_hydrant_monitor_stop
+
+local.current_atv_speed = level.atv_speed
+local.current_atv_direction vector level.atv_direction
+goto rammable_hydrant_probe_active
+
+
+rammable_hydrant_probe_wait:
+
+wait game.FRAMETIME
+level.player_in_vehicle ifequal 0 goto rammable_hydrant_monitor_stop
+goto rammable_hydrant_probe_check
+
+
+rammable_hydrant_probe_active:
+
+// Rebuild the same four contact probes used by the numbered rammable objects.
+local.current_probe_side vector_cross local.current_atv_direction "(0 0 1)"
+local.current_probe_side vector_normalize
+local.current_probe_vertical vector "(0 0 1)"
+local.current_probe_vertical vector_scale level.atv_probe_up
+local.closest_probe_distance = 999999
+
+local.probe_position vector local.current_atv_origin
+local.probe_component vector local.current_atv_direction
+local.probe_component vector_scale 59
+local.probe_position vector_add local.probe_component
+local.probe_component vector local.current_probe_side
+local.probe_component vector_scale -15
+local.probe_position vector_add local.probe_component
+local.probe_position vector_add local.current_probe_vertical
+local.probe_offset vector local.probe_position
+local.probe_offset vector_subtract local.probe_target
+local.probe_distance vector_length local.probe_offset
+local.probe_distance ifless local.closest_probe_distance local.closest_probe_distance = local.probe_distance
+
+local.probe_position vector local.current_atv_origin
+local.probe_component vector local.current_atv_direction
+local.probe_component vector_scale 59
+local.probe_position vector_add local.probe_component
+local.probe_component vector local.current_probe_side
+local.probe_component vector_scale 13
+local.probe_position vector_add local.probe_component
+local.probe_position vector_add local.current_probe_vertical
+local.probe_offset vector local.probe_position
+local.probe_offset vector_subtract local.probe_target
+local.probe_distance vector_length local.probe_offset
+local.probe_distance ifless local.closest_probe_distance local.closest_probe_distance = local.probe_distance
+
+local.probe_position vector local.current_atv_origin
+local.probe_component vector local.current_atv_direction
+local.probe_component vector_scale -65
+local.probe_position vector_add local.probe_component
+local.probe_component vector local.current_probe_side
+local.probe_component vector_scale -15
+local.probe_position vector_add local.probe_component
+local.probe_position vector_add local.current_probe_vertical
+local.probe_offset vector local.probe_position
+local.probe_offset vector_subtract local.probe_target
+local.probe_distance vector_length local.probe_offset
+local.probe_distance ifless local.closest_probe_distance local.closest_probe_distance = local.probe_distance
+
+local.probe_position vector local.current_atv_origin
+local.probe_component vector local.current_atv_direction
+local.probe_component vector_scale -65
+local.probe_position vector_add local.probe_component
+local.probe_component vector local.current_probe_side
+local.probe_component vector_scale 13
+local.probe_position vector_add local.probe_component
+local.probe_position vector_add local.current_probe_vertical
+local.probe_offset vector local.probe_position
+local.probe_offset vector_subtract local.probe_target
+local.probe_distance vector_length local.probe_offset
+local.probe_distance ifless local.closest_probe_distance local.closest_probe_distance = local.probe_distance
+
+local.closest_probe_distance ifgreater local.probe_range goto rammable_hydrant_probe_wait
+local.current_atv_speed ifless local.required_speed goto rammable_hydrant_probe_wait
+
+// Stop this wake trigger before the model runs its normal death handler.
+local.ram_trigger remove
+local.hydrant_index ifequal 1 level.ram_hydrant1_broken = 1
+local.hydrant_index ifequal 2 level.ram_hydrant2_broken = 1
+local.hydrant_index ifequal 1 level.ram_hydrant1_active = 0
+local.hydrant_index ifequal 2 level.ram_hydrant2_active = 0
+
+// Start every authored impact effect directly. The hydrant has no map target,
+// so its death cannot toggle these effects off again.
+trigger local.break_target
+
+// Use the model's normal death handler for the break effect.
+local.body takedamage
+local.body kill
+end
+
+
+rammable_hydrant_monitor_stop:
+
+local.hydrant_index ifequal 1 level.ram_hydrant1_active = 0
+local.hydrant_index ifequal 2 level.ram_hydrant2_active = 0
+end
+
+
+rammable_pair_thread:
+
+// Copy the shared parameters before this thread pauses.
+local.ram_trigger string parm.ram_trigger
+local.ram_break_target string parm.ram_break_target
+local.ram_scare_group string parm.ram_scare_group
+local.piece1 string parm.ram_piece1
+local.piece2 string parm.ram_piece2
+local.piece1_height = parm.ram_piece1_height
+local.piece2_height = parm.ram_piece2_height
+local.piece1_stage1_move vector parm.ram_piece1_stage1_move
+local.piece2_stage1_move vector parm.ram_piece2_stage1_move
+local.piece1_rotate vector parm.ram_piece1_rotate
+local.piece2_rotate vector parm.ram_piece2_rotate
+local.piece1_stage2_move vector parm.ram_piece1_stage2_move
+local.piece2_stage2_move vector parm.ram_piece2_stage2_move
+local.probe_range = parm.ram_probe_range
+local.probe_wake_range = 384
+local.ram_required_speed = parm.ram_required_speed
+local.ram_min_forward_distance = parm.ram_min_forward_distance
+local.ram_max_forward_distance = parm.ram_max_forward_distance
+
+// Use a large internal maximum when the optional profile maximum is disabled.
+local.ram_effective_max_forward_distance = local.ram_max_forward_distance
+local.ram_effective_max_forward_distance iflessequal 0 local.ram_effective_max_forward_distance = 999999
+local.ram_effective_min_forward_distance = local.ram_min_forward_distance
+local.ram_effective_min_forward_distance ifgreater local.ram_effective_max_forward_distance local.ram_effective_min_forward_distance = local.ram_effective_max_forward_distance
+local.ram_sound string parm.ram_sound
+local.ram_sound_volume = parm.ram_sound_volume
+local.piece1_origin getorigin local.piece1
+local.piece2_origin getorigin local.piece2
+
+// Use the same four ATV contact points as the rammable debris objects.
+// Gate and door pieces are wider and less regular, so use the profile radius.
+local.probe_front_1_forward = 59
+local.probe_front_1_side = -15
+local.probe_front_2_forward = 59
+local.probe_front_2_side = 13
+local.probe_back_1_forward = -65
+local.probe_back_1_side = -15
+local.probe_back_2_forward = -65
+local.probe_back_2_side = 13
+
+// Treat the line between the two piece origins as the contact surface. This
+// lets either side of a wide gate or double door accept the nearest ATV point.
+local.probe_axis vector local.piece2_origin
+local.probe_axis vector_subtract local.piece1_origin
+local.probe_axis vector_setz 0
+local.probe_axis_length vector_length local.probe_axis
+local.probe_axis vector_normalize
+
+// Movement vectors use (forward, side, up) for stage 1.
+local.piece1_stage1_forward vector_x local.piece1_stage1_move
+local.piece1_stage1_side vector_y local.piece1_stage1_move
+local.piece1_stage1_up vector_z local.piece1_stage1_move
+local.piece2_stage1_forward vector_x local.piece2_stage1_move
+local.piece2_stage1_side vector_y local.piece2_stage1_move
+local.piece2_stage1_up vector_z local.piece2_stage1_move
+
+// Stage 2 movement uses (forward rate, side rate, landing adjustment).
+local.piece1_stage2_forward vector_x local.piece1_stage2_move
+local.piece1_stage2_side vector_y local.piece1_stage2_move
+local.piece1_landing_adjust vector_z local.piece1_stage2_move
+local.piece2_stage2_forward vector_x local.piece2_stage2_move
+local.piece2_stage2_side vector_y local.piece2_stage2_move
+local.piece2_landing_adjust vector_z local.piece2_stage2_move
+
+// Use one ninth of the total rotation in stage 1 and the rest in stage 2.
+// This retains the gate's existing 1:8 rotation split.
+local.piece1_rotate_x vector_x local.piece1_rotate
+local.piece1_rotate_y vector_y local.piece1_rotate
+local.piece1_rotate_z vector_z local.piece1_rotate
+local.piece2_rotate_x vector_x local.piece2_rotate
+local.piece2_rotate_y vector_y local.piece2_rotate
+local.piece2_rotate_z vector_z local.piece2_rotate
+
+local.piece1_stage1_rotate_x = local.piece1_rotate_x
+local.piece1_stage1_rotate_y = local.piece1_rotate_y
+local.piece1_stage1_rotate_z = local.piece1_rotate_z
+local.piece2_stage1_rotate_x = local.piece2_rotate_x
+local.piece2_stage1_rotate_y = local.piece2_rotate_y
+local.piece2_stage1_rotate_z = local.piece2_rotate_z
+local.piece1_stage1_rotate_x /= 9
+local.piece1_stage1_rotate_y /= 9
+local.piece1_stage1_rotate_z /= 9
+local.piece2_stage1_rotate_x /= 9
+local.piece2_stage1_rotate_y /= 9
+local.piece2_stage1_rotate_z /= 9
+
+local.piece1_stage2_rotate_x = local.piece1_rotate_x
+local.piece1_stage2_rotate_y = local.piece1_rotate_y
+local.piece1_stage2_rotate_z = local.piece1_rotate_z
+local.piece2_stage2_rotate_x = local.piece2_rotate_x
+local.piece2_stage2_rotate_y = local.piece2_rotate_y
+local.piece2_stage2_rotate_z = local.piece2_rotate_z
+local.piece1_stage2_rotate_x -= local.piece1_stage1_rotate_x
+local.piece1_stage2_rotate_y -= local.piece1_stage1_rotate_y
+local.piece1_stage2_rotate_z -= local.piece1_stage1_rotate_z
+local.piece2_stage2_rotate_x -= local.piece2_stage1_rotate_x
+local.piece2_stage2_rotate_y -= local.piece2_stage1_rotate_y
+local.piece2_stage2_rotate_z -= local.piece2_stage1_rotate_z
+
+// Keep the physical halves moving away from each other, independent of impact direction.
+local.side vector local.piece1_origin
+local.side vector_subtract local.piece2_origin
+local.side vector_setz 0
+local.side vector_normalize
+
+
+rammable_pair_loop:
+
+// Shots still collide with the gate, but cannot activate it.
+local.piece1 nodamage
+local.piece2 nodamage
+
+// Moving gate pieces must not cause block damage.
+local.piece1 setdamage 0
+local.piece2 setdamage 0
+
+local.piece1 ontrigger rammable_pair_check
+local.piece2 ontrigger rammable_pair_check
+pause
+
+
+rammable_pair_check:
+
+// A trigger target starts this bounded contact check. The pair breaks only
+// when one ATV contact point reaches the line between the two piece origins.
+// Disable both piece handlers while this instance checks the nearby ATV.
+local.piece1 notrigger
+local.piece2 notrigger
+level.player_in_vehicle ifequal 0 goto rammable_pair_loop
+goto rammable_pair_probe_check
+
+
+rammable_pair_probe_wait:
+
+wait game.FRAMETIME
+level.player_in_vehicle ifequal 0 goto rammable_pair_loop
+
+
+rammable_pair_probe_check:
+
+local.active_atv string level.active_atv
+local.current_atv_origin getorigin local.active_atv
+local.current_atv_direction vector level.atv_direction
+local.current_probe_side vector_cross local.current_atv_direction "(0 0 1)"
+local.current_probe_side vector_normalize
+local.current_probe_vertical vector "(0 0 1)"
+local.current_probe_vertical vector_scale level.atv_probe_up
+
+local.closest_probe_distance = 999999
+
+local.probe_position vector local.current_atv_origin
+local.probe_component vector local.current_atv_direction
+local.probe_component vector_scale local.probe_front_1_forward
+local.probe_position vector_add local.probe_component
+local.probe_component vector local.current_probe_side
+local.probe_component vector_scale local.probe_front_1_side
+local.probe_position vector_add local.probe_component
+local.probe_position vector_add local.current_probe_vertical
+local.probe_offset vector local.probe_position
+local.probe_offset vector_subtract local.piece1_origin
+local.probe_offset vector_setz 0
+local.probe_along vector_dot local.probe_offset local.probe_axis
+local.probe_along ifless 0 local.probe_along = 0
+local.probe_along ifgreater local.probe_axis_length local.probe_along = local.probe_axis_length
+local.probe_closest vector local.probe_axis
+local.probe_closest vector_scale local.probe_along
+local.probe_closest vector_add local.piece1_origin
+local.probe_offset vector local.probe_position
+local.probe_offset vector_subtract local.probe_closest
+local.probe_distance vector_length local.probe_offset
+local.probe_distance ifless local.closest_probe_distance local.closest_probe_distance = local.probe_distance
+
+local.probe_position vector local.current_atv_origin
+local.probe_component vector local.current_atv_direction
+local.probe_component vector_scale local.probe_front_2_forward
+local.probe_position vector_add local.probe_component
+local.probe_component vector local.current_probe_side
+local.probe_component vector_scale local.probe_front_2_side
+local.probe_position vector_add local.probe_component
+local.probe_position vector_add local.current_probe_vertical
+local.probe_offset vector local.probe_position
+local.probe_offset vector_subtract local.piece1_origin
+local.probe_offset vector_setz 0
+local.probe_along vector_dot local.probe_offset local.probe_axis
+local.probe_along ifless 0 local.probe_along = 0
+local.probe_along ifgreater local.probe_axis_length local.probe_along = local.probe_axis_length
+local.probe_closest vector local.probe_axis
+local.probe_closest vector_scale local.probe_along
+local.probe_closest vector_add local.piece1_origin
+local.probe_offset vector local.probe_position
+local.probe_offset vector_subtract local.probe_closest
+local.probe_distance vector_length local.probe_offset
+local.probe_distance ifless local.closest_probe_distance local.closest_probe_distance = local.probe_distance
+
+local.probe_position vector local.current_atv_origin
+local.probe_component vector local.current_atv_direction
+local.probe_component vector_scale local.probe_back_1_forward
+local.probe_position vector_add local.probe_component
+local.probe_component vector local.current_probe_side
+local.probe_component vector_scale local.probe_back_1_side
+local.probe_position vector_add local.probe_component
+local.probe_position vector_add local.current_probe_vertical
+local.probe_offset vector local.probe_position
+local.probe_offset vector_subtract local.piece1_origin
+local.probe_offset vector_setz 0
+local.probe_along vector_dot local.probe_offset local.probe_axis
+local.probe_along ifless 0 local.probe_along = 0
+local.probe_along ifgreater local.probe_axis_length local.probe_along = local.probe_axis_length
+local.probe_closest vector local.probe_axis
+local.probe_closest vector_scale local.probe_along
+local.probe_closest vector_add local.piece1_origin
+local.probe_offset vector local.probe_position
+local.probe_offset vector_subtract local.probe_closest
+local.probe_distance vector_length local.probe_offset
+local.probe_distance ifless local.closest_probe_distance local.closest_probe_distance = local.probe_distance
+
+local.probe_position vector local.current_atv_origin
+local.probe_component vector local.current_atv_direction
+local.probe_component vector_scale local.probe_back_2_forward
+local.probe_position vector_add local.probe_component
+local.probe_component vector local.current_probe_side
+local.probe_component vector_scale local.probe_back_2_side
+local.probe_position vector_add local.probe_component
+local.probe_position vector_add local.current_probe_vertical
+local.probe_offset vector local.probe_position
+local.probe_offset vector_subtract local.piece1_origin
+local.probe_offset vector_setz 0
+local.probe_along vector_dot local.probe_offset local.probe_axis
+local.probe_along ifless 0 local.probe_along = 0
+local.probe_along ifgreater local.probe_axis_length local.probe_along = local.probe_axis_length
+local.probe_closest vector local.probe_axis
+local.probe_closest vector_scale local.probe_along
+local.probe_closest vector_add local.piece1_origin
+local.probe_offset vector local.probe_position
+local.probe_offset vector_subtract local.probe_closest
+local.probe_distance vector_length local.probe_offset
+local.probe_distance ifless local.closest_probe_distance local.closest_probe_distance = local.probe_distance
+
+// Stop the per-frame check after the ATV leaves this object's wake zone.
+local.closest_probe_distance ifgreater local.probe_wake_range goto rammable_pair_loop
+local.closest_probe_distance ifgreater local.probe_range goto rammable_pair_probe_wait
+level.atv_speed ifless local.ram_required_speed goto rammable_pair_too_slow
+
+local.ram_trigger remove
+local.piece1 notrigger
+local.piece2 notrigger
+
+// Copy the monitored values before the monitor updates them again.
+local.impact_speed = level.atv_speed
+local.forward vector level.atv_direction
+
+// Remove collision before the ATV reaches the gate.
+local.piece1 notsolid
+local.piece2 notsolid
+
+// Activate the optional map target when this pair breaks.
+local.ram_break_target ifstrnotequal "" trigger local.ram_break_target
+
+// The office entry doors have the only pair that uses this break target.
+// Turn off their nearby flickering light after the doors break.
+local.ram_break_target ifstrequal "$ram_doorenter_break" thread ram_doorenter_light_off
+
+// Some rammables must frighten their nearby authored civilian group even if
+// BSP area connectivity prevents the normal AI sound event from reaching it.
+local.ram_scare_group ifstrequal "parking_garage" thread scare_parking_garage_neutrals
+local.ram_scare_group ifstrequal "office" thread scare_office_neutrals
+
+// Play the profile's impact sound.
+local.piece1 playsound local.ram_sound local.ram_sound_volume
+
+// Map the profile's required-speed-to-750 range to a 0-1 scale.
+local.launch_scale = local.impact_speed
+local.launch_scale -= local.ram_required_speed
+local.launch_speed_range = 750
+local.launch_speed_range -= local.ram_required_speed
+local.launch_speed_range ifless 1 local.launch_speed_range = 1
+local.launch_scale /= local.launch_speed_range
+local.launch_scale ifless 0 local.launch_scale = 0
+local.launch_scale ifgreater 1 local.launch_scale = 1
+local.launch_timescale = local.launch_scale
+local.launch_timescale /= 8.0
+
+// Temporarily cap the ATV speed after it breaks the gate.
+local.slow_speed = local.impact_speed
+local.slow_speed -= 500
+local.slow_speed ifless 50 local.slow_speed = 50
+local.slow_speed ifgreater 750 local.slow_speed = 750
+local.active_atv vehiclespeed local.slow_speed
+
+// Use a unit vector for the vertical movement offsets.
+local.vertical vector "(0 0 1)"
+
+
+// Calculate piece 1's full rise offsets. Stage 1 cannot exceed the optional maximum.
+local.piece1_stage1_forward_distance = local.piece1_stage1_forward
+local.piece1_stage1_forward_distance *= local.launch_scale
+local.piece1_stage1_forward_distance ifgreater local.ram_effective_max_forward_distance local.piece1_stage1_forward_distance = local.ram_effective_max_forward_distance
+local.piece1_offset_forward vector local.forward
+local.piece1_offset_forward vector_scale local.piece1_stage1_forward_distance
+local.piece1_offset_side vector local.side
+local.piece1_offset_side vector_scale local.piece1_stage1_side
+local.piece1_offset_side vector_scale local.launch_scale
+local.piece1_offset_vertical vector local.vertical
+local.piece1_offset_vertical vector_scale local.piece1_stage1_up
+local.piece1_offset_vertical vector_scale local.launch_scale
+
+// Calculate piece 2's full rise offsets. Stage 1 cannot exceed the optional maximum.
+local.piece2_stage1_forward_distance = local.piece2_stage1_forward
+local.piece2_stage1_forward_distance *= local.launch_scale
+local.piece2_stage1_forward_distance ifgreater local.ram_effective_max_forward_distance local.piece2_stage1_forward_distance = local.ram_effective_max_forward_distance
+local.piece2_offset_forward vector local.forward
+local.piece2_offset_forward vector_scale local.piece2_stage1_forward_distance
+local.piece2_offset_side vector local.side
+local.piece2_offset_side vector_scale local.piece2_stage1_side
+local.piece2_offset_side vector_scale local.launch_scale
+local.piece2_offset_vertical vector local.vertical
+local.piece2_offset_vertical vector_scale local.piece2_stage1_up
+local.piece2_offset_vertical vector_scale local.launch_scale
+
+// Stage 1 moves forward, sideways, and up.
+local.piece1_destination vector local.piece1_origin
+local.piece1_destination vector_add local.piece1_offset_forward
+local.piece1_destination vector_add local.piece1_offset_side
+local.piece1_destination vector_add local.piece1_offset_vertical
+
+local.piece2_destination vector local.piece2_origin
+local.piece2_destination vector_add local.piece2_offset_forward
+local.piece2_destination vector_add local.piece2_offset_side
+local.piece2_destination vector_add local.piece2_offset_vertical
+
+// Scaling distance and time together keeps the stage 1 movement rate constant.
+local.piece1 time local.launch_timescale
+local.piece2 time local.launch_timescale
+local.piece1 moveto local.piece1_destination
+local.piece2 moveto local.piece2_destination
+
+// Spin pieces
+local.piece1 rotateXup local.piece1_stage1_rotate_x
+local.piece1 rotateYup local.piece1_stage1_rotate_y
+local.piece1 rotateZup local.piece1_stage1_rotate_z
+local.piece2 rotateXup local.piece2_stage1_rotate_x
+local.piece2 rotateYup local.piece2_stage1_rotate_y
+local.piece2 rotateZup local.piece2_stage1_rotate_z
+
+waitFor local.piece1
+// Let piece 2 finish stage 1 before either piece receives new movement orders.
+wait game.FRAMETIME
+
+// Stage 2 adds the rise time to its 0.3-second base time.
+local.stage2_time = local.launch_timescale
+local.stage2_time += 0.3
+
+// Scale stage 2 forward travel by the impact speed.
+local.piece1_stage2_forward_distance = local.piece1_stage2_forward
+local.piece1_stage2_forward_distance *= local.stage2_time
+local.piece1_stage2_forward_distance *= local.launch_scale
+local.piece1_forward_distance = local.piece1_stage1_forward_distance
+local.piece1_forward_distance += local.piece1_stage2_forward_distance
+
+// Add the minimum shortfall, then cap stage 2 to the distance left below the maximum.
+local.piece1_forward_shortfall = local.ram_effective_min_forward_distance
+local.piece1_forward_shortfall -= local.piece1_forward_distance
+local.piece1_forward_shortfall ifless 0 local.piece1_forward_shortfall = 0
+local.piece1_stage2_forward_distance += local.piece1_forward_shortfall
+local.piece1_forward_remaining = local.ram_effective_max_forward_distance
+local.piece1_forward_remaining -= local.piece1_stage1_forward_distance
+local.piece1_forward_remaining ifless 0 local.piece1_forward_remaining = 0
+local.piece1_stage2_forward_distance ifgreater local.piece1_forward_remaining local.piece1_stage2_forward_distance = local.piece1_forward_remaining
+local.piece1_step_forward vector local.forward
+local.piece1_step_forward vector_scale local.piece1_stage2_forward_distance
+local.piece1_step_side vector local.side
+local.piece1_step_side vector_scale local.piece1_stage2_side
+local.piece1_step_side vector_scale local.stage2_time
+local.piece1_step_side vector_scale local.launch_scale
+
+// Fall through the stage 1 rise and the adjusted piece height.
+local.piece1_step_down vector local.vertical
+local.piece1_height_adjusted = local.piece1_height
+local.piece1_height_adjusted -= local.piece1_landing_adjust
+local.piece1_step_down vector_scale local.piece1_height_adjusted
+local.piece1_step_down vector_add local.piece1_offset_vertical
+local.piece1_step_down vector_scale -1
+local.piece1_destination vector_add local.piece1_step_forward
+local.piece1_destination vector_add local.piece1_step_side
+local.piece1_destination vector_add local.piece1_step_down
+
+local.piece2_stage2_forward_distance = local.piece2_stage2_forward
+local.piece2_stage2_forward_distance *= local.stage2_time
+local.piece2_stage2_forward_distance *= local.launch_scale
+local.piece2_forward_distance = local.piece2_stage1_forward_distance
+local.piece2_forward_distance += local.piece2_stage2_forward_distance
+local.piece2_forward_shortfall = local.ram_effective_min_forward_distance
+local.piece2_forward_shortfall -= local.piece2_forward_distance
+local.piece2_forward_shortfall ifless 0 local.piece2_forward_shortfall = 0
+local.piece2_stage2_forward_distance += local.piece2_forward_shortfall
+local.piece2_forward_remaining = local.ram_effective_max_forward_distance
+local.piece2_forward_remaining -= local.piece2_stage1_forward_distance
+local.piece2_forward_remaining ifless 0 local.piece2_forward_remaining = 0
+local.piece2_stage2_forward_distance ifgreater local.piece2_forward_remaining local.piece2_stage2_forward_distance = local.piece2_forward_remaining
+local.piece2_step_forward vector local.forward
+local.piece2_step_forward vector_scale local.piece2_stage2_forward_distance
+local.piece2_step_side vector local.side
+local.piece2_step_side vector_scale local.piece2_stage2_side
+local.piece2_step_side vector_scale local.stage2_time
+local.piece2_step_side vector_scale local.launch_scale
+local.piece2_step_down vector local.vertical
+local.piece2_height_adjusted = local.piece2_height
+local.piece2_height_adjusted -= local.piece2_landing_adjust
+local.piece2_step_down vector_scale local.piece2_height_adjusted
+local.piece2_step_down vector_add local.piece2_offset_vertical
+local.piece2_step_down vector_scale -1
+local.piece2_destination vector_add local.piece2_step_forward
+local.piece2_destination vector_add local.piece2_step_side
+local.piece2_destination vector_add local.piece2_step_down
+
+local.piece1 time local.stage2_time
+local.piece2 time local.stage2_time
+local.piece1 moveto local.piece1_destination
+local.piece2 moveto local.piece2_destination
+
+// Spin pieces
+local.piece1 rotateXup local.piece1_stage2_rotate_x
+local.piece1 rotateYup local.piece1_stage2_rotate_y
+local.piece1 rotateZup local.piece1_stage2_rotate_z
+local.piece2 rotateXup local.piece2_stage2_rotate_x
+local.piece2 rotateYup local.piece2_stage2_rotate_y
+local.piece2 rotateZup local.piece2_stage2_rotate_z
+
+waitFor local.piece1
+wait game.FRAMETIME
+local.active_atv vehiclespeed 750
+local.piece1 notsolid
+local.piece2 notsolid
+
+end
+
+
+rammable_pair_too_slow:
+
+// Stop the repeatable map trigger from starting the rejection again every 0.1 seconds.
+local.piece1 notrigger
+local.piece2 notrigger
+
+local.failed_origin getorigin local.active_atv
+local.failed_direction vector level.atv_direction
+
+thread rammable_too_slow_dialog
+
+
+rammable_pair_retry_wait:
+
+wait game.FRAMETIME
+
+// Rearm if the player leaves the ATV.
+level.player_in_vehicle ifequal 0 goto rammable_pair_loop
+
+// First require a 64-unit retreat from the rejected impact.
+local.retry_offset getorigin local.active_atv
+local.retry_offset vector_subtract local.failed_origin
+local.retry_offset vector_setz 0
+local.retry_range vector_length local.retry_offset
+local.retry_range ifgreater local.probe_wake_range goto rammable_pair_loop
+local.retry_distance vector_dot local.retry_offset local.failed_direction
+local.retry_distance ifgreater -64 goto rammable_pair_retry_wait
+
+// Keep the pair disabled until the next approach. This prevents a fast retreat
+// inside the trigger volume from breaking the object in the wrong direction.
+rammable_pair_retry_approach_wait:
+
+wait game.FRAMETIME
+level.player_in_vehicle ifequal 0 goto rammable_pair_loop
+
+local.retry_offset getorigin local.active_atv
+local.retry_offset vector_subtract local.failed_origin
+local.retry_offset vector_setz 0
+local.retry_range vector_length local.retry_offset
+local.retry_range ifgreater local.probe_wake_range goto rammable_pair_loop
+level.atv_speed ifless 50 goto rammable_pair_retry_approach_wait
+
+local.retry_direction_dot vector_dot level.atv_direction local.failed_direction
+local.retry_direction_dot ifless 0.5 goto rammable_pair_retry_approach_wait
+
+goto rammable_pair_loop
+
+
+rammable_too_slow_dialog:
+
+// Prevent adjacent rammable items from starting this line together.
+level.ram_too_slow_dialog_active ifequal 1 goto rammable_too_slow_dialog_done
+level.ram_too_slow_dialog_active = 1
+
+dialog "i_jc" "m_faster" "dialog/gorge/jc/Gofast.wav"
+waitForSound "dialog/gorge/jc/Gofast.wav" 0.2
+
+level.ram_too_slow_dialog_active = 0
+
+
+rammable_too_slow_dialog_done:
+
+end
+
+
+rammable_door_use_dialog:
+
+// This hint is only for a player who tries to use an intact door on foot.
+level.player_in_vehicle ifequal 1 goto rammable_door_use_dialog_done
+level.ram_door_use_dialog_active ifequal 1 goto rammable_door_use_dialog_done
+level.ram_door_use_dialog_active = 1
+
+level.ram_door_use_dialog_first ifequal 0 goto rammable_door_use_dialog_jc
+level.ram_door_use_dialog_first = 0
+dialog "i_blade" "m_jc_how_do_1" "dialog/abandoned/blade/gtt4.wav"
+waitForSound "dialog/abandoned/blade/gtt4.wav" 0.1
+
+
+rammable_door_use_dialog_jc:
+
+dialog "i_jc" "m_what_do_you_2" "dialog/gorge/jc/Gogogo.wav"
+waitForSound "dialog/gorge/jc/Gogogo.wav" 0.2
+
+level.ram_door_use_dialog_active = 0
+
+
+rammable_door_use_dialog_done:
+
+end
+
+
+rocketcar_launcher_setup:
+
+// The stock launcher brushes only supply an origin for each straight rocket.
+$rocketcar1_launcher hide
+$rocketcar1_launcher notsolid
+$rocketcar2_launcher hide
+$rocketcar2_launcher notsolid
+$rocketcar3_launcher hide
+$rocketcar3_launcher notsolid
+$rocketcar4_launcher hide
+$rocketcar4_launcher notsolid
+
+// The visible cars do not handle collision. Solid script objects around the
+// cars block the ATV, bullets, and the scripted rockets until impact.
+$rocketcar1_target notsolid
+$rocketcar2_target notsolid
+$rocketcar3_target notsolid
+$rocketcar4_target notsolid
+
+$rocketcar1_blocker nodamage
+$rocketcar2_blocker nodamage
+$rocketcar3_blocker nodamage
+$rocketcar4_blocker nodamage
+
+end
+
+
+rocketcar1_sequence:
+
+local.turret string "$rocketcar1"
+local.car string "$rocketcar1_target"
+local.blocker string "$rocketcar1_blocker"
+local.launcher string "$rocketcar1_launcher"
+local.shake string "$rocketcar1_shake"
+local.impact_wait = 2.29
+local.extra_shatter = 1
+goto rocketcar_sequence_fire
+
+
+rocketcar2_sequence:
+
+local.turret string "$rocketcar2"
+local.car string "$rocketcar2_target"
+local.blocker string "$rocketcar2_blocker"
+local.launcher string "$rocketcar2_launcher"
+local.shake string "$rocketcar2_shake"
+local.impact_wait = 2.06
+local.extra_shatter = 0
+goto rocketcar_sequence_fire
+
+
+rocketcar3_sequence:
+
+local.turret string "$rocketcar3"
+local.car string "$rocketcar3_target"
+local.blocker string "$rocketcar3_blocker"
+local.launcher string "$rocketcar3_launcher"
+local.shake string "$rocketcar3_shake"
+local.impact_wait = 1.28
+local.extra_shatter = 1
+goto rocketcar_sequence_fire
+
+
+rocketcar4_sequence:
+
+local.turret string "$rocketcar4"
+local.car string "$rocketcar4_target"
+local.blocker string "$rocketcar4_blocker"
+local.launcher string "$rocketcar4_launcher"
+local.shake string "$rocketcar4_shake"
+local.impact_wait = 1.15
+local.extra_shatter = 0
+goto rocketcar_sequence_fire
+
+
+rocketcar_sequence_fire:
+
+// Aim at the matching car. A long lag prevents the normal seek loop from
+// firing an extra rocket before this thread requests its one shot.
+local.turret lagtime 999
+local.turret raise local.car
+wait 2.0
+
+local.launcher launch Rocket
+
+// At the calibrated impact time, remove the collision blocker and use the
+// object's normal death handler. It creates the model's standard debris.
+wait local.impact_wait
+local.blocker remove
+
+// Keep the timing from the working two-shatter test, but let the original
+// vehicle's native die_shatter event create all debris.
+local.extra_shatter ifequal 1 wait 0.1
+local.extra_shatter ifequal 1 wait 0.1
+
+local.car takedamage
+local.car health 1
+local.car hurt 1000
+trigger local.shake
+
+// Lower the visible turret after the one scripted shot.
+local.turret deactivate
+
+end
+
+
+ram_doorexit_hurt_thread:
+$ram_doorexit_hurt setdamage 120
+wait 0.5
+$ram_doorexit_hurt remove
+
+end
+
+
+ram_doorenter_light_off:
+
+server lightstyle 168 "a"
+
+end
+
+
+//---------------------------------------------------------------------------
+// Three-second door button
+//---------------------------------------------------------------------------
+
+kp_door_inside_unlock:
+
+// Let normal door use open the door from the secret-office side.
+$kp_door unlock
+end
+
+
+kp_door_open:
+
+// Match func_rotatingdoor: swing away from the player by 90 degrees.
+local.kp_door_endangles vector local.startangles
+local.opendot ifgreater 0 goto kp_door_open_clockwise
+
+kp_door_open_counterclockwise:
+local.kp_door_endangles vector_add "(0 90 0)"
+goto kp_door_open_move
+
+kp_door_open_clockwise:
+local.kp_door_endangles vector_subtract "(0 90 0)"
+
+kp_door_open_move:
+
+// Lock now. The existing open movement continues while the door is locked.
+local.self lock
+local.self time 1
+local.self rotateto local.kp_door_endangles
+waitFor local.self
+local.self dooropened
+end
+
+
+kp_door_close:
+
+local.self time 1
+local.self rotateto local.startangles
+waitFor local.self
+local.self doorclosed
+end
+
+
+kp_door_buzzer_thread:
+
+// The door starts locked.
+$kp_door lock
+
+// Wait for the player to use the button.
+$kp_door_buzzer onuse kp_door_buzzer_pressed
+pause
+
+
+kp_door_buzzer_pressed:
+
+// Prevent a second press while this sequence runs.
+$kp_door_buzzer nouse
+
+// Unlock the door
+$kp_door unlock
+
+// Depress the button by 0.5 units.
+$kp_door_buzzer time 0.1
+$kp_door_buzzer moveForward 0.5
+waitFor $kp_door_buzzer
+
+// Unlock the door and start the buzzer.
+$kp_door_buzzer_sfx playsound "environment/amb_machine/power1.wav" 1.0 4 2 0.9
+
+// Keep the door unlocked for three seconds.
+wait 3
+
+// Stop the buzzer
+$kp_door_buzzer_sfx stopsound 4
+
+// and lock the door again.
+$kp_door lock
+
+// Return the button to its original position.
+$kp_door_buzzer time 0.1
+$kp_door_buzzer moveBackward 0.5
+waitFor $kp_door_buzzer
+
+// Enable the button again.
+goto kp_door_buzzer_thread
+
+end
+
+//-----------------------------
+// New-city boundary reminder
+//-----------------------------
+
+newcity_noleave_dialog:
+dialog "i_jc" "m_blade_youve_gotta_2" "dialog/subway/jc/catch.wav" 1 5
+waitForSound "dialog/subway/jc/catch.wav" .2
+end
+
+//-----------------------------
+// Generic "locked" responses
+//-----------------------------
+
+dialog_locked_door:
+*1 randomsound "snd_locked" 1 2
+end
+
+dialog_locked_nondoor:
+local.randomsnd randomint 4
+
+local.randomsnd ifequal 0 *1 playsound "dialog/misc2/blade/noway.wav" 1 5
+local.randomsnd ifequal 1 *1 playsound "dialog/misc2/blade/wontmove.wav" 1 5
+local.randomsnd ifequal 2 *1 playsound "dialog/misc2/blade/notchance.wav" 1 5
+local.randomsnd ifequal 3 *1 playsound "dialog/misc2/blade/stuck.wav" 1 5
+
+end
+
+machine_disabled:
+*1 playsound "environment/computer/beeps/reject1.wav" 1 2
+waitForSound "environment/computer/beeps/reject1.wav"
+wait 0.5
+*1 playsound "dialog/misc2/blade/noway.wav" 1 5
+end
+
+//-----------------------------
+// Secret Kingpin office dialog
+//-----------------------------
+
+kp_secret_dialog:
+dialog "i_jc" "m_did_we_wander" "dialog/smbc/jc/wander.wav" 1 5
+waitForSound "dialog/smbc/jc/wander.wav" .3
+thread global/universal_script.scr::secret
+end
+
+//-----------------------------
+// Sinkhole death
+//-----------------------------
+
+sinkhole_death:
+$sinkhole_deathpit notrigger
+*1 playsound "dialog/general/blade/fall2.wav" 1 2
+wait 1
+*1 playerkill
+end
+
+//---------------------------------------------------------------------------
+// Alternate parking-garage exit
+//---------------------------------------------------------------------------
+
+parking_garage_exit_trigger:
+
+level.parking_garage_exit_done ifequal 1 end
+level.player_in_vehicle ifequal 0 end
+
+level.parking_garage_exit_done = 1
+$parking_garage_exit_trigger notrigger
+
+trigger $mancini_final
+trigger $end_thug1
+trigger $end_thug2
+trigger $end_thug3
+
+$csite_end_triggers remove
+$parking_garage_exit_trigger remove
+end
+
+//---------------------------------------------------------------------------
+// New-city NPC retreat
+//---------------------------------------------------------------------------
+
+newcity_retreat_trigger:
+
+level.newcity_retreat_started ifequal 1 end
+level.newcity_retreat_started = 1
+$newcity_retreat_trigger notrigger
+
+level.newcity_retreat_delay = 0
+level.newcity_retreat_lane = 0
+level.newcity_retreat_player_origin getorigin *1
+$newcity_retreatdoors unlock
+
+// These actors start on upper floors with no path to the street-level exit.
+// Remove them now so they do not run into walls below their retreat target.
+$joy_new_city_npc_01 thread newcity_retreat_force_fade
+$joy_new_city_npc_02 thread newcity_retreat_force_fade
+$joy_new_city_npc_03 thread newcity_retreat_force_fade
+$joy_new_city_npc_04 thread newcity_retreat_force_fade
+$joy_new_city_npc_17 thread newcity_retreat_force_fade
+$joy_new_city_npc_19 thread newcity_retreat_force_fade
+
+$joy_new_city_npc_05 thread newcity_retreat_actor
+$joy_new_city_npc_06 thread newcity_retreat_actor
+$joy_new_city_npc_07 thread newcity_retreat_actor
+$joy_new_city_npc_08 thread newcity_retreat_actor
+$joy_new_city_npc_11 thread newcity_retreat_actor
+$joy_new_city_npc_12 thread newcity_retreat_actor
+$joy_new_city_npc_16 thread newcity_retreat_actor
+$joy_new_city_npc_18 thread newcity_retreat_actor
+
+thread newcity_retreat_timeout
+
+$newcity_retreat_trigger remove
+end
+
+
+newcity_retreat_actor:
+
+local.self clearstate
+local.self ignoreall
+local.self respondto pain killed opendoor
+
+// The last new-city path node is at X 3669. Fade any new-city actor that
+// crossed beyond that path coverage before the retreat began.
+local.retreat_origin getorigin local.self
+
+// Remove actors that are already too far from the player to show a useful
+// retreat. This uses the player position captured when the trigger fired.
+local.retreat_player_delta vector local.retreat_origin
+local.retreat_player_delta vector_subtract level.newcity_retreat_player_origin
+local.retreat_player_distance vector_length local.retreat_player_delta
+local.retreat_player_distance ifgreater 1800 goto newcity_retreat_force_fade
+
+local.retreat_x vector_x local.retreat_origin
+local.retreat_y vector_y local.retreat_origin
+local.retreat_x ifless -4096 goto newcity_retreat_force_fade
+local.retreat_x ifgreater 3669 goto newcity_retreat_force_fade
+local.retreat_y ifless -4096 goto newcity_retreat_force_fade
+local.retreat_y ifgreaterequal 4096 goto newcity_retreat_force_fade
+
+// Remove the prior chase and hold the actor still while its stagger delay runs.
+local.self clearenemy
+local.self idle "idle"
+
+// Give each actor a separate start time so they do not form four large groups.
+local.retreat_delay = level.newcity_retreat_delay
+level.newcity_retreat_delay += 0.75
+wait local.retreat_delay
+
+// Use two fixed lanes. FindFlee reserves its destination, so two actors can
+// block both exit nodes and leave the rest of the group without a valid node.
+level.newcity_retreat_lane ifequal 0 goto newcity_retreat_actor_lane_1
+level.newcity_retreat_lane = 0
+goto newcity_retreat_actor_lane_2
+
+
+newcity_retreat_actor_lane_1:
+
+level.newcity_retreat_lane = 1
+local.self behavior GotoPathNode "run" $newcity_retreat_1_1
+waitFor local.self
+local.self behavior GotoPathNode "run" $newcity_retreat_1_mid
+waitFor local.self
+local.self behavior GotoPathNode "run" $newcity_retreat_1_2
+waitFor local.self
+goto newcity_retreat_actor_wait_for_timeout
+
+
+newcity_retreat_actor_lane_2:
+
+local.self behavior GotoPathNode "run" $newcity_retreat_2_1
+waitFor local.self
+local.self behavior GotoPathNode "run" $newcity_retreat_2_mid
+waitFor local.self
+local.self behavior GotoPathNode "run" $newcity_retreat_2_2
+waitFor local.self
+
+
+newcity_retreat_actor_wait_for_timeout:
+
+// The shared 20-second timeout replaces this actor thread and fades the actor.
+local.self idle "idle"
+pause
+
+
+newcity_retreat_timeout:
+
+// Any street-level actor that did not reach the exit fades after 20 seconds.
+wait 20
+$joy_new_city_npc_05 thread newcity_retreat_force_fade
+$joy_new_city_npc_06 thread newcity_retreat_force_fade
+$joy_new_city_npc_07 thread newcity_retreat_force_fade
+$joy_new_city_npc_08 thread newcity_retreat_force_fade
+$joy_new_city_npc_11 thread newcity_retreat_force_fade
+$joy_new_city_npc_12 thread newcity_retreat_force_fade
+$joy_new_city_npc_16 thread newcity_retreat_force_fade
+$joy_new_city_npc_18 thread newcity_retreat_force_fade
+end
+
+
+newcity_retreat_force_fade:
+
+local.self targetname joy_new_city_npc_fading
+local.self notsolid
+local.self fadeout
+end
+
+//---------------------------------------------------------------------------
+// Parking-garage technician retreat
+//---------------------------------------------------------------------------
+
+scare_parking_garage_neutrals:
+
+level.parking_garage_neutrals_rammable_scared ifequal 1 end
+level.parking_garage_neutrals_rammable_scared = 1
+$joy_parking_garage_npc_15 state breakingsound
+$joy_parking_garage_npc_16 state breakingsound
+end
+
+
+scare_office_neutrals:
+
+level.office_neutrals_rammable_scared ifequal 1 end
+level.office_neutrals_rammable_scared = 1
+$joy_office_npc_01 state breakingsound
+$joy_office_npc_02 state breakingsound
+$joy_office_npc_06 state breakingsound
+end
+
+
+parking_garage_npc15_cower_scared:
+
+local.self clearstate
+local.self ignoreall
+// Keep death enabled, but do not let another state cancel the cower pose.
+local.self respondto killed
+local.self anim "hidedrop1"
+waitFor local.self
+local.self anim "hiding1"
+pause
+
+
+parking_garage_retreat_scared:
+
+local.self clearstate
+local.self ignoreall
+local.self respondto opendoor
+
+level.parking_garage_retreat_active += 1
+$newcity_retreatdoors unlock
+
+parking_garage_retreat_choose_lane:
+
+// Separate simultaneous fear responses so the technicians do not collide.
+local.retreat_delay randomint 2
+wait local.retreat_delay
+
+level.parking_garage_retreat_lane ifequal 0 goto parking_garage_retreat_lane_1
+level.parking_garage_retreat_lane = 0
+goto parking_garage_retreat_lane_2
+
+
+parking_garage_retreat_lane_1:
+
+level.parking_garage_retreat_lane = 1
+local.self behavior GotoPathNode "run" $newcity_retreat_1_1
+waitFor local.self
+local.self behavior GotoPathNode "run" $newcity_retreat_1_mid
+waitFor local.self
+local.self behavior GotoPathNode "run" $newcity_retreat_1_2
+waitFor local.self
+goto parking_garage_retreat_finish
+
+
+parking_garage_retreat_lane_2:
+
+local.self behavior GotoPathNode "run" $newcity_retreat_2_1
+waitFor local.self
+local.self behavior GotoPathNode "run" $newcity_retreat_2_mid
+waitFor local.self
+local.self behavior GotoPathNode "run" $newcity_retreat_2_2
+waitFor local.self
+
+
+parking_garage_retreat_finish:
+
+local.self remove
+
+level.parking_garage_retreat_active -= 1
+level.parking_garage_retreat_active ifgreater 0 end
+level.newcity_retreat_started ifequal 1 end
+$newcity_retreatdoors lock
+end
+
+//---------------------------------------------------------------------------
+// Office civilian escape
+//---------------------------------------------------------------------------
+
+office_escape_door_use:
+
+// The door class does not expose its open or closed state to scripts.
+// Suppress the locked-door response while the office escape can open it.
+level.office_escape_active ifgreater 0 end
+thread dialog_locked_door
+end
+
+
+office_escape_scared:
+
+local.self clearstate
+local.self ignoreall
+local.self respondto opendoor
+
+level.office_escape_active += 1
+$office_door_escape unlock
+
+// Stagger simultaneous fear responses so the civilians do not block one another.
+local.escape_delay randomint 3
+wait local.escape_delay
+
+local.self behavior GotoPathNode "run" $office_fleepath1
+waitFor local.self
+local.self behavior GotoPathNode "run" $office_fleepath2
+waitFor local.self
+local.self behavior GotoPathNode "run" $office_fleepath3
+waitFor local.self
+local.self behavior GotoPathNode "run" $office_fleepath4
+waitFor local.self
+local.self behavior GotoPathNode "run" $office_fleepath5
+waitFor local.self
+local.self behavior GotoPathNode "run" $office_fleepath6
+waitFor local.self
+local.self behavior GotoPathNode "run" $office_fleepath7
+waitFor local.self
+local.self behavior GotoPathNode "run" $office_fleepath8
+waitFor local.self
+local.self behavior GotoPathNode "run" $office_fleepath9
+waitFor local.self
+goto office_escape_finish_actor
+
+
+office_escape_finish_actor:
+
+// Match the stock hostage_roof escape sequence.
+local.self remove
+
+level.office_escape_active -= 1
+level.office_escape_active ifgreater 0 end
+$office_door_escape lock
+end
+
+//---------------------------------------------------------------------------
+// Delayed NPC encounter spawning
+//
+// The source NPC layers remain visible in TrenchBroom but are excluded from
+// export. These functions reproduce every gameplay key from those templates.
+// Spawn in small batches to avoid one large network update.
+//---------------------------------------------------------------------------
+
+spawn_newcitynpcs:
+
+level.spawn_newcitynpcs_done ifequal 1 end
+level.spawn_newcitynpcs_done = 1
+$spawn_newcitynpcs remove
+
+trigger $joy_new_city_npc_spawner_01
+$joy_new_city_npc_spawner_01 remove
+trigger $joy_new_city_npc_spawner_02
+$joy_new_city_npc_spawner_02 remove
+trigger $joy_new_city_npc_spawner_03
+$joy_new_city_npc_spawner_03 remove
+trigger $joy_new_city_npc_spawner_04
+$joy_new_city_npc_spawner_04 remove
+wait game.FRAMETIME
+
+trigger $joy_new_city_npc_spawner_05
+$joy_new_city_npc_spawner_05 remove
+$joy_new_city_npc_05 scale .95
+trigger $joy_new_city_npc_spawner_06
+$joy_new_city_npc_spawner_06 remove
+$joy_new_city_npc_06 scale 1.02
+trigger $joy_new_city_npc_spawner_07
+$joy_new_city_npc_spawner_07 remove
+$joy_new_city_npc_07 scale 1.0
+$joy_new_city_npc_07 anim idle1
+trigger $joy_new_city_npc_spawner_08
+$joy_new_city_npc_spawner_08 remove
+$joy_new_city_npc_08 scale .95
+wait game.FRAMETIME
+
+trigger $joy_new_city_npc_spawner_11
+$joy_new_city_npc_spawner_11 remove
+$joy_new_city_npc_11 scale .95
+trigger $joy_new_city_npc_spawner_12
+$joy_new_city_npc_spawner_12 remove
+$joy_new_city_npc_12 scale 1.0
+$joy_new_city_npc_12 anim idle1
+wait game.FRAMETIME
+
+trigger $joy_new_city_npc_spawner_16
+$joy_new_city_npc_spawner_16 remove
+wait game.FRAMETIME
+
+trigger $joy_new_city_npc_spawner_17
+$joy_new_city_npc_spawner_17 remove
+$joy_new_city_npc_17 scale 1.2
+$joy_new_city_npc_17 anim idle1
+$joy_new_city_npc_17 visiondistance 0
+trigger $joy_new_city_npc_spawner_18
+$joy_new_city_npc_spawner_18 remove
+trigger $joy_new_city_npc_spawner_19
+$joy_new_city_npc_spawner_19 remove
+$joy_new_city_npc_19 scale 1.2
+$joy_new_city_npc_19 anim idle1
+$joy_new_city_npc_19 visiondistance 0
+
+// These technicians are visible from the new-city area, so spawn them with
+// that group instead of waiting for the parking-garage trigger.
+wait game.FRAMETIME
+trigger $joy_parking_garage_npc_spawner_15
+$joy_parking_garage_npc_spawner_15 remove
+$joy_parking_garage_npc_15 definestate opendoor global/baseai.scr::opendoor
+$joy_parking_garage_npc_15 definestate sightenemy parking_garage_npc15_cower_scared
+$joy_parking_garage_npc_15 definestate default_sightenemy parking_garage_npc15_cower_scared
+$joy_parking_garage_npc_15 definestate weaponsound parking_garage_npc15_cower_scared
+$joy_parking_garage_npc_15 definestate painsound parking_garage_npc15_cower_scared
+$joy_parking_garage_npc_15 definestate breakingsound parking_garage_npc15_cower_scared
+$joy_parking_garage_npc_15 definestate mutantsound parking_garage_npc15_cower_scared
+$joy_parking_garage_npc_15 state idle
+
+wait game.FRAMETIME
+trigger $joy_parking_garage_npc_spawner_16
+$joy_parking_garage_npc_spawner_16 remove
+$joy_parking_garage_npc_16 definestate opendoor global/baseai.scr::opendoor
+$joy_parking_garage_npc_16 definestate sightenemy parking_garage_retreat_scared
+$joy_parking_garage_npc_16 definestate default_sightenemy parking_garage_retreat_scared
+$joy_parking_garage_npc_16 definestate weaponsound parking_garage_retreat_scared
+$joy_parking_garage_npc_16 definestate painsound parking_garage_retreat_scared
+$joy_parking_garage_npc_16 definestate deathsound parking_garage_retreat_scared
+$joy_parking_garage_npc_16 definestate breakingsound parking_garage_retreat_scared
+$joy_parking_garage_npc_16 definestate mutantsound parking_garage_retreat_scared
+$joy_parking_garage_npc_16 definestate pain parking_garage_retreat_scared
+$joy_parking_garage_npc_16 state idle
+level.parking_garage_neutrals_rammable_scared ifequal 1 $joy_parking_garage_npc_15 state breakingsound
+level.parking_garage_neutrals_rammable_scared ifequal 1 $joy_parking_garage_npc_16 state breakingsound
+end
+
+spawn_parkinggaragenpcs:
+
+level.spawn_parkinggaragenpcs_done ifequal 1 end
+level.spawn_parkinggaragenpcs_done = 1
+$spawn_parkinggaragenpcs remove
+
+trigger $joy_parking_garage_npc_spawner_01
+$joy_parking_garage_npc_spawner_01 remove
+$joy_parking_garage_npc_01 targetname joy_spawned_parking_garage_npc
+trigger $joy_parking_garage_npc_spawner_02
+$joy_parking_garage_npc_spawner_02 remove
+$joy_parking_garage_npc_02 scale 1.06
+$joy_parking_garage_npc_02 minlight 1
+$joy_parking_garage_npc_02 lightoffset 80
+$joy_parking_garage_npc_02 targetname joy_spawned_parking_garage_npc
+trigger $joy_parking_garage_npc_spawner_03
+$joy_parking_garage_npc_spawner_03 remove
+$joy_parking_garage_npc_03 scale 1.07
+$joy_parking_garage_npc_03 minlight 1
+$joy_parking_garage_npc_03 lightoffset 80
+$joy_parking_garage_npc_03 targetname joy_spawned_parking_garage_npc
+trigger $joy_parking_garage_npc_spawner_04
+$joy_parking_garage_npc_spawner_04 remove
+$joy_parking_garage_npc_04 scale 1.09
+$joy_parking_garage_npc_04 minlight 1
+$joy_parking_garage_npc_04 lightoffset 80
+$joy_parking_garage_npc_04 targetname joy_spawned_parking_garage_npc
+wait game.FRAMETIME
+
+trigger $joy_parking_garage_npc_spawner_05
+$joy_parking_garage_npc_spawner_05 remove
+$joy_parking_garage_npc_05 scale 1.03
+$joy_parking_garage_npc_05 minlight 1
+$joy_parking_garage_npc_05 lightoffset 80
+$joy_parking_garage_npc_05 targetname joy_spawned_parking_garage_npc
+trigger $joy_parking_garage_npc_spawner_06
+$joy_parking_garage_npc_spawner_06 remove
+$joy_parking_garage_npc_06 targetname joy_spawned_parking_garage_npc
+trigger $joy_parking_garage_npc_spawner_07
+$joy_parking_garage_npc_spawner_07 remove
+$joy_parking_garage_npc_07 targetname joy_spawned_parking_garage_npc
+trigger $joy_parking_garage_npc_spawner_08
+$joy_parking_garage_npc_spawner_08 remove
+$joy_parking_garage_npc_08 targetname joy_spawned_parking_garage_npc
+wait game.FRAMETIME
+
+trigger $joy_parking_garage_npc_spawner_09
+$joy_parking_garage_npc_spawner_09 remove
+$joy_parking_garage_npc_09 targetname joy_spawned_parking_garage_npc
+trigger $joy_parking_garage_npc_spawner_10
+$joy_parking_garage_npc_spawner_10 remove
+$joy_parking_garage_npc_10 targetname joy_spawned_parking_garage_npc
+trigger $joy_parking_garage_npc_spawner_11
+$joy_parking_garage_npc_spawner_11 remove
+$joy_parking_garage_npc_11 targetname joy_spawned_parking_garage_npc
+trigger $joy_parking_garage_npc_spawner_12
+$joy_parking_garage_npc_spawner_12 remove
+$joy_parking_garage_npc_12 targetname joy_spawned_parking_garage_npc
+wait game.FRAMETIME
+
+trigger $joy_parking_garage_npc_spawner_13
+$joy_parking_garage_npc_spawner_13 remove
+$joy_parking_garage_npc_13 targetname joy_spawned_parking_garage_npc
+trigger $joy_parking_garage_npc_spawner_14
+$joy_parking_garage_npc_spawner_14 remove
+$joy_parking_garage_npc_14 targetname joy_spawned_parking_garage_npc
+
+$end_thug1 show
+$end_thug2 show
+$end_thug3 show
+$mancini_final show
+// $mancini_final ignore activate
+end
+
+spawn_officenpcs:
+
+level.spawn_officenpcs_done ifequal 1 end
+level.spawn_officenpcs_done = 1
+$spawn_officenpcs remove
+
+level.spawn_newcitynpcs_done ifequal 0 goto spawn_officenpcs_after_newcity_cleanup
+$joy_new_city_npc_01 remove
+$joy_new_city_npc_02 remove
+$joy_new_city_npc_03 remove
+$joy_new_city_npc_04 remove
+$joy_new_city_npc_05 remove
+$joy_new_city_npc_06 remove
+$joy_new_city_npc_07 remove
+$joy_new_city_npc_08 remove
+$joy_new_city_npc_11 remove
+$joy_new_city_npc_12 remove
+$joy_new_city_npc_16 remove
+$joy_new_city_npc_17 remove
+$joy_new_city_npc_18 remove
+$joy_new_city_npc_19 remove
+$joy_parking_garage_npc_15 remove
+$joy_parking_garage_npc_16 remove
+
+spawn_officenpcs_after_newcity_cleanup:
+
+trigger $joy_office_npc_spawner_01
+$joy_office_npc_spawner_01 remove
+trigger $joy_office_npc_spawner_02
+$joy_office_npc_02 script global/cinematic.scr
+$joy_office_npc_02 anim idle1
+$joy_office_npc_spawner_02 remove
+trigger $joy_office_npc_spawner_03
+$joy_office_npc_spawner_03 remove
+trigger $joy_office_npc_spawner_04
+$joy_office_npc_spawner_04 remove
+wait game.FRAMETIME
+
+trigger $joy_office_npc_spawner_05
+$joy_office_npc_spawner_05 remove
+trigger $joy_office_npc_spawner_06
+$joy_office_npc_06 script global/cinematic.scr
+$joy_office_npc_06 anim idle1
+$joy_office_npc_spawner_06 remove
+
+// Wait until the actors have run their model-defined initialization scripts.
+wait game.FRAMETIME
+
+$joy_office_npc_01 definestate opendoor global/baseai.scr::opendoor
+$joy_office_npc_01 definestate sightenemy office_escape_scared
+$joy_office_npc_01 definestate default_sightenemy office_escape_scared
+$joy_office_npc_01 definestate weaponsound office_escape_scared
+$joy_office_npc_01 definestate painsound office_escape_scared
+$joy_office_npc_01 definestate deathsound office_escape_scared
+$joy_office_npc_01 definestate breakingsound office_escape_scared
+$joy_office_npc_01 definestate mutantsound office_escape_scared
+$joy_office_npc_01 definestate pain office_escape_scared
+
+$joy_office_npc_02 definestate opendoor global/baseai.scr::opendoor
+$joy_office_npc_02 definestate sightenemy office_escape_scared
+$joy_office_npc_02 definestate default_sightenemy office_escape_scared
+$joy_office_npc_02 definestate weaponsound office_escape_scared
+$joy_office_npc_02 definestate painsound office_escape_scared
+$joy_office_npc_02 definestate deathsound office_escape_scared
+$joy_office_npc_02 definestate breakingsound office_escape_scared
+$joy_office_npc_02 definestate mutantsound office_escape_scared
+$joy_office_npc_02 definestate pain office_escape_scared
+
+$joy_office_npc_06 definestate opendoor global/baseai.scr::opendoor
+$joy_office_npc_06 definestate sightenemy office_escape_scared
+$joy_office_npc_06 definestate default_sightenemy office_escape_scared
+$joy_office_npc_06 definestate weaponsound office_escape_scared
+$joy_office_npc_06 definestate painsound office_escape_scared
+$joy_office_npc_06 definestate deathsound office_escape_scared
+$joy_office_npc_06 definestate breakingsound office_escape_scared
+$joy_office_npc_06 definestate mutantsound office_escape_scared
+$joy_office_npc_06 definestate pain office_escape_scared
+level.office_neutrals_rammable_scared ifequal 1 $joy_office_npc_01 state breakingsound
+level.office_neutrals_rammable_scared ifequal 1 $joy_office_npc_02 state breakingsound
+level.office_neutrals_rammable_scared ifequal 1 $joy_office_npc_06 state breakingsound
+end
+
+
+// Flashlight stuff for WoS mode
+init_flashlight:
+
+  local.wosmode getcvar sv_wos
+  local.wosmode ifequal 1 goto keep_flashlight
+
+  level.no_flashlight = 1
+  $flashylighty remove
+  end
+
+  keep_flashlight:
+
+  level.no_flashlight = 0
+  $flashylighty effects +poi
+
+end
+
