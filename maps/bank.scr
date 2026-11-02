@@ -5336,8 +5336,15 @@ LevelComplete:
 // Clears any items in the player's inventory that need to be removed
 thread universal::ClearInventory
 
+	//[coop] chrissstrahl - coop compatibility
+	level.coopInMultiplayer ifgreaterequal 1 thread coop_takeStuff
+	level.coopInMultiplayer ifgreaterequal 1 goto LevelComplete_continue
+
 *1 take evidence
 *1 take dollar
+
+	//[coop] chrissstrahl - coop compatibility
+	LevelComplete_continue:
 
 // P1 & 5 are the only objects that need to be set, anything else is a bug
 level.PObjective1 = 1 // Disable Hostile Threat
@@ -5601,6 +5608,14 @@ end
 
 
 
+//[coop] chrissstrahl - coop compatibility
+coop_takeStuff:
+	parm.coop_take string "evidence"
+	thread coopReplace::coop_take
+	
+	parm.coop_take string "dollar"
+	thread coopReplace::coop_take
+end
 
 //[coop] chrissstrahl - DETECT PLAYER SPAWN - REQUIRED
 //this fires everytime a player is spawned
@@ -5611,10 +5626,13 @@ end
 
 //[coop] chrissstrahl - spawn a trigger we can actually control, as long as the next level is not completed
 coop_levelSetup:
-	//removeclass "triggerchangelevel"
-	//wait game.FRAMETIME
+	removeclass "triggerchangelevel"
+	wait game.FRAMETIME
+	//clearsavegames
+	//map "abandon$start1"
+	//the asterix infront of the mapname is suppose to clearsaved games in the trigger_changelevel
 	//WARNING - the model number may change if the game gets updates!!!
-	//spawn trigger_changelevel model "*242" origin "-2688 512 224" "map" "bank" targetname "coopLvlEnd" //"abandon$start1"
+	spawn trigger_changelevel model "*242" origin "-2688 512 224" "map" "*abandon$start1" targetname "coopLvlEnd" thread "LevelComplete"
 end
 
 //[coop] chrissstrahl - executed each time a player has spawned
