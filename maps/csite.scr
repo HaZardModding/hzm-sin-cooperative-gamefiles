@@ -3305,6 +3305,14 @@ level.atv_next_breaking_sound = 0
 atv_motion_monitor_wait:
 
 wait 0.1
+
+//[coop] chrissstrahl - crude check and atempt to move vehicle, pretty sure this won't work
+local.coopCheck getorigin $atv_base
+local.coopCheckz vector_z local.coopCheck
+local.coopCheckz iflessequal -500 local.primary_previous_origin string "( -879 997 17 )"
+local.coopCheckz iflessequal -500 $atv_base origin "( -879 997 17 )"
+
+
 level.player_in_vehicle ifequal 0 goto atv_motion_monitor_wait
 
 local.primary_previous_origin getorigin $atv_base
@@ -3320,23 +3328,21 @@ wait game.FRAMETIME
 
 
 atv_motion_monitor_active_loop:
-
-level.player_in_vehicle ifequal 0 goto atv_motion_monitor_stopped
-
-// Sample the regular ATV.
-local.primary_current_origin getorigin $atv_base
-local.primary_delta vector local.primary_current_origin
-local.primary_delta vector_subtract local.primary_previous_origin
-local.primary_delta vector_setz 0
-level.atv_primary_speed_previous2 = level.atv_primary_speed_previous1
-level.atv_primary_direction_previous2 vector level.atv_primary_direction_previous1
-level.atv_primary_speed_previous1 = level.atv_primary_speed
-level.atv_primary_direction_previous1 vector level.atv_primary_direction
-level.atv_primary_speed vector_length local.primary_delta
-level.atv_primary_speed /= game.FRAMETIME
-level.atv_primary_speed iflessequal 0 goto atv_motion_monitor_primary_store
-level.atv_primary_direction vector local.primary_delta
-level.atv_primary_direction vector_normalize
+	level.player_in_vehicle ifequal 0 goto atv_motion_monitor_stopped
+	// Sample the regular ATV.
+	local.primary_current_origin getorigin $atv_base
+	local.primary_delta vector local.primary_current_origin
+	local.primary_delta vector_subtract local.primary_previous_origin
+	local.primary_delta vector_setz 0
+	level.atv_primary_speed_previous2 = level.atv_primary_speed_previous1
+	level.atv_primary_direction_previous2 vector level.atv_primary_direction_previous1
+	level.atv_primary_speed_previous1 = level.atv_primary_speed
+	level.atv_primary_direction_previous1 vector level.atv_primary_direction
+	level.atv_primary_speed vector_length local.primary_delta
+	level.atv_primary_speed /= game.FRAMETIME
+	level.atv_primary_speed iflessequal 0 goto atv_motion_monitor_primary_store
+	level.atv_primary_direction vector local.primary_delta
+	level.atv_primary_direction vector_normalize
 
 
 atv_motion_monitor_primary_store:
@@ -3445,64 +3451,52 @@ goto atv_motion_monitor_active_loop
 
 
 atv_motion_monitor_stopped:
-
-level.atv_speed = 0
-level.atv_primary_speed = 0
-level.atv_primary_speed_previous1 = 0
-level.atv_primary_speed_previous2 = 0
-level.atv_backup_speed = 0
-level.atv_backup_speed_previous1 = 0
-level.atv_backup_speed_previous2 = 0
+	level.atv_speed = 0
+	level.atv_primary_speed = 0
+	level.atv_primary_speed_previous1 = 0
+	level.atv_primary_speed_previous2 = 0
+	level.atv_backup_speed = 0
+	level.atv_backup_speed_previous1 = 0
+	level.atv_backup_speed_previous2 = 0
 goto atv_motion_monitor_wait
 
 
 rammable_shatter_setup_all:
-
-local.index = 1
-
-
-rammable_shatter_setup_loop:
-
-parm.ram_shatter_index = local.index
-thread rammable_shatter_thread
-
-local.index += 1
-local.index iflessequal level.rammable_shatter_count goto rammable_shatter_setup_loop
-
+	local.index = 1
+	rammable_shatter_setup_loop:
+	parm.ram_shatter_index = local.index
+	thread rammable_shatter_thread
+	local.index += 1
+	local.index iflessequal level.rammable_shatter_count goto rammable_shatter_setup_loop
 end
 
 
 rammable_shatter_thread:
+	// Copy the shared parameter before this thread pauses.
+	local.index = parm.ram_shatter_index
+	local.body string "$box"
+	local.body appendint local.index
+	local.body append "_body"
 
-// Copy the shared parameter before this thread pauses.
-local.index = parm.ram_shatter_index
+	local.break_target string "$box"
+	local.break_target appendint local.index
+	local.break_target append "_explode"
 
-local.body string "$box"
-local.body appendint local.index
-local.body append "_body"
-
-local.break_target string "$box"
-local.break_target appendint local.index
-local.break_target append "_explode"
-
-// The script cannot read an arbitrary sound property from a script object.
-// Select the three authored material sounds here and play them from the body.
-local.break_sound string "impact/crates/crate.wav"
-local.index iflessequal 5 goto rammable_shatter_sound_cardboard
-local.index ifequal 6 goto rammable_shatter_sound_crate
+	// The script cannot read an arbitrary sound property from a script object.
+	// Select the three authored material sounds here and play them from the body.
+	local.break_sound string "impact/crates/crate.wav"
+	local.index iflessequal 5 goto rammable_shatter_sound_cardboard
+	local.index ifequal 6 goto rammable_shatter_sound_crate
 goto rammable_shatter_sound_selected
 
 
 rammable_shatter_sound_cardboard:
-
-local.break_sound string "impact/crates/crate5.wav"
+	local.break_sound string "impact/crates/crate5.wav"
 goto rammable_shatter_sound_selected
 
 
 rammable_shatter_sound_crate:
-
-local.break_sound string "impact/crates/crate6.wav"
-
+	local.break_sound string "impact/crates/crate6.wav"
 
 rammable_shatter_sound_selected:
 
@@ -4638,6 +4632,8 @@ end
 //-----------------------------
 
 sinkhole_death:
+//[coop] chrissstrahl - this trigger was removed and a different one is spawned in .ent_patch file
+
 $sinkhole_deathpit notrigger
 *1 playsound "dialog/general/blade/fall2.wav" 1 2
 wait 1
@@ -5210,9 +5206,161 @@ init_flashlight:
 end
 
 
+
+
+
+coop_sinkhole_death:
+	//[coop] chrissstrahl - replacement function for sinkhole_death - called from trigger in the *.ent_patch file
+	level.coopInMultiplayer ifless 1 end
+	local.index = 0
+	
+	coop_sinkhole_death_loop:
+	local.index += 1
+	local.index ifgreater level.coopMaxPlayers end
+	
+	local.player string "$player"
+	local.player appendint local.index
+	
+	//check which players are touching the trigger and annihilate them
+	parm.objectsTouching1 string local.player
+	parm.objectsTouching2 string "$coop_sinkhole_deathpit"
+	parm.objectsTouching1Bbox string "16 16 76"
+	parm.objectsTouching2Bbox string "500 500 300"
+	thread coopMain::objectsTouching
+	local.isTouching = parm.objectsTouching
+	local.isTouching ifequal 1 goto coop_sinkhole_death_touching
+	goto coop_sinkhole_death_loop
+	
+	coop_sinkhole_death_touching:
+	local.threadNme string local.player
+	local.threadNme append "_coop_elevator_deathpit"
+	thread local.threadNme
+	goto coop_sinkhole_death_loop
+end
+
+coop_elevator_deathpit:
+	//[coop] chrissstrahl - replacement function for sinkhole_death
+	level.coopInMultiplayer ifless 1 end	
+	local.index = 0
+	
+	print "coop_elevator_deathpit\n"
+	
+	coop_elevator_deathpit_loop:
+	local.index += 1
+	local.index ifgreater level.coopMaxPlayers end
+	
+	local.player string "$player"
+	local.player appendint local.index
+	
+	//check which players are touching the trigger and annihilate them	
+	parm.objectsTouching1 string local.player
+	parm.objectsTouching2 string "$coop_elevator_deathpit"
+	parm.objectsTouching1Bbox string "100 100 30"
+	parm.objectsTouching2Bbox string "150 150 100"
+	thread coopMain::objectsTouching
+	local.isTouching = parm.objectsTouching
+	local.isTouching ifequal 1 goto coop_elevator_deathpit_touching
+	goto coop_elevator_deathpit_loop
+	
+	coop_elevator_deathpit_touching:
+	local.threadNme string local.player
+	local.threadNme append "_coop_elevator_deathpit"
+	thread local.threadNme
+	goto coop_elevator_deathpit_loop
+end
+
+$player1_coop_elevator_deathpit:
+	level.coop_elevator_deathpit_player1 ifequal 1 end
+	level.coop_elevator_deathpit_player1 = 1
+	local.player string "$player1"
+	//scream
+	local.player playsound "dialog/general/blade/fall2.wav" 1 2
+	//make sure the pit does not get littered
+	local.player dropweapon 0
+	local.player take all 
+	local.player take Magnum
+	local.player take Blueprints 999
+	local.player take Glowstick 999
+	local.player take Shotgun
+	local.player take AssaultRifle
+	wait 2
+	level.coop_elevator_deathpit_player1 = 0
+end
+
+$player2_coop_elevator_deathpit:
+	level.coop_elevator_deathpit_player2 ifequal 1 end
+	level.coop_elevator_deathpit_player2 = 1
+	local.player string "$player2"
+	//scream
+	local.player playsound "dialog/general/blade/fall2.wav" 1 2
+	//make sure the pit does not get littered
+	local.player dropweapon 0
+	local.player take all 
+	local.player take Magnum
+	local.player take Blueprints 999
+	local.player take Glowstick 999
+	local.player take Shotgun
+	local.player take AssaultRifle
+	wait 2
+	level.coop_elevator_deathpit_player2 = 0
+end
+
+$player3_coop_elevator_deathpit:
+	level.coop_elevator_deathpit_player3 ifequal 1 end
+	level.coop_elevator_deathpit_player3 = 1
+	local.player string "$player3"
+	//scream
+	local.player playsound "dialog/general/blade/fall2.wav" 1 2
+	//make sure the pit does not get littered
+	local.player dropweapon 0
+	local.player take all 
+	local.player take Magnum
+	local.player take Blueprints 999
+	local.player take Glowstick 999
+	local.player take Shotgun
+	local.player take AssaultRifle
+	wait 2
+	level.coop_elevator_deathpit_player3 = 0
+end
+
+$player4_coop_elevator_deathpit:
+	level.coop_elevator_deathpit_player4 ifequal 1 end
+	level.coop_elevator_deathpit_player4 = 1
+	local.player string "$player4"
+	//scream
+	local.player playsound "dialog/general/blade/fall2.wav" 1 2
+	//make sure the pit does not get littered
+	local.player dropweapon 0
+	local.player take all 
+	local.player take Magnum
+	local.player take Blueprints 999
+	local.player take Glowstick 999
+	local.player take Shotgun
+	local.player take AssaultRifle
+	wait 2
+	level.coop_elevator_deathpit_player4 = 0
+end
+
+
+
 coop_wreckingballAreaSpawns:
 	//[coop] chrissstrahl - move spawnlocations down to where you get the blueprints
 	thread coopPlayerSpawn::csite_wreckingball
+end
+
+coop_afraidofthedarkSpawns:
+	//[coop] chrissstrahl - move spawnlocations down to where you turn the power generator on
+	thread coopPlayerSpawn::csite_youarenotafraidofthedarkareyou
+end
+
+coop_elevatorShaftSpawns:
+	//[coop] chrissstrahl - move spawnlocations to where you emerge from under the building where the elevator shaft is
+	thread coopPlayerSpawn::csite_longWayRaoundAtElevator
+end
+
+coop_csite_vehicle:
+	//[coop] chrissstrahl - move spawnlocations down to where you get the blueprints
+	thread coopPlayerSpawn::csite_vehicle
 end
 
 //[coop] chrissstrahl - DETECT PLAYER SPAWN - REQUIRED
@@ -5242,13 +5390,35 @@ coop_levelSetup:
 	thread coopMain::addNoRespawnZone
 	
 	
+	//spawn location updates
 	spawn trigger_once origin "-676 2525 0" thread "coop_wreckingballAreaSpawns" targetname "coopUpdateSpawns1"
-	$coopUpdateSpawns1 setsize "-1400 -1400 0" "1400 1400 300"
+	$coopUpdateSpawns1 setsize "-900 -700 0" "900 700 300"
 	
 	spawn trigger_once origin "-2785 3418 -128" thread "coop_afraidofthedarkSpawns" targetname "coopUpdateSpawns2"
 	$coopUpdateSpawns2 setsize "-65 -65 30" "65 65 30"
+
+	spawn trigger_once origin "-1994 1592 -71" thread "coop_elevatorShaftSpawns" targetname "coopUpdateSpawns3"
+	$coopUpdateSpawns3 setsize "-150 -150 0" "150 150 30"
 	
-	spawn func_vehicle model "atv.def" targetname "coopAtv1" "target" "atv" "thread" "global/func_vehicle_atv.scr::vehicle_atv" "origin" "-809 997 100"
+	spawn trigger_once origin "671 696 31" thread "csite_vehicle" targetname "coopUpdateSpawns4"
+	$coopUpdateSpawns4 setsize "-350 -350 -30" "350 350 30"
+	
+	//elevator deathpit
+	spawn trigger_multiple origin "-1578 1631 50" thread "coop_elevator_deathpit" targetname "coop_elevator_deathpit"
+	$coop_elevator_deathpit setsize "-110 -110 -100" "110 110 20"
+	
+	//construction deathpit
+	spawn trigger_hurt origin "-1731 -760 -1000" targetname "coop_sinkhole_deathpit_kill" "damage" "9999"
+	$coop_sinkhole_deathpit_kill setsize "-500 -500 -200" "500 500 1"
+	
+	//remove this trigger, we will spawn a own coop trigger
+	$sinkhole_deathpit remove 
+	
+	level.coop_elevator_deathpit_player1 = 0
+	level.coop_elevator_deathpit_player2 = 0
+	level.coop_elevator_deathpit_player3 = 0
+	level.coop_elevator_deathpit_player4 = 0
+	
 	
 	removeclass "triggerchangelevel"
 	wait game.FRAMETIME
@@ -5258,6 +5428,34 @@ coop_levelSetup:
 	//WARNING - the model number may change if the game gets updates!!!
 	//spawn trigger_changelevel model "*242" origin "-2688 512 224" "map" "*abandon$start1" targetname "coopLvlEnd" thread "LevelComplete"
 
+	//move vehicles back to a place they can be reached again
+	thread coop_multiplayer_vehicle_reset
+end
+
+coop_multiplayer_vehicle_reset:
+//related to atv_motion_monitor
+end
+    local.maxZdepthAllowed = -500
+    //local.vehicle string "$atv_base_backup"
+    local.vehicle string "$atv_base"
+
+coop_multiplayer_vehicle_reset_loop:
+    local.vehicleOrigin getorigin local.vehicle
+
+    local.printOut string "Vehicle Z: "
+    local.printOut append local.vehicleOrigin
+    local.printOut append "\n"
+    print local.printOut
+
+    wait 1
+	local.vehicleZ vector_z local.vehicleOrigin
+	local.vehicleZ iflessequal -500 goto coop_multiplayer_vehicle_reset_now
+    goto coop_multiplayer_vehicle_reset_loop
+	
+	coop_multiplayer_vehicle_reset_now:
+	//local.vehicle
+	print "RESET vehicele\n"
+	goto coop_multiplayer_vehicle_reset_loop
 end
 
 //[coop] chrissstrahl - executed each time a player has spawned
@@ -5301,3 +5499,18 @@ coop_justLeft:
 	//local.player ifstrequal "$player2" print "Player 2 has lost the will to fight\n"
 end
 
+//NOTES  - vehicle
+//		HYDRANT
+//level.ram_hydrant1_broken
+//level.ram_hydrant1_active
+//level.ram_hydrant2_broken
+//level.ram_hydrant2_active
+//
+//		PLAYER
+//level.player_in_vehicle
+//
+//		ATV
+//level.active_atv //entity name
+//level.atv_speed
+//level.atv_direction
+//
