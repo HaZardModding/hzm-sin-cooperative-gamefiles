@@ -94,7 +94,6 @@ abandon:
 	local.player give RiotHelmet 30
 	local.player give FlakJacket 30
 	local.player give FlakPants 30
-	//Chrissstrahl - added dual magnum and fixed next/prev-weapon (with use) selection not working upon map restart
 	local.player give DualMagnum 1
 	local.player use DualMagnum
 end
@@ -104,4 +103,21 @@ csite_cinema:
 	local.player string parm.player
 	//give weapons?
 	//You don't need weapons, you have ELEXIS!
+end
+
+csite:
+	local.player string parm.player
+	local.player give GlowStick 10
+	
+	local.player give Shotgun
+	local.player give AssaultRifle
+	local.player give Bullet10mm 100
+	local.player give Bullet50mm 100
+	local.player give ShotgunClip 50
+
+	local.player give RiotHelmet 30
+	local.player give FlakJacket 30
+	local.player give FlakPants 30
+	local.player give DualMagnum 2
+	local.player use DualMagnum
 end
