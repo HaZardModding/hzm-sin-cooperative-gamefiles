@@ -8,11 +8,17 @@ main:
 	level.maxClientsCvar getcvar "maxclients"
 	level.maxentities getcvar "maxentities"
 	local.temp getcvar "coop"
-	local.temp ifequal 1 level.coopInMultiplayer = 666
 	// local.temp getcvar "deathmatch"
 	// local.temp ifequal 1 level.coopInMultiplayer = 1
 	// local.temp getcvar "ctf"
 	// local.temp ifequal 1 level.coopInMultiplayer = 2
+	
+	local.temp ifequal 1 level.coopInMultiplayer = 666
+	level.coopMaxPlayers = level.maxClientsCvar
+	//hardlimit players to 4 for coop
+	level.coopMaxPlayers ifgreater 4 level.coopMaxPlayers = 4
+	
+
 	
 	//used to skip cinematics and other parts of the missions while testing
 	//the idea is that even if it is not removed before release, this should
