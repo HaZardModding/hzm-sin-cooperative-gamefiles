@@ -3,6 +3,10 @@
 // Ritual Entertainment - Charlie Wiederhold
 //***************************************************************************
 
+//[coop] chrissstrahl - START COOP MOD - REQUIRED
+aliasscript global/coop_main.scr coopMain
+thread coopMain::main
+
 setdialogscript dialog/dialog_csite.scr
 
 level.SkillLevel getcvar skill
@@ -2218,6 +2222,11 @@ pause
 
 Mancini_Jump:
 music surprise
+
+//[coop] chrissstrahl - move spawnlocations up onto the roof
+thread coopPlayerSpawn::csite_roof
+
+
 local.self ignore activate
 thread dialog::mancini_get_me_out
 local.self runto $mancini_jump_end
@@ -2340,7 +2349,11 @@ local.self anim "opencan1"
 waitFor local.self
 local.self anim "idle1"
 local.self respondtoall
-local.self attack *1
+
+	//[coop] chrissstrahl - attack closest player
+	parm.coop_attack string local.self 
+	thread coopReplace::coop_attack
+
 pause
 
 end
@@ -2382,7 +2395,11 @@ pause
 
 Thug_Ledge1_Attack:
 local.self respondtoall
-local.self attack *1
+
+	//[coop] chrissstrahl - attack closest player
+	parm.coop_attack string local.self 
+	thread coopReplace::coop_attack
+	
 pause
 
 Thug_Ledge1_Idle:
@@ -2419,7 +2436,11 @@ pause
 
 Thug_Ledge2_Attack:
 local.self respondtoall
-local.self attack *1
+
+	//[coop] chrissstrahl - attack closest player
+	parm.coop_attack string local.self 
+	thread coopReplace::coop_attack
+	
 pause
 
 Thug_Ledge2_Idle:
@@ -2462,7 +2483,11 @@ waitFor local.self
 local.self turnto 270
 waitFor local.self
 local.self respondtoall
-local.self attack *1
+
+	//[coop] chrissstrahl - attack closest player
+	parm.coop_attack string local.self 
+	thread coopReplace::coop_attack
+	
 pause
 
 Thug1_Roof1_Pain:
@@ -2474,7 +2499,11 @@ pause
 Thug1_Roof1_Sound:
 local.self copystate pain default_pain
 local.self respondtoall
-local.self attack *1
+
+	//[coop] chrissstrahl - attack closest player
+	parm.coop_attack string local.self 
+	thread coopReplace::coop_attack
+	
 pause
 
 end
@@ -2498,7 +2527,11 @@ local.self respondto pain
 local.self runto $roof1_standground
 waitFor local.self
 local.self respondtoall
-local.self attack *1
+
+	//[coop] chrissstrahl - attack closest player
+	parm.coop_attack string local.self 
+	thread coopReplace::coop_attack
+	
 pause
 
 Thug2_Roof1_Pain:
@@ -2510,7 +2543,11 @@ pause
 Thug2_Roof1_Sound:
 local.self copystate pain default_pain
 local.self respondtoall
-local.self attack *1
+
+	//[coop] chrissstrahl - attack closest player
+	parm.coop_attack string local.self 
+	thread coopReplace::coop_attack
+	
 pause
 
 end
@@ -2591,7 +2628,11 @@ local.self ignore activate
 local.self runto $thug1_scatter_spot
 waitFor local.self
 local.self respondtoall
-local.self attack *1
+
+	//[coop] chrissstrahl - attack closest player
+	parm.coop_attack string local.self 
+	thread coopReplace::coop_attack
+	
 pause
 
 CYard_Thug1_Pain:
@@ -2601,7 +2642,11 @@ pause
 
 CYard_Thug1_Sound:
 local.self respondtoall
-local.self attack *1
+
+	//[coop] chrissstrahl - attack closest player
+	parm.coop_attack string local.self 
+	thread coopReplace::coop_attack
+	
 pause
 
 end
@@ -2627,7 +2672,11 @@ local.self ignore activate
 local.self runto $thug2_scatter_spot
 waitFor local.self
 local.self respondtoall
-local.self attack *1
+
+	//[coop] chrissstrahl - attack closest player
+	parm.coop_attack string local.self 
+	thread coopReplace::coop_attack
+	
 pause
 
 CYard_Thug2_Pain:
@@ -2637,7 +2686,11 @@ pause
 
 CYard_Thug2_Sound:
 local.self respondtoall
-local.self attack *1
+
+	//[coop] chrissstrahl - attack closest player
+	parm.coop_attack string local.self 
+	thread coopReplace::coop_attack
+	
 pause
 
 end
@@ -2667,7 +2720,11 @@ local.self ignore activate
 local.self runto $thug3_scatter_spot
 waitFor local.self
 local.self respondtoall
-local.self attack *1
+
+	//[coop] chrissstrahl - attack closest player
+	parm.coop_attack string local.self 
+	thread coopReplace::coop_attack
+	
 pause
 
 CYard_Thug3_Pain:
@@ -2677,7 +2734,11 @@ pause
 
 CYard_Thug3_Sound:
 local.self respondtoall
-local.self attack *1
+
+	//[coop] chrissstrahl - attack closest player
+	parm.coop_attack string local.self 
+	thread coopReplace::coop_attack
+	
 pause
 
 CYard_Thug3_Idle:
@@ -2856,7 +2917,11 @@ local.ThugNum ifequal 6 local.self turnto 0
 local.ThugNum ifequal 7 local.self turnto 0
 waitFor local.self
 local.self respondtoall
-local.self attack *1
+
+	//[coop] chrissstrahl - attack closest player
+	parm.coop_attack string local.self 
+	thread coopReplace::coop_attack
+	
 pause
 
 end
@@ -2946,7 +3011,11 @@ Vator_Thug1_Active:
 local.self runto $vator_thug1_node
 waitFor local.self
 local.self respondtoall
-local.self attack *1
+
+	//[coop] chrissstrahl - attack closest player
+	parm.coop_attack string local.self 
+	thread coopReplace::coop_attack
+	
 pause
 
 end
@@ -2961,7 +3030,11 @@ pause
 
 Vator_Thug2_Active:
 local.self respondtoall
-local.self attack *1
+
+	//[coop] chrissstrahl - attack closest player
+	parm.coop_attack string local.self 
+	thread coopReplace::coop_attack
+	
 pause
 
 end
@@ -2977,7 +3050,11 @@ pause
 
 Vator_Thug3_Active:
 local.self respondtoall
-local.self attack *1
+
+	//[coop] chrissstrahl - attack closest player
+	parm.coop_attack string local.self 
+	thread coopReplace::coop_attack
+	
 pause
 
 end
@@ -3069,12 +3146,21 @@ Foreman_Conversation:
 music suspense
 local.self anim "idle1"
 local.self ignore use
-cinematic
+
+	//cinematic
+	//[coop] chrissstrahl - notify coop about cinematic
+	thread coopReplace::coop_cinematic
+	
 hud 0
 freezeplayer
 $foreman_camera2 fixedposition
 $foreman_camera1 fixedposition
-cuecamera $foreman_camera1
+
+	//cuecamera $foreman_camera1
+	//[coop] chrissstrahl - register and cue camera
+	parm.camera string $foreman_camera1
+	thread coopReplace::coop_cuecamera
+
 fadein 4 0 0 0
 wait 1.5
 thread dialog::blade_foreman
@@ -3092,8 +3178,14 @@ local.self anim "idle1"
 waitForSound "dialog/csite/foreman/plsgo.wav" .1
 hud 1
 fadein 4 0 0 0
-cueplayer
-noncinematic
+
+	//cueplayer
+	//[coop] chrissstrahl - unregister camera and cueplayer
+	thread coopReplace::coop_cueplayer
+	//noncinematic
+	//[coop] chrissstrahl - end cinematic and notify script
+	thread coopReplace::coop_noncinematic
+
 releaseplayer
 local.self respondto pain killed
 
@@ -5115,5 +5207,97 @@ init_flashlight:
   level.no_flashlight = 0
   $flashylighty effects +poi
 
+end
+
+
+coop_wreckingballAreaSpawns:
+	//[coop] chrissstrahl - move spawnlocations down to where you get the blueprints
+	thread coopPlayerSpawn::csite_wreckingball
+end
+
+//[coop] chrissstrahl - DETECT PLAYER SPAWN - REQUIRED
+//this fires everytime a player is spawned
+//without this the coop mod will not work correctly!
+coopInfoPlayerStartActivated:
+	thread coopMain::playerTargetnames
+end
+
+//[coop] chrissstrahl - spawn a trigger we can actually control, as long as the next level is not completed
+coop_levelSetup:
+	waitforplayer
+	wait 5
+	//elevator shaft
+	parm.addNoRespawnZoneBoundingbox string "100 100 1000"
+	parm.addNoRespawnZoneOrigin string "-1567 1635 213"
+	thread coopMain::addNoRespawnZone
+
+	//elevator shaft
+	parm.addNoRespawnZoneBoundingbox string "100 100 50"
+	parm.addNoRespawnZoneOrigin string "-1546 2150 45"
+	thread coopMain::addNoRespawnZone
+	
+	//big hole where the player has to jump across
+	parm.addNoRespawnZoneBoundingbox string "550 330 550"
+	parm.addNoRespawnZoneOrigin string "-1608 -669 -594"
+	thread coopMain::addNoRespawnZone
+	
+	
+	spawn trigger_once origin "-676 2525 0" thread "coop_wreckingballAreaSpawns" targetname "coopUpdateSpawns1"
+	$coopUpdateSpawns1 setsize "-1400 -1400 0" "1400 1400 300"
+	
+	spawn trigger_once origin "-2785 3418 -128" thread "coop_afraidofthedarkSpawns" targetname "coopUpdateSpawns2"
+	$coopUpdateSpawns2 setsize "-65 -65 30" "65 65 30"
+	
+	spawn func_vehicle model "atv.def" targetname "coopAtv1" "target" "atv" "thread" "global/func_vehicle_atv.scr::vehicle_atv" "origin" "-809 997 100"
+	
+	removeclass "triggerchangelevel"
+	wait game.FRAMETIME
+	//clearsavegames
+	//map "abandon$start1"
+	//the asterix infront of the mapname is suppose to clearsaved games in the trigger_changelevel
+	//WARNING - the model number may change if the game gets updates!!!
+	//spawn trigger_changelevel model "*242" origin "-2688 512 224" "map" "*abandon$start1" targetname "coopLvlEnd" thread "LevelComplete"
+
+end
+
+//[coop] chrissstrahl - executed each time a player has spawned
+//optional function
+coop_justSpawned:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+		
+//[coop] chrissstrahl - executed each time a player has died
+//optional function
+coop_justDied:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+
+//[coop] chrissstrahl - executed each time a player enters spectator mode
+//optional function
+coop_justBecameSpectator:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+
+//[coop] chrissstrahl - executed each time a player has entered the game (usually oce per level)
+//optional function
+coop_justEntered:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end	
+	
+//[coop] chrissstrahl - executed each time a player has disconnected
+//optional function
+coop_justLeft:
+	local.player string parm.playerEvent
+	//EXAMPLE: You can't do something with the player because the player has disconnected
+	//You can however still check stuff based on player targetname
+	//local.player ifstrequal "$player2" print "Player 2 has lost the will to fight\n"
 end
 
