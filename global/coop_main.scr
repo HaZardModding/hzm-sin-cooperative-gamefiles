@@ -445,10 +445,10 @@ playerAnyoneHasItem:
 
 	playerAnyoneHasItem_loop:
     local.index += 1
-    local.index ifgreaterequal 5 end
+    local.index ifgreater level.coopMaxPlayers end
 
     parm.player string "$player"
-    parm.player appendint local.index
+    parm.player append local.index
 
 	parm.playerHasItem string parm.playerAnyoneHasItem
     thread playerHasItem
@@ -570,10 +570,10 @@ playerMoveAllToSpawn:
 
 	playerMoveAllToSpawn_loop:
     local.index += 1
-    local.index ifgreaterequal 5 end
+    local.index ifgreater level.coopMaxPlayers end
 
     parm.player string "$player"
-    parm.player appendint local.index
+    parm.player append local.index
     thread playerMoveToSpawn
 
     goto playerMoveAllToSpawn_loop
@@ -666,10 +666,10 @@ playerMove:
 	
 	playerMove_loop:
 	local.index += 1
-	local.index ifgreaterequal 5 goto playerMove_end
+	local.index ifgreater level.coopMaxPlayers goto playerMove_end
 	
 	local.player string "$player"
-	local.player appendint local.index
+	local.player append local.index
 	
 	local.playerAlive isentalive local.player
 	local.playerAlive ifequal 0 goto playerMove_loop
@@ -709,34 +709,48 @@ end
 
 //lower weapons of players
 playerLowerAll:
-	$player1 forcelowerweapon
-	$player2 forcelowerweapon
-	$player3 forcelowerweapon
-	$player4 forcelowerweapon
+	local.index = 0
+	
+	playerLowerAll_loop:
+	local.index += 1
+	local.index ifgreater level.coopMaxPlayers end
+	local.player string "$player"
+	local.player append local.index
+	
+	local.player forcelowerweapon
+	
+	goto playerLowerAll_loop
 end
 
 //raise weapons of players
 playerRaiseAll:
-	$player1 forceraiseweapon
-	$player2 forceraiseweapon
-	$player3 forceraiseweapon
-	$player4 forceraiseweapon
+	local.index = 0
+	
+	playerRaiseAll_loop:
+	local.index += 1
+	local.index ifgreater level.coopMaxPlayers end
+	local.player string "$player"
+	local.player append local.index
+	
+	local.player forceraiseweapon
+	
+	goto playerRaiseAll_loop
 end
 
 //change player to the fists
 playerFistsAll:
-	$player1 use fists
-	$player1 forcelowerweapon
-	$player1 forceraiseweapon
-	$player2 use fists
-	$player2 forcelowerweapon
-	$player2 forceraiseweapon
-	$player3 use fists
-	$player3 forcelowerweapon
-	$player3 forceraiseweapon
-	$player4 use fists
-	$player4 forcelowerweapon
-	$player4 forceraiseweapon
+	local.index = 0
+	
+	playerFistsAll_loop:
+	local.index += 1
+	local.index ifgreater level.coopMaxPlayers end
+	local.player string "$player"
+	local.player append local.index
+	
+	local.player use fists
+	local.player forcelowerweapon
+	
+	goto playerFistsAll_loop
 end
 
 //teleport given player
@@ -781,7 +795,7 @@ isPlayerObject:
 	
 	isPlayerObject_loop:
     local.index += 1
-    local.index ifgreaterequal 5 end
+    local.index ifgreater level.coopMaxPlayers end
     local.player string "$player"
     local.player append local.index
 	parm.isPlayerObject ifstrequal local.player goto isPlayerObject_true
@@ -834,10 +848,10 @@ playerClosest:
 	//loop form here
 	playerClosest_loop:
 	local.index += 1
-	local.index ifgreaterequal 5 goto playerClosest_end
+	local.index ifgreater level.coopMaxPlayers goto playerClosest_end
 	
 	local.player string "$player"
-	local.player appendint local.index
+	local.player append local.index
 	
 	local.playerAlive isentalive local.player
 	local.playerAlive ifequal 0 goto playerClosest_loop
@@ -887,7 +901,7 @@ playersDropWeapon:
 	
 	playersDropWeapon_loop:
     local.index += 1
-    local.index ifgreaterequal 5 end
+    local.index ifgreater level.coopMaxPlayers end
     local.player string "$player"
     local.player append local.index
 	parm.playerExist string local.player
@@ -904,10 +918,10 @@ playersWithFistsOnly:
 	
 	playersWithFistsOnly_loop:
 	local.index += 1
-	local.index ifgreaterequal 5 goto playersWithFistsOnly_true
+	local.index ifgreater level.coopMaxPlayers goto playersWithFistsOnly_true
 	
 	local.player string "$player"
-	local.player appendint local.index	
+	local.player append local.index	
 	local.playerAlive isentalive local.player
 	local.playerAlive ifequal 0 goto playersWithFistsOnly_loop
 	
@@ -1011,9 +1025,9 @@ playerMakeSolidAsap:
 	//loop from here
 	playerMakeSolidAsap_loop:
 	local.index += 1
-	local.index ifgreaterequal 5 goto playerMakeSolidAsap_check
+	local.index ifgreater level.coopMaxPlayers goto playerMakeSolidAsap_check
 	local.player string "$player"
-	local.player appendint local.index
+	local.player append local.index
 	
 	//same player, skip
 	local.playerToHandle ifstrequal local.player goto playerMakeSolidAsap_skip
@@ -1604,7 +1618,7 @@ clearInventory:
 	
 	clearInventory_loop:
     local.index += 1
-    local.index ifgreaterequal 5 end
+    local.index ifgreater level.coopMaxPlayers end
     local.player string "$player"
     local.player append local.index
 	parm.playerExist string local.player
@@ -1636,7 +1650,7 @@ newEpisode:
 	
 	newEpisode_loop:
     local.index += 1
-    local.index ifgreaterequal 5 end
+    local.index ifgreater level.coopMaxPlayers end
     local.player string "$player"
     local.player append local.index
 	parm.playerExist string local.player
@@ -1667,7 +1681,7 @@ newEpisode:
 	local.player take silencer 1000
 	local.player take Hand 1000
 	local.player give fists
-	local.has_pulse ifequal 1 *1 give PulseRifle
+	local.has_pulse ifequal 1 local.player give PulseRifle
 	local.player give Magnum
 	goto newEpisode_loop
 end
