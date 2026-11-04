@@ -211,3 +211,113 @@ csite_cinema:
 	level.coopPlayer3SpawnLocation string "399 1040 562"
 	level.coopPlayer4SpawnLocation string "399 1040 562"
 end
+
+csite:
+	//used to spawn a trigger detecting players spawning (entering the server)
+	//move so they are no longer on the level where players can accidently run into them
+	$start1 origin "3391 3361 200" //move info player start spawnlocation out of the way
+	level.infoPlayerStartOrigin1 string "3391 3361 200"
+	level.infoPlayerStartPushDirection1 string "270"
+	
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 270 0"
+	level.coopPlayer2SpawnAngles string "0 270 0"
+	level.coopPlayer3SpawnAngles string "0 180 0"
+	level.coopPlayer4SpawnAngles string "0 180 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "-809 997 100" //(correct one)3335 3131 0 //(vehicle test)-809 997 100
+	level.coopPlayer2SpawnLocation string "3295 3131 0"
+	level.coopPlayer3SpawnLocation string "3391 2943 0"
+	level.coopPlayer4SpawnLocation string "3391 2832 0"
+end
+
+csite_roof:
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 223 0"
+	level.coopPlayer2SpawnAngles string "0 223 0"
+	level.coopPlayer3SpawnAngles string "0 223 0"
+	level.coopPlayer4SpawnAngles string "0 223 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "2683 2730 980"
+	level.coopPlayer2SpawnLocation string "2643 2730 980"
+	level.coopPlayer3SpawnLocation string "2603 2730 980"
+	level.coopPlayer4SpawnLocation string "2563 2730 980"
+	print "Spawnlocation updated: csite_roof\n"
+end
+
+csite_wreckingball:
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 270 0"
+	level.coopPlayer2SpawnAngles string "0 270 0"
+	level.coopPlayer3SpawnAngles string "0 270 0"
+	level.coopPlayer4SpawnAngles string "0 270 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "-770 3255 80"
+	level.coopPlayer2SpawnLocation string "-730 3255 80"
+	level.coopPlayer3SpawnLocation string "-690 3255 80"
+	level.coopPlayer4SpawnLocation string "-650 3255 80"
+	print "Spawnlocation updated: csite_wreckingball\n"
+end
+
+csite_youarenotafraidofthedarkareyou:
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 90 0"
+	level.coopPlayer2SpawnAngles string "0 90 0"
+	level.coopPlayer3SpawnAngles string "0 90 0"
+	level.coopPlayer4SpawnAngles string "0 90 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "-1919 2064 -80"
+	level.coopPlayer2SpawnLocation string "-1879 2064 -80"
+	level.coopPlayer3SpawnLocation string "-1839 2064 -80"
+	level.coopPlayer4SpawnLocation string "-1800 2064 -80"
+	print "Spawnlocation updated: csite_youarenotafraidofthedarkareyou\n"
+end
+
+csite_longWayRaoundAtElevator:
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 1 0"
+	level.coopPlayer2SpawnAngles string "0 1 0"
+	level.coopPlayer3SpawnAngles string "0 1 0"
+	level.coopPlayer4SpawnAngles string "0 314 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "-2271 1602 190"
+	level.coopPlayer2SpawnLocation string "-2271 1644 170"
+	level.coopPlayer3SpawnLocation string "-2271 1711 130"
+	level.coopPlayer4SpawnLocation string "-2164 1711 130"
+	print "Spawnlocation updated: csite_longWayRaoundAtElevator\n"
+end
+
+csite_vehicle:
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 270 0"
+	level.coopPlayer2SpawnAngles string "0 270 0"
+	level.coopPlayer3SpawnAngles string "0 270 0"
+	level.coopPlayer4SpawnAngles string "0 270 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "-560 1071 200"
+	level.coopPlayer2SpawnLocation string "-600 1071 200"
+	level.coopPlayer3SpawnLocation string "-640 1071 200"
+	level.coopPlayer4SpawnLocation string "-680 1071 200"
+	print "Spawnlocation updated: csite_vehicle\n"
+end
+
+csite_office:
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 270 0"
+	level.coopPlayer2SpawnAngles string "0 270 0"
+	level.coopPlayer3SpawnAngles string "0 270 0"
+	level.coopPlayer4SpawnAngles string "0 270 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "-560 1071 200"
+	level.coopPlayer2SpawnLocation string "-600 1071 200"
+	level.coopPlayer3SpawnLocation string "-640 1071 200"
+	level.coopPlayer4SpawnLocation string "-680 1071 200"
+	print "Spawnlocation updated: csite_office\n"
+end
