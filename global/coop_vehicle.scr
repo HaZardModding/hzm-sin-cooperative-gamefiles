@@ -1,0 +1,149 @@
+//Contains coop vehicle related functions
+//Chrissstrahl - 2026.11.05
+
+
+coop_vehicle:
+	local.vehicleLastDriver string ""
+	local.vehicleSpeed = 0
+	local.vehicleDriver string ""
+	local.vehicleLastPos vector "( 0 0 0 )"
+	local.vehiclePos vector "( 0 0 0 )"
+	local.playerLastDist = 99999
+	local.playerDist = 99999
+	local.vehicle string parm.coop_vehicle
+	
+	//check if it actually exist before we go any further
+	local.objectOrigin getorigin local.vehicle
+    local.vecLength vector_length local.objectOrigin
+    local.vecLength ifequal 0 goto coop_vehicle_notExist
+	
+	//make sure we are synced
+	local.vehicleLastPos vector local.objectOrigin
+	local.vehiclePos vector local.objectOrigin
+	
+	
+	coop_vehicle_loop:
+	//set prev origin before we grab new pos
+	local.vehicleLastPos vector local.vehiclePos
+	
+	//check if it actually exist before we continue on
+	local.vehiclePos getorigin local.vehicle
+    local.vecLength vector_length local.vehiclePos
+    local.vecLength ifequal 0 goto coop_vehicle_removed
+	
+	//calc speed
+	local.primary_delta vector local.vehiclePos
+	local.primary_delta vector_subtract local.vehicleLastPos
+	local.primary_delta vector_setz 0
+	local.vehicleSpeed vector_length local.primary_delta
+	local.vehicleSpeed /= game.FRAMETIME
+	
+	parm.playerClosestNoIgnoreZ = 1
+	parm.playerClosestOrigin vector local.vehiclePos
+	thread coopMain::playerClosest
+	local.playerDist = parm.playersClosestDistance
+	local.vehicleDriver string parm.playerClosest
+	
+	//check no driver abbort - update last pos
+	local.countAbbort = 0
+	
+	//scale allowed dist with drving speed
+	local.maxDistAllowed = 25
+	local.vehicleSpeed ifgreaterequal 300 local.maxDistAllowed = 28
+	local.vehicleSpeed ifgreaterequal 350 local.maxDistAllowed = 33
+	local.vehicleSpeed ifgreaterequal 450 local.maxDistAllowed = 36
+	local.vehicleSpeed ifgreaterequal 500 local.maxDistAllowed = 39
+	local.vehicleSpeed ifgreaterequal 600 local.maxDistAllowed = 42
+	
+	local.playerDist ifgreater local.maxDistAllowed local.countAbbort += 1
+	local.playerLastDist ifgreater local.maxDistAllowed local.countAbbort += 1
+	local.countAbbort ifgreaterequal 2 goto coop_vehicle_loop_noDriver
+	
+	//wait a frame
+	coop_vehicle_loopWait:
+	
+	local.vehicleLastDriver ifstrnotequal local.vehicleDriver print "Drive changed was: "
+	local.vehicleLastDriver ifstrnotequal local.vehicleDriver print local.vehicleLastDriver
+	local.vehicleLastDriver ifstrnotequal local.vehicleDriver print " is now: "
+	local.vehicleLastDriver ifstrnotequal local.vehicleDriver print local.vehicleDriver
+	local.vehicleLastDriver ifstrnotequal local.vehicleDriver print " Speed: "
+	local.vehicleLastDriver ifstrnotequal local.vehicleDriver print local.vehicleSpeed
+	local.vehicleLastDriver ifstrnotequal local.vehicleDriver print "\n"
+	
+	//grab last pos
+	local.playerLastDist = local.playerDist
+	//grab last driver
+	local.vehicleLastDriver string local.vehicleDriver
+	
+	local.printout string "Vehicle Speed: "
+	local.printOut append local.vehicle
+	local.printOut append " at "
+	local.printOut append local.vehicleSpeed
+	local.printOut append " - Driver: "
+	local.printOut append local.vehicleDriver
+	local.printOut append " - Dist: "
+	local.printOut append local.playerDist
+	local.printOut append "\n"
+	//print local.printOut
+	
+//print local.vehicleSpeed
+//print "\n"
+
+	wait game.FRAMETIME
+	goto coop_vehicle_loop
+	
+	coop_vehicle_loop_noDriver:
+	//reset driver
+	local.vehicleDriver string ""
+// print "NO DRIVER\n"
+// print local.vehicleSpeed
+// print "\n" 
+	goto coop_vehicle_loopWait
+	
+	coop_vehicle_notExist:
+	//info
+	local.printOut string "::coop_vehicle: Vehicle "
+	local.printOut append local.vehicle
+	local.printOut append " does not exist!\n"
+	print local.printOut
+	goto coop_vehicle_end
+	
+	coop_vehicle_removed:
+	//make sure we get valid data
+	local.vehiclePos = local.vehicleLastPos 
+	//info
+	local.printOut string "::coop_vehicle: Vehicle "
+	local.printOut append parm.coop_vehicle
+	local.printOut append " was removed.\n"
+	print local.printOut
+	goto coop_vehicle_end
+	
+	coop_vehicle_end:
+	parm.coop_vehiclePos string local.vehiclePos
+	parm.coop_vehicleLastPos string local.vehicleLastPos
+	parm.coop_vehicleDriver string local.vehicleDriver
+	parm.coop_vehicleSpeed = local.vehicleSpeed
+end
+
+
+coop_vehicleGetDriver:
+	parm.coop_vehicleGetDriver string ""
+	local.vehicle string parm.coop_vehicleGetDriverVehicle
+	local.vehicleOri getorigin local.vehicle
+	parm.playerClosestNoIgnoreZ = 1
+	parm.playerClosestOrigin vector local.vehicleOri
+	thread coopMain::playerClosest
+	local.player string parm.playerClosest
+	local.dist = parm.playersClosestDistance
+	
+	//level.coopPlayer1Vehicle
+	//level.coopPlayer1VehicleSpeed
+	
+	//38,39 at worst - this needs to be done proper
+	local.dist iflessequal 33 parm.coop_vehicleGetDriver string local.player
+	
+	// local.printOut string "dist: "
+	// local.printOut append local.dist
+	// local.printOut append "\n"
+	// print local.printOut
+end
