@@ -1,0 +1,367 @@
+end
+
+// regexes:
+// part\.(.*?) = ['"]?(.*?)['"]?;
+// parm.part $1 $2
+//
+// obj\.(.*?) = ['"]?(.*?)['"]?;
+// local.self $1 $2
+//
+// part\.physobj_flags \|= PHFLAGS_POWERED;
+// parm.part physobj_flags powered
+
+vehicle_atv:
+	local.self driveranim "driveatv"
+
+	local.self physobj_mass 1000
+	local.self lip 16
+	local.self max_forward_speed 750
+	local.self max_reverse_speed 600
+	local.self max_roll_speed 2000
+	local.self accelerate_forward 2100
+	local.self accelerate_reverse 1800
+	local.self accelerate_roll 250
+	local.self max_turn 35
+	local.self turn_speed 150
+	local.self autolevel_force 1 5 0
+	local.self autolevel_maxangle 35 20 0
+	local.self physobj_friction_logic_mult 2 1 1
+	local.self physobj_friction_braking_mult 22.25 1 1
+
+	local.self spawn_static
+	parm.part model atv.def
+	parm.part netname chassis
+	parm.part relative_org 0 0 0
+
+	local.self spawn_static
+	parm.part netname "driver"
+	parm.part relative_org -15 0 -1.5
+
+	local.self spawn_static
+	parm.part model atvtire_front.def
+	parm.part relative_org 32 18 20
+	parm.part netname frontleft
+
+	local.self spawn_static
+	parm.part model atvtire_back.def
+	parm.part relative_org -32 18 22
+	parm.part netname backleft
+
+	local.self spawn_static
+	parm.part model atvtire_back.def
+	parm.part relative_org -32 -18 22
+	parm.part netname backright
+
+	local.self spawn_static
+	parm.part model atvtire_front.def
+	parm.part relative_org 32 -18 20
+	parm.part netname frontright
+
+	local.self spawn_static
+	parm.part relative_org 0 42 46
+	parm.part netname leftdoor
+
+	local.self spawn_static
+	parm.part relative_org 0 -42 46
+	parm.part netname rightdoor
+
+	local.self spawn_static
+	parm.part relative_org -14 0 80
+	parm.part netname topexit
+
+	local.self spawn_static
+	parm.part relative_org 64 0 46
+	parm.part netname frontexit
+
+	local.self spawn_static
+	parm.part relative_org -64 0 46
+	parm.part netname backexit
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org 32 23.5 20
+	parm.part relative_size 15
+	parm.part part_mass 1.5
+	parm.part physobj_spring_length 10
+	parm.part physobj_spring_force 0 5.8 0.052
+	parm.part physobj_stiction 10
+	parm.part physobj_friction_ground 200 1000 5
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+	parm.part netname frontleft
+	parm.part physobj_flags powered
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org 32 -23.5 20
+	parm.part relative_size 15
+	parm.part part_mass 1.5
+	parm.part physobj_spring_length 10
+	parm.part physobj_spring_force 0 5.8 0.052
+	parm.part physobj_stiction 10
+	parm.part physobj_friction_ground 200 1000 5
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+	parm.part netname frontright
+	parm.part physobj_flags powered
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org -32 -23.5 22
+	parm.part relative_size 15
+	parm.part part_mass 1.5
+	parm.part physobj_spring_length 12
+	parm.part physobj_spring_force 0 5.8 0.052
+	parm.part physobj_stiction 10
+	parm.part physobj_friction_ground 200 1000 5
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+	parm.part netname backright
+	parm.part physobj_flags powered
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org -32 23.5 22
+	parm.part relative_size 15
+	parm.part part_mass 1.5
+	parm.part physobj_spring_length 12
+	parm.part physobj_spring_force 0 5.8 0.052
+	parm.part physobj_stiction 10
+	parm.part physobj_friction_ground 200 1000 5
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+	parm.part netname backleft
+	parm.part physobj_flags powered
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org 41 0 29
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.55
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+	
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org -40.51 0 29
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.55
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+	
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org -30 0 46
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.55
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org -9 0 43
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.55
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+	
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org 8 0 46
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.55
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org 29.91 0 50.22 // -28
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.55
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org -40.51 17.43 39.86 // -28
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.55
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org -19.42 16.1 36.47 // -28
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.55
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org -11 16 15
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.75
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org 10 16 15
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.75
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org 19.19 20.57 36.66 // -28
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.55
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org 41 18.82 35.34 // -28
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.55
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org 41 -18.82 35.34 // -28
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.55
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org 19.19 -20.57 36.66 // -28
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.55
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org 10 -16 15
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.75
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org -11 -16 15
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.75
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org -19.42 -16.1 36.47 // -28
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.55
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org -40.51 -17.43 39.86 // -28
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.55
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+
+	local.self spawn_particle
+	//parm.part model progs/debug/point.spr
+	parm.part relative_org 15.26 0 59.45 // -28
+	parm.part netname point
+	parm.part physobj_stepup 1
+	parm.part part_mass 0.25
+	parm.part physobj_stiction 50
+	parm.part physobj_friction_ground 400 400 0
+	parm.part physobj_friction_water 2 2 2
+	parm.part physobj_bounce 1.0
+	parm.part physobj_buoyancy -0.75
+end
