@@ -21,8 +21,8 @@ vehicle_atv:
 	local.self accelerate_forward 2100
 	local.self accelerate_reverse 1800
 	local.self accelerate_roll 250
-	local.self max_turn 35
-	local.self turn_speed 150
+	local.self max_turn 70 //35 - [coop] chrissstrahl - feels more controlable
+	local.self turn_speed 250 //150 - [coop] chrissstrahl - feels more controlable
 	local.self autolevel_force 1 5 0
 	local.self autolevel_maxangle 35 20 0
 	local.self physobj_friction_logic_mult 2 1 1
