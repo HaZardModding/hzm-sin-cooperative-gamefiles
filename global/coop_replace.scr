@@ -188,6 +188,16 @@ coop_take:
     goto coop_take_loop
 end
 
+
+coop_takeItem:
+	parm.coop_takeItem ifstrequal "$player1" local.itemcount getitemcount *1 parm.coop_takeItemName
+    parm.coop_takeItem ifstrequal "$player2" local.itemcount getitemcount *2 parm.coop_takeItemName
+    parm.coop_takeItem ifstrequal "$player3" local.itemcount getitemcount *3 parm.coop_takeItemName
+    parm.coop_takeItem ifstrequal "$player4" local.itemcount getitemcount *4 parm.coop_takeItemName
+	parm.coop_takeItem take parm.coop_takeItemName local.itemcount
+end
+
+
 //Use this if you want NPC to attack the closest player
 //alternatively a function with hurt 1 to npc could make npc aggressive
 //NPC COMMAND
