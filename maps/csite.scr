@@ -3973,19 +3973,51 @@ rammable_pair_check:
 // Disable both piece handlers while this instance checks the nearby ATV.
 local.piece1 notrigger
 local.piece2 notrigger
-level.player_in_vehicle ifequal 0 goto rammable_pair_loop
+
+	//[coop] chrissstrahl - grab closest ATV and make decisons based on that
+	local.oriPice getorigin local.piece1
+	parm.location string local.oriPice
+	thread coop_getClosestATV
+	local.coopVeh1 string parm.coop_getClosestATV
+	local.distPice1 = parm.coop_getClosestATVDistance
+	//check the other part
+	local.oriPice getorigin local.piece2
+	parm.location string local.oriPice
+	thread coop_getClosestATV
+	local.coopVeh2 string parm.coop_getClosestATV
+	local.distPice2 = parm.coop_getClosestATVDistance
+	//get closest
+	local.distPice1 iflessequal local.distPice2 local.coopVehicle string local.coopVeh1
+	local.distPice2 iflessequal local.distPice1 local.coopVehicle string local.coopVeh2
+	//get driver
+	thread coop_getATVDriver:
+	local.atv string parm.coop_getATVDriverATV
+	
+	//[coop] chrissstrahl - make coop compatible
+	//level.player_in_vehicle ifequal 0 goto rammable_pair_loop
+	local.numberOne = 1
+	local.numberOne ifequal 0 goto rammable_pair_loop
+
 goto rammable_pair_probe_check
 
 
 rammable_pair_probe_wait:
 
 wait game.FRAMETIME
-level.player_in_vehicle ifequal 0 goto rammable_pair_loop
+	//[coop] chrissstrahl - make coop compatible
+	//level.player_in_vehicle ifequal 0 goto rammable_pair_loop
+	local.numberOne ifequal 0 goto rammable_pair_loop
 
 
 rammable_pair_probe_check:
 
-local.active_atv string level.active_atv
+	//[coop] chrissstrahl - make coop compatible
+	//local.active_atv string level.active_atv
+	local.active_atv string local.coopVehicle
+	//level.atv_direction - this needs fixing
+	//level.atv_speed - this needs fixing
+	//level.atv_probe_up
+		
 local.current_atv_origin getorigin local.active_atv
 local.current_atv_direction vector level.atv_direction
 local.current_probe_side vector_cross local.current_atv_direction "(0 0 1)"
@@ -4601,16 +4633,24 @@ dialog_locked_door:
 end
 
 dialog_locked_nondoor:
+	
+	//[coop] chrissstrahl - multiplayer compatibility
+	level.coopInMultiplayer ifgreater 0 goto coop_dialog_locked_nondoor
+	
 local.randomsnd randomint 4
-
 local.randomsnd ifequal 0 *1 playsound "dialog/misc2/blade/noway.wav" 1 5
 local.randomsnd ifequal 1 *1 playsound "dialog/misc2/blade/wontmove.wav" 1 5
 local.randomsnd ifequal 2 *1 playsound "dialog/misc2/blade/notchance.wav" 1 5
 local.randomsnd ifequal 3 *1 playsound "dialog/misc2/blade/stuck.wav" 1 5
-
 end
 
 machine_disabled:
+
+	//[coop] chrissstrahl - multiplayer compatibility
+	level.coopInMultiplayer ifgreater 0 goto coop_machine_disabled
+	//[coop] chrissstrahl - multiplayer compatibility
+	level.coopInMultiplayer ifgreater 0 goto coop_machine_disabled
+
 *1 playsound "environment/computer/beeps/reject1.wav" 1 2
 waitForSound "environment/computer/beeps/reject1.wav"
 wait 0.5
@@ -4632,7 +4672,7 @@ end
 //-----------------------------
 
 sinkhole_death:
-//[coop] chrissstrahl - this trigger was removed and a different one is spawned in .ent_patch file
+//[coop] chrissstrahl - this trigger was removed and a different one is spawned in .ent_patch file during coop
 
 $sinkhole_deathpit notrigger
 *1 playsound "dialog/general/blade/fall2.wav" 1 2
@@ -4673,7 +4713,17 @@ $newcity_retreat_trigger notrigger
 
 level.newcity_retreat_delay = 0
 level.newcity_retreat_lane = 0
-level.newcity_retreat_player_origin getorigin *1
+
+//level.newcity_retreat_player_origin getorigin *1
+
+	//[coop] chrissstrahl - grab closest player
+	local.ori getorigin $newcity_retreat_trigger
+	parm.playerClosestOrigin string local.ori
+	thread coopMain::playerClosest
+	local.player string parm.playerClosest
+	level.newcity_retreat_player_origin getorigin local.player
+
+
 $newcity_retreatdoors unlock
 
 // These actors start on upper floors with no path to the street-level exit.
@@ -4887,6 +4937,10 @@ office_escape_door_use:
 // The door class does not expose its open or closed state to scripts.
 // Suppress the locked-door response while the office escape can open it.
 level.office_escape_active ifgreater 0 end
+
+	//[coop] chrissstrahl - multiplayer compatibility
+	level.coopInMultiplayer ifgreater 0 goto coop_dialog_locked_door
+
 thread dialog_locked_door
 end
 
@@ -5209,6 +5263,135 @@ end
 
 
 
+
+coop_getClosestATV:
+	local.index = 0
+	local.location vector parm.location
+	local.distClosest = 9999
+	local.entClosest string ""
+	
+	//check the two standard/defauolt ATVs
+	local.atv string "atv_base"
+	local.locCurrent getorigin local.atv
+	local.calcVecLength vector local.locCurrent
+	local.calcVecLength vector_subtract local.location
+	local.vecLength vector_length local.calcVecLength
+	local.distClosest = local.vecLength
+	local.entClosest string local.atv
+	
+	local.atv string "atv_base_backup"
+	local.locCurrent getorigin local.atv
+	local.calcVecLength vector local.locCurrent
+	local.calcVecLength vector_subtract local.location
+	local.vecLength vector_length local.calcVecLength
+	local.vecLength ifgreaterequal local.distClosest goto coop_getClosestATV_loop
+	local.distClosest = local.vecLength
+	local.entClosest string local.atv	
+	
+	coop_getClosestATV_loop:
+	local.index += 1
+	local.index ifgreater 4 goto coop_getClosestATV_end
+	
+	local.atv string "$coop_atv"
+	local.atv append local.index
+
+	local.locCurrent getorigin local.atv
+	//check if entity does exist
+	local.vecLength vector_length local.locCurrent
+	local.vecLength ifequal 0 goto coop_getClosestATV_loop
+	//exists, continue
+	local.calcVecLength vector local.locCurrent
+	local.calcVecLength vector_subtract local.location
+	local.vecLength vector_length local.calcVecLength
+	
+	local.vecLength ifgreaterequal local.distClosest goto coop_getClosestATV_loop
+	local.distClosest = local.vecLength
+	local.entClosest string local.atv
+	goto coop_getClosestATV_loop
+	
+	coop_getClosestATV_end:	
+	parm.coop_getClosestATV string local.entClosest
+	parm.coop_getClosestATVDistance = local.distClosest
+// local.info string "coop_getClosestATV: "
+// local.info append local.entClosest
+// local.info append " - "
+// local.info append local.distClosest
+// local.info append "\n"
+// print local.info
+end
+
+coop_dialog_locked_door:
+	parm.playerClosestOrigin string "2938 1920 348"
+	thread coopMain::playerClosest
+	local.player string parm.playerClosest
+	local.player randomsound "snd_locked" 1 2
+end
+
+coop_dialog_locked_nondoor:
+	//we need to check which player is closest to one of these entities
+	//then play the sound on this player
+	//it won't be perfect but it will have to do
+	local.closestDist = 9999
+	local.closestPlayer string ""
+	//door 1
+	parm.playerClosestOrigin string "3305 1694 328"
+	parm.playerClosestNoIgnoreZ = 1
+	thread coopMain::playerClosest
+	local.closestPlayer string parm.playerClosest
+	local.closestDist = parm.playersClosestDistance
+	//door 2
+	parm.playerClosestOrigin string "2614 1670 151"
+	parm.playerClosestNoIgnoreZ = 1
+	thread coopMain::playerClosest
+	local.closestPlayer string parm.playerClosest
+	local.closestDist = parm.playersClosestDistance
+	parm.playersClosestDistance iflessequal local.closestDist local.closestDist = parm.playersClosestDistance
+	parm.playersClosestDistance iflessequal local.closestDist local.closestPlayer string parm.playerClosest
+	//door 3
+	parm.playerClosestOrigin string "2560 1670 161"
+	parm.playerClosestNoIgnoreZ = 1
+	thread coopMain::playerClosest
+	local.closestPlayer string parm.playerClosest
+	local.closestDist = parm.playersClosestDistance
+	parm.playersClosestDistance iflessequal local.closestDist local.closestDist = parm.playersClosestDistance
+	parm.playersClosestDistance iflessequal local.closestDist local.closestPlayer string parm.playerClosest
+	//door 4
+	parm.playerClosestOrigin string "2482 1560 160"
+	parm.playerClosestNoIgnoreZ = 1
+	thread coopMain::playerClosest
+	local.closestPlayer string parm.playerClosest
+	local.closestDist = parm.playersClosestDistance
+	parm.playersClosestDistance iflessequal local.closestDist local.closestDist = parm.playersClosestDistance
+	parm.playersClosestDistance iflessequal local.closestDist local.closestPlayer string parm.playerClosest
+	//door 5
+	parm.playerClosestOrigin string "3614 1770 160"
+	parm.playerClosestNoIgnoreZ = 1
+	thread coopMain::playerClosest
+	local.closestPlayer string parm.playerClosest
+	local.closestDist = parm.playersClosestDistance
+	parm.playersClosestDistance iflessequal local.closestDist local.closestDist = parm.playersClosestDistance
+	parm.playersClosestDistance iflessequal local.closestDist local.closestPlayer string parm.playerClosest
+
+	//make closest player talk
+	local.randomsnd randomint 4
+	local.randomsnd ifequal 0 local.closestPlayer playsound "dialog/misc2/blade/noway.wav" 1 5
+	local.randomsnd ifequal 1 local.closestPlayer playsound "dialog/misc2/blade/wontmove.wav" 1 5
+	local.randomsnd ifequal 2 local.closestPlayer playsound "dialog/misc2/blade/notchance.wav" 1 5
+	local.randomsnd ifequal 3 local.closestPlayer playsound "dialog/misc2/blade/stuck.wav" 1 5
+end
+
+coop_machine_disabled:
+	parm.playerClosestOrigin string "3493 2378 250" //take sweetspot between elevators
+	thread coopMain::playerClosest
+	local.player string parm.playerClosest
+	local.player playsound "environment/computer/beeps/reject1.wav" 1 2
+	waitForSound "environment/computer/beeps/reject1.wav"
+	wait 0.5
+	local.playerAlive isentalive local.player
+	local.playerAlive ifequal 0 end
+	local.player playsound "dialog/misc2/blade/noway.wav" 1 5
+end
+
 coop_sinkhole_death:
 	//[coop] chrissstrahl - replacement function for sinkhole_death - called from trigger in the *.ent_patch file
 	level.coopInMultiplayer ifless 1 end
@@ -5243,8 +5426,6 @@ coop_elevator_deathpit:
 	level.coopInMultiplayer ifless 1 end	
 	local.index = 0
 	
-	print "coop_elevator_deathpit\n"
-	
 	coop_elevator_deathpit_loop:
 	local.index += 1
 	local.index ifgreater level.coopMaxPlayers end
@@ -5269,20 +5450,45 @@ coop_elevator_deathpit:
 	goto coop_elevator_deathpit_loop
 end
 
-$player1_coop_elevator_deathpit:
-	level.coop_elevator_deathpit_player1 ifequal 1 end
-	level.coop_elevator_deathpit_player1 = 1
-	local.player string "$player1"
+coop_elevator_deathpit_take:
+	local.player string parm.coop_elevator_deathpit_take
 	//scream
 	local.player playsound "dialog/general/blade/fall2.wav" 1 2
+	//retrive actual inventory
+	parm.coop_takeItem string local.player
+	parm.coop_takeItemName string "Blueprints"
+	thread coopReplace::coop_takeItem
+ 	parm.coop_takeItem string local.player
+	parm.coop_takeItemName string "Glowstick"
+	thread coopReplace::coop_takeItem
+	
+	parm.coop_takeItem string local.player
+	parm.coop_takeItemName string "RiotHelmet"
+	thread coopReplace::coop_takeItem
+	
+	parm.coop_takeItem string local.player
+	parm.coop_takeItemName string "FlakJacket"
+	thread coopReplace::coop_takeItem
+	
+	parm.coop_takeItem string local.player
+	parm.coop_takeItemName string "FlakPants"
+	thread coopReplace::coop_takeItem
+
 	//make sure the pit does not get littered
 	local.player dropweapon 0
 	local.player take all 
 	local.player take Magnum
-	local.player take Blueprints 999
-	local.player take Glowstick 999
 	local.player take Shotgun
 	local.player take AssaultRifle
+end
+
+$player1_coop_elevator_deathpit:
+	level.coop_elevator_deathpit_player1 ifequal 1 end
+	level.coop_elevator_deathpit_player1 = 1
+	
+	parm.coop_elevator_deathpit_take string "$player1"
+	thread coop_elevator_deathpit_take
+
 	wait 2
 	level.coop_elevator_deathpit_player1 = 0
 end
@@ -5290,17 +5496,10 @@ end
 $player2_coop_elevator_deathpit:
 	level.coop_elevator_deathpit_player2 ifequal 1 end
 	level.coop_elevator_deathpit_player2 = 1
-	local.player string "$player2"
-	//scream
-	local.player playsound "dialog/general/blade/fall2.wav" 1 2
-	//make sure the pit does not get littered
-	local.player dropweapon 0
-	local.player take all 
-	local.player take Magnum
-	local.player take Blueprints 999
-	local.player take Glowstick 999
-	local.player take Shotgun
-	local.player take AssaultRifle
+	
+	parm.coop_elevator_deathpit_take string "$player2"
+	thread coop_elevator_deathpit_take
+	
 	wait 2
 	level.coop_elevator_deathpit_player2 = 0
 end
@@ -5308,17 +5507,10 @@ end
 $player3_coop_elevator_deathpit:
 	level.coop_elevator_deathpit_player3 ifequal 1 end
 	level.coop_elevator_deathpit_player3 = 1
-	local.player string "$player3"
-	//scream
-	local.player playsound "dialog/general/blade/fall2.wav" 1 2
-	//make sure the pit does not get littered
-	local.player dropweapon 0
-	local.player take all 
-	local.player take Magnum
-	local.player take Blueprints 999
-	local.player take Glowstick 999
-	local.player take Shotgun
-	local.player take AssaultRifle
+
+	parm.coop_elevator_deathpit_take string "$player3"
+	thread coop_elevator_deathpit_take
+	
 	wait 2
 	level.coop_elevator_deathpit_player3 = 0
 end
@@ -5326,22 +5518,13 @@ end
 $player4_coop_elevator_deathpit:
 	level.coop_elevator_deathpit_player4 ifequal 1 end
 	level.coop_elevator_deathpit_player4 = 1
-	local.player string "$player4"
-	//scream
-	local.player playsound "dialog/general/blade/fall2.wav" 1 2
-	//make sure the pit does not get littered
-	local.player dropweapon 0
-	local.player take all 
-	local.player take Magnum
-	local.player take Blueprints 999
-	local.player take Glowstick 999
-	local.player take Shotgun
-	local.player take AssaultRifle
+
+	parm.coop_elevator_deathpit_take string "$player4"
+	thread coop_elevator_deathpit_take
+	
 	wait 2
 	level.coop_elevator_deathpit_player4 = 0
 end
-
-
 
 coop_wreckingballAreaSpawns:
 	//[coop] chrissstrahl - move spawnlocations down to where you get the blueprints
@@ -5359,8 +5542,13 @@ coop_elevatorShaftSpawns:
 end
 
 coop_csite_vehicle:
-	//[coop] chrissstrahl - move spawnlocations down to where you get the blueprints
+	//[coop] chrissstrahl - move spawnlocations to where the first atv is
 	thread coopPlayerSpawn::csite_vehicle
+end
+
+coop_csite_aufsicht:
+	//[coop] chrissstrahl - move spawnlocations to where the parking supervision office is
+	thread coopPlayerSpawn::csite_aufsicht
 end
 
 //[coop] chrissstrahl - DETECT PLAYER SPAWN - REQUIRED
@@ -5371,8 +5559,13 @@ coopInfoPlayerStartActivated:
 end
 
 //[coop] chrissstrahl - spawn a trigger we can actually control, as long as the next level is not completed
-coop_levelSetup:
-	waitforplayer
+coop_levelSetup:	
+	waitforplayer	
+	level.coop_elevator_deathpit_player1 = 0
+	level.coop_elevator_deathpit_player2 = 0
+	level.coop_elevator_deathpit_player3 = 0
+	level.coop_elevator_deathpit_player4 = 0
+	
 	wait 5
 	//elevator shaft
 	parm.addNoRespawnZoneBoundingbox string "100 100 1000"
@@ -5389,6 +5582,15 @@ coop_levelSetup:
 	parm.addNoRespawnZoneOrigin string "-1608 -669 -594"
 	thread coopMain::addNoRespawnZone
 	
+	//parking garage barrier gate - Entry
+	parm.addNoRespawnZoneBoundingbox string "30 110 40"
+	parm.addNoRespawnZoneOrigin string "4170 -1346 50"
+	thread coopMain::addNoRespawnZone
+	
+	//parking garage barrier gate - Exit
+	parm.addNoRespawnZoneBoundingbox string "30 110 40"
+	parm.addNoRespawnZoneOrigin string "3900 -1145 50"
+	thread coopMain::addNoRespawnZone
 	
 	//spawn location updates
 	spawn trigger_once origin "-676 2525 0" thread "coop_wreckingballAreaSpawns" targetname "coopUpdateSpawns1"
@@ -5400,8 +5602,11 @@ coop_levelSetup:
 	spawn trigger_once origin "-1994 1592 -71" thread "coop_elevatorShaftSpawns" targetname "coopUpdateSpawns3"
 	$coopUpdateSpawns3 setsize "-150 -150 0" "150 150 30"
 	
-	spawn trigger_once origin "671 696 31" thread "csite_vehicle" targetname "coopUpdateSpawns4"
-	$coopUpdateSpawns4 setsize "-350 -350 -30" "350 350 30"
+	spawn trigger_once origin "4548 -1502 33" thread "coop_csite_aufsicht" targetname "coopUpdateSpawns4"
+	$coopUpdateSpawns4 setsize "-10 -10 -10" "10 10 30"
+	
+	spawn trigger_once origin "671 696 31" thread "csite_vehicle" targetname "coopUpdateSpawns5"
+	$coopUpdateSpawns5 setsize "-350 -350 -30" "350 350 30"
 	
 	//elevator deathpit
 	spawn trigger_multiple origin "-1578 1631 50" thread "coop_elevator_deathpit" targetname "coop_elevator_deathpit"
@@ -5412,13 +5617,7 @@ coop_levelSetup:
 	$coop_sinkhole_deathpit_kill setsize "-500 -500 -200" "500 500 1"
 	
 	//remove this trigger, we will spawn a own coop trigger
-	$sinkhole_deathpit remove 
-	
-	level.coop_elevator_deathpit_player1 = 0
-	level.coop_elevator_deathpit_player2 = 0
-	level.coop_elevator_deathpit_player3 = 0
-	level.coop_elevator_deathpit_player4 = 0
-	
+	$sinkhole_deathpit remove	
 	
 	removeclass "triggerchangelevel"
 	wait game.FRAMETIME
@@ -5430,6 +5629,23 @@ coop_levelSetup:
 
 	//move vehicles back to a place they can be reached again
 	thread coop_multiplayer_vehicle_reset
+	
+	parm.coop_vehicle string "$coop_atv1"
+	thread global/coop_vehicle.scr::coop_vehicle
+	
+	loliflop:
+	
+	//ATV is basically colliding with it if it gets as close as 110 - if we want precise checks we need to check via bbox
+	//parm.location string "4151 -1349 46" //ENTRY gate parging garage
+	//parm.location string "3881 -1147 46" //EXIT gate parging garage
+	//thread coop_getClosestATV
+	
+	parm.coop_vehicleGetDriverVehicle string "$atv_base"
+	thread global/coop_vehicle.scr::coop_vehicleGetDriver
+	print parm.coop_vehicleGetDriver
+	newline
+	wait 1
+	goto loliflop
 end
 
 coop_multiplayer_vehicle_reset:
@@ -5508,9 +5724,19 @@ end
 //
 //		PLAYER
 //level.player_in_vehicle
+//level.newcity_retreat_player_origin getorigin *1
+//
+//
 //
 //		ATV
 //level.active_atv //entity name
 //level.atv_speed
 //level.atv_direction
 //
+//
+//{ "model" "*20" "origin" "-735 329 117" "target" "atv_coop1" "classname" "vehicle_hitmodel" }
+//{ "model" "coop_atv.def" "targetname" "atv_coop1" "thread" "global/func_vehicle_atv.scr::vehicle_atv" "target" "atv" "origin" "-732 328 82" "classname" "func_vehicle" }
+//{ "model" "*20" "origin" "-535 333 117" "target" "atv_coop2" "classname" "vehicle_hitmodel" }
+//{ "model" "coop_atv.def" "targetname" "atv_coop2" "thread" "global/func_vehicle_atv.scr::vehicle_atv" "target" "atv" "origin" "-532 332 82" "classname" "func_vehicle" }
+//{ "model" "*20" "origin" "-1748 1052 117" "target" "atv_coop3" "classname" "vehicle_hitmodel" }
+//{ "model" "atv.def" "targetname" "atv_coop3" "thread" "global/func_vehicle_atv.scr::vehicle_atv" "target" "atv" "origin" "-1745 1051 82" "classname" "func_vehicle" }
