@@ -559,11 +559,16 @@ playerMoveToSpawn:
 	local.player ifstrequal "$player4" local.spawnAngles string level.coopPlayer4SpawnAngles
 	
 	playerMoveToSpawn_origin:
+	//make sure to only move if the origin is not exactly 0 0 0
+	local.vecLngt vector_length local.spawnLocation
+	local.vecLngt ifequal 0 goto playerMoveToSpawn_asap
+	
 	local.player origin local.spawnLocation
 	local.player clearsavedangles
 	local.player deltaangles local.spawnAngles
 	
 	//make sure players don't get stuck in each other
+	playerMoveToSpawn_asap:
 	parm.playerMakeSolidAsap string local.player
 	thread playerMakeSolidAsap
 	
@@ -632,16 +637,16 @@ playerTargetnames:
 	
 	//this trigger pushes player away from the trigger - we don't want to constantly re-targetname
 	//push players away, that works better than moving them away to spawn
-	spawn trigger_push origin level.infoPlayerStartOrigin1 speed "500" spawnflags "24" targetname "coopInfoPlayerStartPush1" angle level.infoPlayerStartPushDirection1
-	$coopInfoPlayerStartPush1 setsize "-10 -10 -0" "10 10 10" //was "10 10 76"
-	$coopInfoPlayerStartPush1 origin local.triggerPos33
+	//spawn trigger_push origin level.infoPlayerStartOrigin1 speed "500" spawnflags "24" targetname "coopInfoPlayerStartPush1" angle level.infoPlayerStartPushDirection1
+	//$coopInfoPlayerStartPush1 setsize "-10 -10 -0" "10 10 10" //was "10 10 76"
+	//$coopInfoPlayerStartPush1 origin local.triggerPos33
 	
 	//for alternative spawn spot if it exists
 	level.infoPlayerStartOrigin2 ifstrequal "" end
 	spawn trigger_multiple origin level.infoPlayerStartOrigin2 targetname "coopInfoPlayerStartTrigger2" thread "coopInfoPlayerStartActivated"
 	$coopInfoPlayerStartTrigger2 setsize "0 0 0" "1 1 1" //was "1 1 20"
-	spawn trigger_push origin level.infoPlayerStartOrigin2 speed "500" spawnflags "24" targetname "coopInfoPlayerStartPush2" angle level.infoPlayerStartPushDirection2
-	$coopInfoPlayerStartPush2 setsize "-10 -10 0" "10 10 10" //was "10 10 76"
+	//spawn trigger_push origin level.infoPlayerStartOrigin2 speed "500" spawnflags "24" targetname "coopInfoPlayerStartPush2" angle level.infoPlayerStartPushDirection2
+	//$coopInfoPlayerStartPush2 setsize "-10 -10 0" "10 10 10" //was "10 10 76"
 end
 
 //make player use object or trigger
@@ -878,7 +883,7 @@ playerClosest:
 	goto playerClosest_loop
 	
 	playerClosest_end:
-	end //disable printout for testing
+	end //disable printOut for testing
 	level.coopDebug iflessequal 0 end
 	parm.print1 string "Coop - ::playerClosest: "
 	parm.print2 string parm.playerClosest
@@ -1044,10 +1049,10 @@ playerMakeSolidAsap:
 	level.coopCinematic ifequal 1 goto playerMakeSolidAsap_cinematic	
 	//dead, skip
 	local.playerAlive isentalive local.player
-	// local.printout string "playerMakeSolidAsap: player dead:"
-	// local.printout append local.player
-	// local.printout append "\n"
-	// local.playerAlive ifequal 0 print local.printout
+	// local.printOut string "playerMakeSolidAsap: player dead:"
+	// local.printOut append local.player
+	// local.printOut append "\n"
+	// local.playerAlive ifequal 0 print local.printOut
 	local.playerAlive ifequal 0 goto playerMakeSolidAsap_loop
 	
 	parm.playersTouching1 string local.playerToHandle
@@ -1072,12 +1077,12 @@ playerMakeSolidAsap:
 	parm.playerMakeSolidAsapPlayerOther string local.player
 	thread playerMakeSolidAsapPlayerOther
 	
-	// local.printout string "MakeSolid inside for player: "
-	// local.printout append local.player
-	// local.printout append " is inside "
-	// local.printout append local.playerToHandle
-	// local.printout append "\n"
-	// print local.printout
+	// local.printOut string "MakeSolid inside for player: "
+	// local.printOut append local.player
+	// local.printOut append " is inside "
+	// local.printOut append local.playerToHandle
+	// local.printOut append "\n"
+	// print local.printOut
 	goto playerMakeSolidAsap_waitframe
 	
 	//wait a frame, then check if player still exists
@@ -1093,55 +1098,55 @@ playerMakeSolidAsap:
 	
 	//same player, skip
 	playerMakeSolidAsap_skip:
-	// local.printout string "MakeSolid skipped player: "
-	// local.printout append local.playerToHandle
-	// local.printout append " versus "
-	// local.printout append local.player
-	// local.printout append "\n"
-	// print local.printout
+	// local.printOut string "MakeSolid skipped player: "
+	// local.printOut append local.playerToHandle
+	// local.printOut append " versus "
+	// local.printOut append local.player
+	// local.printOut append "\n"
+	// print local.printOut
 	goto playerMakeSolidAsap_loop
 	
 	//yay - make it solid baby
 	playerMakeSolidAsap_makeSolid:
-	// local.printout string "MakeSolid success for player: "
-	// local.printout append local.playerToHandle
-	// local.printout append "\n"
-	// print local.printout
+	// local.printOut string "MakeSolid success for player: "
+	// local.printOut append local.playerToHandle
+	// local.printOut append "\n"
+	// print local.printOut
 	local.playerToHandle solid
 	
 	//make sure to clean up afterwards!
 	playerMakeSolidAsap_end:
-	// local.printout string "playerMakeSolidAsap_end for: "
-	// local.printout append local.playerToHandle
-	// local.printout append "\n"
-	// print local.printout
+	// local.printOut string "playerMakeSolidAsap_end for: "
+	// local.printOut append local.playerToHandle
+	// local.printOut append "\n"
+	// print local.printOut
 	local.playerToHandle ifstrequal "$player1" level.coopPlayer1MakeSolidAsapRunning = 0
 	local.playerToHandle ifstrequal "$player2" level.coopPlayer2MakeSolidAsapRunning = 0
 	local.playerToHandle ifstrequal "$player3" level.coopPlayer3MakeSolidAsapRunning = 0
 	local.playerToHandle ifstrequal "$player4" level.coopPlayer4MakeSolidAsapRunning = 0
 	end
 	playerMakeSolidAsap_cinematic:
-	// local.printout string "MakeSolid aborted cinematic: "
-	// local.printout append local.playerToHandle
-	// local.printout append "\n"
+	// local.printOut string "MakeSolid aborted cinematic: "
+	// local.printOut append local.playerToHandle
+	// local.printOut append "\n"
 	goto playerMakeSolidAsap_end
 	
 	playerMakeSolidAsap_doesnotexist:
-	// local.printout string "MakeSolid aborted does not exist: "
-	// local.printout append local.playerToHandle
-	// local.printout append "\n"
+	// local.printOut string "MakeSolid aborted does not exist: "
+	// local.printOut append local.playerToHandle
+	// local.printOut append "\n"
 	goto playerMakeSolidAsap_end
 	
 	playerMakeSolidAsap_isdead:
-	// local.printout string "MakeSolid aborted is dead: "
-	// local.printout append local.playerToHandle
-	// local.printout append "\n"
+	// local.printOut string "MakeSolid aborted is dead: "
+	// local.printOut append local.playerToHandle
+	// local.printOut append "\n"
 	goto playerMakeSolidAsap_end
 
 	playerMakeSolidAsap_allreadyrunning:
-	// local.printout string "MakeSolid allready running for: "
-	// local.printout append local.playerToHandle
-	// local.printout append "\n"
+	// local.printOut string "MakeSolid allready running for: "
+	// local.printOut append local.playerToHandle
+	// local.printOut append "\n"
 	end
 end
 
@@ -1619,6 +1624,224 @@ inNoRespawnZone:
     print local.printOut
 
     parm.inNoRespawnZoneTrue = 1
+end
+
+// parm.playersMoveXYZ
+// parm.playersMoveXYZ_x	//Set coordinates you want a player to pass or else the player gets moved to spawn location
+// parm.playersMoveXYZ_y	//Used to move players that are behind a barrier or locked door
+// parm.playersMoveXYZ_z	//the in world coordinates are compared
+// parm.playersMoveXYZ_match	//if you want axis to be ignored, set it to 0
+//
+//each axis allowes individual check for <, >, =
+//you can set how many you want to match, 2 could mean x and y have to check out - if 0 is set it will check all 3 (ignoring the ones that are 0)
+//
+//Examples: "11 0 0" will ignore Y and Z even if you want 2 to match
+playersMoveXYZ:
+    local.index = 0
+	//just to be on the safe side
+	local.playersMoveXYZ string parm.playersMoveXYZ
+	local.playersMoveXYZ_x string parm.playersMoveXYZ_x
+	local.playersMoveXYZ_y string parm.playersMoveXYZ_y
+	local.playersMoveXYZ_z string parm.playersMoveXYZ_z
+	local.playersMoveXYZ_match = parm.playersMoveXYZ_match
+	
+	playersMoveXYZ_loop:
+    local.index += 1
+    local.index ifgreater level.coopMaxPlayers end
+    local.player string "$player"
+    local.player append local.index
+	
+	parm.playerExist string 
+	thread playerExist
+	parm.playerExistTrue ifequal 0 goto playersMoveXYZ_loop
+	
+	//check if player origin matches criteria
+	local.originPlayer getorigin local.player
+	parm.playerMoveToSpawnIfXYZ string local.playersMoveXYZ
+	parm.playerMoveToSpawnIfXYZ_x string local.playersMoveXYZ_x
+	parm.playerMoveToSpawnIfXYZ_y string local.playersMoveXYZ_y
+	parm.playerMoveToSpawnIfXYZ_z string local.playersMoveXYZ_z
+	parm.playerMoveToSpawnIfXYZ_match = local.playersMoveXYZ_match
+	parm.playerMoveToSpawnIfXYZ_playerPos = local.originPlayer
+	thread playerMoveToSpawnIfXYZ
+	
+	//actually move player
+	parm.playerMoveToSpawnIfXYZ_result ifequal 1 parm.player string local.player
+	parm.playerMoveToSpawnIfXYZ_result ifequal 1 thread playerMoveToSpawn
+	
+    goto playersMoveXYZ_loop
+end
+
+
+// parm.playerMoveToSpawnIfXYZ string "0 0 0"
+// parm.playerMoveToSpawnIfXYZ_x string "<"
+// parm.playerMoveToSpawnIfXYZ_y string ">"
+// parm.playerMoveToSpawnIfXYZ_z string "="
+// parm.playerMoveToSpawnIfXYZ_match = 1
+// parm.playerMoveToSpawnIfXYZ_playerPos = "0 0 0"
+// parm.playerMoveToSpawnIfXYZ_result //return value
+//Set coordinates you want a player to pass or else the player gets moved to spawn location
+//Used to move players that are behind a barrier or locked door
+//the in world coordinates are compared
+//if you want axis to be ignored, set it to 0
+//
+//each axis allowes individual check for <, >, =
+//you can set how many you want to match, 2 could mean x and y have to check out - if 0 is set it will check all 3 (ignoring the ones that are 0)
+//
+//Examples: "11 0 0" will ignore Y and Z even if you want 2 to match
+playerMoveToSpawnIfXYZ:
+	local.pos vector parm.playerMoveToSpawnIfXYZ
+	//make sure we get a int
+	local.hasToMatch string parm.playerMoveToSpawnIfXYZ_match
+	local.hasToMatch = local.hasToMatch
+	local.hasToMatch div 1
+	local.hasToMatch iflessequal 0 local.hasToMatch = 3
+
+	local.xCheck string parm.playerMoveToSpawnIfXYZ_x
+	local.yCheck string parm.playerMoveToSpawnIfXYZ_y
+	local.zCheck string parm.playerMoveToSpawnIfXYZ_z
+
+	//make sure we actually get a valid value
+	local.coords vector local.pos
+	local.vLngt vector_length local.coords
+	local.vLngt ifequal 0 goto playerMoveToSpawnIfXYZ_empty
+	
+	//grab each individual axis
+	local.posX vector_x local.coords
+	local.posY vector_y local.coords
+	local.posZ vector_z local.coords
+	local.matches = 0
+	local.skipped = 0
+	
+	//grab player location
+	local.ori vector parm.playerMoveToSpawnIfXYZ_playerPos
+	local.oriX vector_x local.ori
+	local.oriY vector_y local.ori
+	local.oriZ vector_z local.ori
+	//make sure we get int values
+	local.oriX div 1
+	local.oriY div 1
+	local.oriZ div 1
+	
+	//reset match check
+	local.matches = 0
+	
+	playerMoveToSpawnIfXYZ_checkX:
+	local.doesMatch = 0
+	local.posX ifequal 0 goto playerMoveToSpawnIfXYZ_skipX
+	local.xCheck ifstrequal ">" goto playerMoveToSpawnIfXYZ_X_Greater
+	local.xCheck ifstrequal "<" goto playerMoveToSpawnIfXYZ_X_Less
+	goto playerMoveToSpawnIfXYZ_X_Equal
+	playerMoveToSpawnIfXYZ_checkX_result:
+	local.doesMatch ifequal 1 local.matches += 1
+	
+	playerMoveToSpawnIfXYZ_checkY:
+	local.doesMatch = 0
+	local.posY ifequal 0 goto playerMoveToSpawnIfXYZ_skipY
+	local.yCheck ifstrequal ">" goto playerMoveToSpawnIfXYZ_Y_Greater
+	local.yCheck ifstrequal "<" goto playerMoveToSpawnIfXYZ_Y_Less
+	goto playerMoveToSpawnIfXYZ_Y_Equal
+	playerMoveToSpawnIfXYZ_checkY_result:
+	local.doesMatch ifequal 1 local.matches += 1
+	
+	playerMoveToSpawnIfXYZ_checkZ:
+	local.doesMatch = 0
+	local.posZ ifequal 0 goto playerMoveToSpawnIfXYZ_skipZ
+	local.zCheck ifstrequal ">" goto playerMoveToSpawnIfXYZ_Z_Greater
+	local.zCheck ifstrequal "<" goto playerMoveToSpawnIfXYZ_Z_Less
+	goto playerMoveToSpawnIfXYZ_Z_Equal
+	playerMoveToSpawnIfXYZ_checkZ_result:
+	local.doesMatch ifequal 1 local.matches += 1
+	
+	playerMoveToSpawnIfXYZ_check:
+		local.matchTarget = local.hasToMatch
+		local.matchTarget -= local.skipped
+		// local.printOut string "::playerMoveToSpawnIfXYZ matches: "
+		// local.printOut append local.matches
+		// local.printOut append " out of "
+		// local.printOut append local.matchTarget
+		// local.printOut append "\n"
+		// print local.printOut
+		local.matches ifgreaterequal local.matchTarget goto playerMoveToSpawnIfXYZ_doesMatch
+		parm.playerMoveToSpawnIfXYZ_result = 0
+	end
+	
+	playerMoveToSpawnIfXYZ_doesMatch:
+		parm.playerMoveToSpawnIfXYZ_result = 1
+	end
+	
+	//X AXIS STUFF
+	playerMoveToSpawnIfXYZ_skipX:
+		local.hasToMatch ifequal 3 local.skipped += 1 //skip only when not set
+		//print "::playerMoveToSpawnIfXYZ skipping x\n"
+	goto playerMoveToSpawnIfXYZ_checkY
+	
+	playerMoveToSpawnIfXYZ_X_Equal:
+		local.tolerance = local.oriX
+		local.tolerance -= local.posX
+		local.vecTolerance vector "( 0 0 0 )"
+		local.vecTolerance vector_setx local.tolerance
+		local.tolerance vector_length local.vecTolerance
+		local.tolerance ifless 1 local.doesMatch = 1
+	goto playerMoveToSpawnIfXYZ_checkX_result
+
+	playerMoveToSpawnIfXYZ_X_Less:
+		local.posX ifless local.oriX local.doesMatch = 1
+	goto playerMoveToSpawnIfXYZ_checkX_result
+
+	playerMoveToSpawnIfXYZ_X_Greater:
+		local.oriX ifgreaterequal local.posX local.doesMatch = 1
+	goto playerMoveToSpawnIfXYZ_checkX_result
+	
+	//Y AXIS STUFF
+	playerMoveToSpawnIfXYZ_skipY:
+		local.hasToMatch ifequal 3 local.skipped += 1 //skip only when not set
+		//print "::playerMoveToSpawnIfXYZ skipping y\n"
+	goto playerMoveToSpawnIfXYZ_checkZ
+	
+	playerMoveToSpawnIfXYZ_Y_Equal:
+		local.tolerance = local.oriY
+		local.tolerance -= local.posY
+		local.vecTolerance vector "( 0 0 0 )"
+		local.vecTolerance vector_setx local.tolerance
+		local.tolerance vector_length local.vecTolerance
+		local.tolerance ifless 1 local.doesMatch = 1
+	goto playerMoveToSpawnIfXYZ_checkY_result
+
+	playerMoveToSpawnIfXYZ_Y_Less:
+		local.oriY ifless local.posY local.doesMatch = 1
+	goto playerMoveToSpawnIfXYZ_checkY_result
+
+	playerMoveToSpawnIfXYZ_Y_Greater:
+		local.oriY ifgreaterequal local.posY local.doesMatch = 1
+	goto playerMoveToSpawnIfXYZ_checkY_result
+	
+	//Z AXIS STUFF
+	playerMoveToSpawnIfXYZ_skipZ:
+		local.hasToMatch ifequal 3 local.skipped += 1 //skip only when not set
+		//print "::playerMoveToSpawnIfXYZ skipping z\n"
+	goto playerMoveToSpawnIfXYZ_check
+	
+	playerMoveToSpawnIfXYZ_Z_Equal:
+		local.tolerance = local.oriZ
+		local.tolerance -= local.posZ
+		local.vecTolerance vector "( 0 0 0 )"
+		local.vecTolerance vector_setx local.tolerance
+		local.tolerance vector_length local.vecTolerance
+		local.tolerance ifless 1 local.doesMatch = 1
+	goto playerMoveToSpawnIfXYZ_checkZ_result
+
+	playerMoveToSpawnIfXYZ_Z_Less:
+		local.oriZ ifless local.posZ local.doesMatch = 1
+	goto playerMoveToSpawnIfXYZ_checkZ_result
+
+	playerMoveToSpawnIfXYZ_Z_Greater:
+		local.oriZ ifgreaterequal local.posZ local.doesMatch = 1
+	goto playerMoveToSpawnIfXYZ_checkZ_result
+	
+	//empty parameter - abbort
+	playerMoveToSpawnIfXYZ_empty:
+		print "::playerMoveToSpawnIfXYZ parameter parm.playerMoveToSpawnIfXYZ was not set or 0 0 0\n"
 end
 
 
