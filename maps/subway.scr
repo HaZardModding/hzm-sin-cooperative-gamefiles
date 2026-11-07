@@ -1,0 +1,1673 @@
+//=========================================================
+// Subway script
+// Tom Mustaine - Ritual Entertainment
+//=========================================================
+
+// Subway Dialog Script
+setdialogscript dialog/dialog_subway.scr
+
+spawn clipbox type 1 mins "2640 -1664 16" maxs "2880 -1648 72"
+spawn clipbox type 1 mins "2896 -1664 16" maxs "3130 -1648 72"
+
+
+spawn clipbox type 2 mins "-3744 -2208 0" maxs "-3520 -2184 128"
+spawn clipbox type 2 mins "-3520 -2208 0" maxs "-3280 -2184 128"
+spawn clipbox type 2 mins "-3264 -2208 0" maxs "-3024 -2184 128"
+spawn clipbox type 2 mins "-3008 -2208 0" maxs "-2768 -2184 128"
+spawn clipbox type 2 mins "-2752 -2208 0" maxs "-2624 -2184 128"
+
+//spawn programmer type "carmack" mins "0 1 0" maxs "1 0 0"
+//spawn programmer type "dose" mins "1 0 1" maxs "1 0 0"
+//spawn level_designer type "mustaine" mins "0 0 0" maxs "0 0 0"
+
+ai_disconnectpath breaknode_a breaknode_b
+
+//=========================================================
+// Script Init
+//=========================================================
+waitforplayer
+level.PObjective3 = 5  // Setting Mission computer to not show mutant at start of map
+level.goodpeopledead = 0
+level.failed_s1_already = 0
+level.found_secrets = 0
+level.total_secrets = 1
+level.pmanu_blocker_gone = 0
+level.manu1_blocker_gone = 0
+level.shatter1_gone = 0
+level.bum11_asked_for_quarter = 0
+level.bum11_took_quarter = 0
+
+thread MiscObjects
+thread SetupTurnstyles
+thread GeneratorABO
+thread Manu_ambush1
+thread MissionStatus
+thread Setup_Train
+thread Phones
+
+// Characters Init
+$thug_blockpath1	thread	thug_blockpath1_state	// Thug that blocks you from chasing manumit
+$thug_bumkilla1		thread	thug_bumkilla1_state	// Thug that kills bum2
+$bum1			thread	bum1_state
+$bum2			thread	bum2_state
+$bum3			thread	bum3_state
+$bum4			thread	bum4_state
+$bum5			thread	bum5_state
+$bum6			thread	bum6_state
+$bum7			thread	bum7_state
+$bum8			thread	bum8_state
+$bum9			thread	bum9_state
+$bum10			thread	bum10_state
+$bum11			thread	bum11_state
+$pthug1			thread	pthug1_state
+$pthug2			thread	pthug2_state
+
+thread RatState
+
+$rat_water notsolid
+
+// Character Gives
+$thug_0001	item	health		50
+$thug_0002	item	health		20
+$thug_0002	item	RiotHelmet	50
+$thug_bumkilla1	item	health		50
+$thug_blockpath1	item	health	50
+$thug_0003	item	health		20
+//$thug_0004	item	health		50
+$thug_0005	item	health		20
+$thug_0006	item	health		50
+$thug_0007	item	health		50
+$thug_0008	item	health		50
+$thug_0009	item	health		50
+$thug_0010	item	health		50
+$thug_0011	item	health		20
+$thug_0011	health	200
+$thug_0012	item	health		20
+$thug_0013	item	health		50
+
+end
+
+// AI path fixes
+fix_t13_explode:
+  wait 0.2 // wait for the wall to be gone
+  ai_calcpath breaknode_a breaknode_b
+end
+
+//-------------------------------------------
+//  Powerstation Thugs
+//-------------------------------------------
+pthug1_state:
+local.self	ignoresounds
+pause
+end
+
+pthug2_state:
+local.self	ignoresounds
+pause
+end
+
+//-------------------------------------------
+// Easter Rat
+//-------------------------------------------
+RatState:
+$bigrat	nodamage
+$bigrat	notsolid
+end
+
+//-------------------------------------------
+// Start location Crap
+//-------------------------------------------
+setup_start3:
+game.subway_startstate = 3
+thread StateObjects
+end
+
+setup_start1:
+game.subway_startstate = 1
+thread StateObjects
+end
+
+//-------------------------------------------
+// Good Poeple Checking Thread
+//-------------------------------------------
+check_good_people:
+level.failed_s1_already ifequal 1 goto good_end
+level.goodpeopledead ifgreater 6 goto fail_s1
+end
+
+good_end:
+end
+
+fail_s1:
+level.failed_s1_already = 1
+level.SObjective1 = 2
+thread MissionStatus
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+thread global/universal_script.scr::SObjectiveFailed
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+thread global/universal_script.scr::StatusUpdated
+end
+
+//-------------------------------------------
+// Bum1 State
+//-------------------------------------------
+bum1_state:
+$bum1	item	apple	1
+local.self ignoreall
+local.self respondto pain killed use activate
+local.self definestate use Bum1_Use
+local.self definestate idle Bum1_Idle
+local.self definestate killed Bum1_Killed
+local.self definestate activate bum1_runandhide
+local.self state idle
+pause
+
+bum1_runandhide:
+local.self	runto	$runbum_node2
+waitFor	local.self
+local.self anim "crouch_idle"
+pause
+
+Bum1_Idle:
+local.self anim "idle1"
+pause
+
+Bum1_Use:
+local.self ignore use
+parm.SaySomething = 1
+parm.bumname string "$bum1"
+thread bum_say_something_thread
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+end
+
+Bum1_Killed:
+level.goodpeopledead += 1
+thread check_good_people
+end
+end
+
+bum2_state:
+$bum2	item	banana	1
+$bum2	item	soda	1
+local.self ignoreall
+local.self respondto pain killed use
+local.self definestate use Bum2_Use
+local.self definestate idle Bum2_Idle
+local.self definestate killed Bum2_Killed
+local.self state idle
+pause
+
+Bum2_Idle:
+local.self anim "idle1"
+pause
+
+Bum2_Use:
+local.self ignore use
+parm.SaySomething = 2
+parm.bumname string "$bum2"
+thread bum_say_something_thread
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+end
+
+Bum2_Killed:
+level.goodpeopledead += 1
+thread check_good_people
+end
+end
+
+bum3_state:
+local.self ignoreall
+local.self respondto pain killed use
+local.self definestate use Bum3_Use
+local.self definestate idle Bum3_Idle
+local.self definestate killed Bum3_Killed
+local.self state idle
+pause
+
+Bum3_Idle:
+local.self anim "idle1"
+pause
+
+Bum3_Use:
+local.self ignore use
+parm.SaySomething = 3
+parm.bumname string "$bum3"
+thread bum_say_something_thread
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+end
+
+Bum3_Killed:
+level.goodpeopledead += 1
+thread check_good_people
+end
+end
+
+bum4_state:
+$bum4	item	sandwich	1
+local.self ignoreall
+local.self respondto pain killed use
+local.self definestate use Bum4_Use
+local.self definestate idle Bum4_Idle
+local.self definestate killed Bum4_Killed
+local.self state idle
+pause
+
+Bum4_Idle:
+local.self anim "idle1"
+pause
+
+Bum4_Use:
+local.self ignore use
+parm.SaySomething = 4
+parm.bumname string "$bum4"
+thread bum_say_something_thread
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+end
+
+Bum4_Killed:
+level.goodpeopledead += 1
+thread check_good_people
+end
+end
+
+bum5_state:
+$bum5	item	apple	2
+local.self ignoreall
+local.self respondto pain killed use
+local.self definestate use Bum5_Use
+local.self definestate idle Bum5_Idle
+local.self definestate killed Bum5_Killed
+local.self state idle
+pause
+
+Bum5_Idle:
+local.self anim "idle1"
+pause
+
+Bum5_Use:
+local.self ignore use
+parm.SaySomething = 5
+parm.bumname string "$bum5"
+thread bum_say_something_thread
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+end
+
+Bum5_Killed:
+level.goodpeopledead += 1
+thread check_good_people
+end
+end
+
+bum6_state:
+$bum6	item	soda		1
+$bum6	item	sandwich	1
+local.self ignoreall
+local.self respondto pain killed use
+local.self definestate use Bum6_Use
+local.self definestate idle Bum6_Idle
+local.self definestate killed Bum6_Killed
+local.self state idle
+pause
+
+Bum6_Idle:
+local.self anim "idle1"
+pause
+
+Bum6_Use:
+local.self ignore use
+parm.SaySomething = 6
+parm.bumname string "$bum6"
+thread bum_say_something_thread
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+end
+
+Bum6_Killed:
+level.goodpeopledead += 1
+thread check_good_people
+end
+end
+
+bum7_state:
+$bum7	item	banana	1
+local.self ignoreall
+local.self respondto pain killed use
+local.self definestate use Bum7_Use
+local.self definestate idle Bum7_Idle
+local.self definestate killed Bum7_Killed
+local.self state idle
+pause
+
+Bum7_Idle:
+local.self anim "idle1"
+pause
+
+Bum7_Use:
+local.self ignore use
+parm.SaySomething = 7
+parm.bumname string "$bum7"
+thread bum_say_something_thread
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+end
+
+Bum7_Killed:
+level.goodpeopledead += 1
+thread check_good_people
+end
+end
+
+bum8_state:
+$bum8	item	apple	1
+local.self ignoreall
+local.self respondto pain killed use
+local.self definestate use Bum8_Use
+local.self definestate idle Bum8_Idle
+local.self definestate killed Bum8_Killed
+local.self state idle
+pause
+
+Bum8_Idle:
+local.self anim "idle1"
+pause
+
+Bum8_Use:
+local.self ignore use
+parm.SaySomething = 8
+parm.bumname string "$bum8"
+thread bum_say_something_thread
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+end
+
+Bum8_Killed:
+level.goodpeopledead += 1
+thread check_good_people
+end
+end
+
+bum9_state:
+$bum9	item	apple		1
+$bum9	item	sandwich	1
+$bum9	item	soda		1
+$bum9	item	banana		1
+local.self ignoreall
+local.self respondto pain killed use
+local.self definestate use Bum9_Use
+local.self definestate idle Bum9_Idle
+local.self definestate killed Bum9_Killed
+local.self state idle
+pause
+
+Bum9_Idle:
+local.self anim "idle1"
+pause
+
+Bum9_Use:
+local.self ignore use
+parm.SaySomething = 9
+parm.bumname string "$bum9"
+thread bum_say_something_thread
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+end
+
+Bum9_Killed:
+level.goodpeopledead += 1
+thread check_good_people
+end
+end
+
+bum10_state:
+$bum10	item	sandwich	1
+local.self ignoreall
+local.self respondto pain killed use
+local.self definestate use Bum10_Use
+local.self definestate idle Bum10_Idle
+local.self definestate killed Bum10_Killed
+local.self state idle
+pause
+
+Bum10_Idle:
+local.self anim "idle1"
+pause
+
+Bum10_Use:
+local.self ignore use
+parm.SaySomething = 10
+parm.bumname string "$bum10"
+thread bum_say_something_thread
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+end
+
+Bum10_Killed:
+level.goodpeopledead += 1
+thread check_good_people
+end
+end
+
+bum11_state:
+$bum11	item	banana	1
+$bum11	item	apple	1
+local.self ignoreall
+local.self respondto pain killed use
+local.self definestate use Bum11_Use
+local.self definestate idle Bum11_Idle
+local.self definestate killed Bum11_Killed
+local.self state idle
+pause
+
+Bum11_Idle:
+local.self anim "idle1"
+pause
+
+Bum11_Use:
+local.self ignore use
+parm.SaySomething = 0
+level.bum11_took_quarter ifequal 1 goto Bum11_Ask_For_Dollar
+level.bum11_asked_for_quarter ifequal 1 goto Bum11_Take_Quarter
+level.bum11_asked_for_quarter = 1
+thread Bum11_Ask_For_Quarter
+end
+
+Bum11_Take_Quarter:
+local.quartercount getitemcount *1 coin
+local.quartercount ifequal 0 thread Bum11_Ask_For_Quarter
+local.quartercount ifequal 0 waitForThread parm.previousthread
+local.quartercount ifequal 0 end
+*1 take coin
+*1 playsound impact/bodyfall/sml2.wav 1 1 1 1
+level.bum11_took_quarter = 1
+thread Bum11_Ask_For_Dollar
+end
+
+Bum11_Ask_For_Dollar:
+thread dialog::bum_gimme_dollar
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+end
+
+Bum11_Ask_For_Quarter:
+parm.bumname string "$bum11"
+thread bum_say_something_thread
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+end
+
+Bum11_Killed:
+level.goodpeopledead += 1
+thread check_good_people
+end
+end
+
+bum_say_something_thread:
+local.bumname string parm.bumname
+local.SaySomething = parm.SaySomething
+parm.bum string local.bumname
+local.SaySomething ifequal 0 thread dialog::bum_gimme_quarter
+local.SaySomething ifequal 1 thread dialog::bum_go_away
+local.SaySomething ifequal 2 thread dialog::bum_got_money
+local.SaySomething ifequal 3 thread dialog::bum_i_saw_thing
+local.SaySomething ifequal 4 thread dialog::bum_get_away_fire
+local.SaySomething ifequal 5 thread dialog::bum_stop_drinking
+local.SaySomething ifequal 6 thread dialog::bum_sees_blade
+local.SaySomething ifequal 7 thread dialog::bum_monsters_everywhere
+local.SaySomething ifequal 8 thread dialog::bum_need_drink
+local.SaySomething ifequal 9 thread dialog::bum_i_got_rights
+local.SaySomething ifequal 10 thread dialog::bum_bill_gates
+local.waitforthread = parm.previousthread
+waitForThread parm.previousthread
+end
+
+//-------------------------------------------
+// Phones
+//-------------------------------------------
+Phones:
+thread Phone1_wait
+thread Phone2_wait
+$phone1 key coin
+$phone2 key coin
+end
+
+Phone1_wait:
+$phone1	onuse	phone1_used
+pause
+
+Phone2_wait:
+$phone2	onuse	phone2_used
+pause
+
+phone1_used:
+$phone1	nouse
+local.other take local.key
+thread dialog::jc_lucky_day
+local.waitforthread = parm.previousthread
+waitForThread parm.previousthread
+*1 give coin 2
+//trigger $coin1_spawn
+//trigger $coin2_spawn
+end
+
+phone2_used:
+$phone2 nouse
+local.other take local.key
+parm.phone string "$phone2"
+thread dialog::phone_sintek_chemical
+local.waitforthread = parm.previousthread
+waitForThread parm.previousthread
+thread dialog::jc_fooling_phones
+end
+
+//-------------------------------------------
+// Mission Status
+//-------------------------------------------
+MissionStatus:
+//0 nd 1 succeed 2 fail
+// level.PObjective1 --> Persue and Capture Mancini
+// level.PObjective2 --> Eliminate All Enemy Forces
+// level.PObjective3 --> Stop mutant creature
+// level.SObjective1 --> Minimize Civilian Casualties
+// level.SObjective2 --> Recover Stolen Cashola
+thread global/universal_script.scr::NewMisConSetup
+
+parm.status = level.PObjective1
+parm.title string "\"m_pursue_and_capture_1\""
+thread global/universal_script.scr::NewMisConPrimary
+
+parm.status = level.PObjective2
+parm.title string "\"m_eliminate_remaining_enemy_1\""
+thread global/universal_script.scr::NewMisConPrimary
+
+parm.status = level.PObjective3
+parm.title string "\"m_stop_mutant_creature_1\""
+thread global/universal_script.scr::NewMisConPrimary
+
+parm.status = level.SObjective1
+parm.title string "\"m_minimize_civilian_casualties_1\""
+thread global/universal_script.scr::NewMisConSecondary
+
+parm.status = level.SObjective2
+parm.title string "\"m_recover_stolen_money_2_1\""
+thread global/universal_script.scr::NewMisConSecondary
+
+end
+
+//=========================================================
+// Ambush 2
+//=========================================================
+start_ambush2:
+trigger $roof_down_explode
+forcemusic aux7
+$roof_shatter1	playsound impact/comp_explode/cmpmx3.wav 2
+$roof_shatter1	shatter "(1 1 1)" 40 10 40 .3 0
+$roof_shatter1	remove
+$roof_down_big1 time .2
+$roof_down_big1 moveDown	8
+waitFor $roof_down_big1
+$roof_down_big1 moveDown	16
+waitFor $roof_down_big1
+$roof_down_big1 moveDown	24
+waitFor $roof_down_big1
+$roof_down_big1 moveDown	32
+waitFor $roof_down_big1
+$roof_down_big1 moveDown	48
+waitFor $roof_down_big1
+$roof_down_big1	playsound	impact/comp_explode/cmpmx3.wav 2 //Heavy thud sound here **BROKEN
+$floor_raise1	show
+$floor_raise1	solid
+$floor_raise1	shatter "(1 1 1)" 40 10 40 .1 0
+wait 1
+thread dialog::jc_trap	// DIALOG
+wait 3
+thread power_on
+local.waitforthread = parm.previousthread
+waitForThread parm.previousthread
+wait 2
+$floor_raise1	playsound impact/comp_explode/cmpmx3.wav 1
+trigger $spawn_manumitp
+parm.manumit string "$manumit_proom"
+thread dialog::manumit_surprise // DIALOG
+forcemusic surprise
+wait .1
+$manumit_proom	thread	p_manumit_state
+wait 2
+local.skilllevel getcvar skill
+local.skilllevel ifequal 0 $manumit_proom health	1000
+local.skilllevel ifequal 1 $manumit_proom health	1200
+local.skilllevel ifequal 2 $manumit_proom health	1400
+game.subway_startstate ifequal 1 thread dialog::blade_holy_shit
+trigger $manumit_proom
+$manu2_mover 	time	.5
+$manu2_mover	moveEast	256
+waitFor $manu2_mover
+end
+
+p_manumit_state:
+local.self	definestate	health_med	pmanu_lowhealth
+local.self	definestate	activate	pmanu_activated
+local.self definestate killed pmanu_killed
+pause
+
+pmanu_activated:
+local.self	anim	"melee5"
+waitFor local.self
+local.self	respondtoall
+local.self	state	sightenemy
+end
+
+pmanu_lowhealth:
+thread pmanu_remove_if_fuckedup_ai
+local.self	ignore	health_med
+local.self	nodamage
+forcemusic normal
+local.self	runto	pmanu_node1
+waitFor local.self
+local.self	anim	"melee3"
+waitFor local.self
+$shatter_door1	playsound impact/comp_explode/cmpmx3.wav 1
+$shatter_door1	shatter "(1 1 1)" 40 10 40 .3 0
+$shatter_door1	remove
+level.pmanu_blocker_gone = 2
+local.self	runto	pmanu_node2
+waitFor local.self
+local.self	runto	pmanu_node3
+waitFor local.self
+local.self	runto	pmanu_node4
+waitFor local.self
+local.self	runto	pmanu_node5
+waitFor local.self
+trigger $pthug1
+trigger $pthug2
+game.subway_startstate ifequal 3 thread dialog::jc_bad_feeling // DIALOG
+local.self	remove
+$player_blocker2	remove
+level.pmanu_blocker_gone = 1
+thread pmanu_missioncomp_thingie
+end
+
+pmanu_killed:
+forcemusic normal
+thread pmanu_remove_if_fuckedup_ai
+end
+
+pmanu_missioncomp_thingie:
+game.subway_startstate ifnotequal 1 end 
+level.PObjective3 = 0
+thread MissionStatus
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+thread global/universal_script.scr::StatusUpdated
+end
+
+pmanu_remove_if_fuckedup_ai:
+wait 10
+level.pmanu_blocker_gone ifequal 1 goto pmanu_remove_end
+$manumit_proom		remove
+$player_blocker2	remove
+level.pmanu_shatter_door_gone ifequal 2 goto pmanu_remove_end
+$shatter_door1	playsound impact/comp_explode/cmpmx3.wav 1
+$shatter_door1	shatter "(1 1 1)" 40 10 40 .3 0
+$shatter_door1		remove
+thread pmanu_missioncomp_thingie
+end
+
+pmanu_remove_end:
+end
+
+//=========================================================
+// Lights go on, In power room
+//=========================================================
+power_on:
+$roof_down_big1	playsound	environment/generator/gemup1.wav 3
+$ambush lightstyle "Lb"
+wait 1
+$ambush lightstyle "Lmmzmmz"
+trigger $parts1
+wait .5
+trigger $parts2
+$ambush lightstyle "Lc"
+wait .5
+$ambush lightstyle "LcCdefghipk"
+wait 1
+$ambush lightstyle "Llmmmnnnoooopqqqrrrrsssttttuuuuvvvvwwwwxxxxyyyzzzz"
+trigger $parts1
+wait .5
+$ambush lightstyle "Lz"
+wait 1
+thread dialog::blade_found_power // DIALOG
+local.waitforthread = parm.previousthread
+waitForThread parm.previousthread
+trigger $parts1
+end
+
+
+//=========================================================
+// Check moneybags
+//=========================================================
+moneybags:
+level.moneybags += 1
+level.moneybags ifequal 10 goto Got_Money
+level.moneybags ifequal 5 thread dialog::jc_find_money // DIALOG
+end
+
+Got_Money:
+level.SObjective2 = 1
+wait 1
+thread dialog::jc_recover
+local.waitforthread = parm.previousthread
+waitForThread parm.previousthread
+thread MissionStatus
+local.waitforthread = parm.previousthread
+waitForThread parm.previousthread
+thread global/universal_script.scr::SObjectiveComplete
+end
+
+//=========================================================
+// Ambush #1 in main entrance.
+//=========================================================
+Manu_ambush1:
+$breakgrate1	ontrigger	start_ambush1
+pause
+
+start_ambush1:
+$breakgrate1	notrigger
+$manumit1	thread	manu1_state
+wait .2
+local.skilllevel getcvar skill
+local.skilllevel ifequal 0 $manumit1 health	800
+local.skilllevel ifequal 1 $manumit1 health	1000
+local.skilllevel ifequal 2 $manumit1 health	1200
+trigger $manumit1
+end
+
+//Bum Killer State-----------------------------------------
+thug_bumkilla1_state:
+local.self	definestate	activate	bumkilla1_activated
+pause
+
+bumkilla1_activated:
+local.self	ignore	activate
+local.self	state	sightenemy
+waitFor local.self
+local.self	respondtoall
+end
+
+//=========================================================
+//Thug who blocks you for manumit--------------------------
+thug_blockpath1_state:
+local.self	definestate	activate	thug_block1
+pause
+
+thug_block1:
+local.self	runto	$thug_blockpath1_node
+waitFor local.self
+local.self	respondtoall
+wait .1
+local.self	state	sightenemy
+end
+//=========================================================
+
+// Manumit1 ambush state
+manu1_state:
+local.self	definestate	activate	manu1_activated
+local.self	definestate	health_med	manu1_lowhealth
+local.self	definestate	killed	manu1_killed
+pause
+
+manu1_activated:
+local.self      ignore  activate
+local.self	respondtoall
+$manu1blocker	remove
+trigger $bum1
+parm.bum string "$bum1"
+thread dialog::bum_monster
+$breakgrate1	playsound impact/comp_explode/cmpmx3.wav 2
+$breakgrate1	shatter "(1 1 1)" 40 10 40 .3 0
+$breakgrate1	remove
+forcemusic surprise
+thread dialog::blade_holy_shit	// DIALOG
+$manu1_mover	time	1
+$manu1_mover	moveDown	192
+waitFor $manu1_mover
+local.self	attackplayer
+wait 1
+parm.manumit string "$manumit1"
+thread dialog::manumit_crush_you // DIALOG
+local.self	anim	"melee5"
+waitFor local.self
+
+local.self	attackplayer
+end
+
+manu1_lowhealth:
+thread manu1_ai_fucked_up_fix
+forcemusic normal
+local.self	ignore	 health_med
+local.self 	ignore	pain
+local.self	nodamage
+local.self	runto	$manu_path1
+waitFor local.self
+local.self	anim	"melee3"
+waitFor local.self
+$manu_shatter1	playsound impact/comp_explode/cmpmx3.wav 1
+$manu_shatter1	shatter "(1 1 1)" 40 10 40 .3 0
+$manu_shatter1	remove
+level.shatter1_gone = 1
+$t11 open
+local.self	runto	$manu_path2
+waitFor local.self
+trigger $thug_blockpath1
+trigger $thug_bumkilla1
+local.self	runto	$manu_path3
+waitFor local.self
+local.self	remove
+$blockyou1	remove
+level.manu1_blocker_gone = 1
+thread manu1_missioncomp_update_thingie
+end
+
+manu1_killed:
+thread manu1_ai_fucked_up_fix
+forcemusic normal
+end
+
+manu1_missioncomp_update_thingie:
+level.PObjective3 = 0
+thread MissionStatus
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+thread global/universal_script.scr::StatusUpdated
+end
+
+manu1_ai_fucked_up_fix:
+wait 20
+level.manu1_blocker_gone ifequal 1 goto manu1_fucked_end
+thread remove_shatter1_failed
+$blockyou1	remove
+$manumit1	remove
+thread manu1_missioncomp_update_thingie
+end
+
+manu1_fucked_end:
+end
+
+remove_shatter1_failed:
+level.shatter1_gone ifequal 1 goto remove_shatter1_end
+$manu_shatter1	playsound impact/comp_explode/cmpmx3.wav 1
+$manu_shatter1	shatter "(1 1 1)" 40 10 40 .3 0
+$manu_shatter1	remove
+$t11 open
+end
+
+remove_shatter1_end:
+end
+
+
+//=========================================================
+
+//=========================================================
+// GeneratorABO
+//=========================================================
+GeneratorABO:
+$generator time   .1
+$generator moveUp 304
+waitFor $generator
+
+//GeneratorABO game.csite_generator 2 triggered
+//				    1 Not-triggered
+game.csite_generator ifequal 0 goto gengone
+game.csite_generator ifequal 1 goto gengone
+game.csite_generator ifequal 2 goto genthere
+end
+
+gengone:
+$generator		remove
+$generator_floor2	remove
+$generator_floor	remove
+end
+
+genthere:
+$generator_floor hide
+$generator_floor2 hide
+$generator_floor nonsolid
+$generator_floor2 nonsolid
+trigger $generator_thug_spawn
+wait game.FRAMETIME
+$generator_thug thread stand_ground_thread
+end
+
+stand_ground_thread:
+local.self ignoresounds
+local.attackmode = 1
+end
+
+generator_fall_thread:
+game.csite_generator ifnotequal 2 goto generator_fall_thread_skip
+
+$generator_hurtbox setdamage 10000
+wait game.FRAMETIME
+$generator_hurtbox setdamage 0
+
+trigger $generator_roof_exploder
+$generator_roof	shatter "(1 1 1)" 40 10 40 .3 0
+$generator_roof	remove
+$generator_floor show
+$generator_floor solid
+$generator time        .4
+$generator rotateZdown 20
+$generator moveDown    304
+waitFor $generator
+
+$generator playsound "environment/levelsnds/subway/gensmash.wav" 2
+$generator_floor2   show
+$generator_floor2   solid
+
+generator_fall_thread_skip:
+end
+
+//=========================================================
+
+//=========================================================
+// Turnstyles
+//=========================================================
+SetupTurnstyles:
+$turnstyle2 time 1
+$turnstyle2 rotateZupto 44
+$turnstyle1 time 1
+$turnstyle1 rotateZupto 44
+waitFor $turnstyle1
+$turnstyle2	notsolid
+$turnstyle1	notsolid
+end
+
+// This stuff didn't work, gimble lock sucks :[
+OldTurnstyles:
+$turnstyle2 time 1
+$turnstyle2 rotateZupto 44
+$turnstyle1 time 1
+$turnstyle1 rotateZupto 44
+waitFor $turnstyle1
+thread waitforturnstyle1
+thread waitforturnstyle2
+end
+
+waitforturnstyle1:
+$turnstyle1 ontouch moveturn1
+pause
+
+moveturn1:
+$turnstyle1 notouch
+$turnstyle1 rotateYdown 180
+waitFor $turnstyle1
+goto waitforturnstyle1
+end
+
+waitforturnstyle2:
+$turnstyle2 ontouch moveturn2
+pause
+
+moveturn2:
+$turnstyle2 notouch
+$turnstyle2 rotateXdown 180
+waitFor $turnstyle2
+goto waitforturnstyle2
+end
+//=======End Turnstyles====================================
+
+//=========================================================
+//        * TRAIN STUFF FROM SUBWAYB *
+//=========================================================
+// Move the train to the start position and wait for trigger
+//=========================================================
+start_car_moving1:
+trigger $fuckingcar
+end
+
+Setup_Train:
+$cardoorright bind $fuckingcar
+$cardoorleft	bind $fuckingcar
+$carholeroof	bind $fuckingcar
+wait .1
+$fuckingcar	moveto	$carway1
+$fuckingcar	ontrigger	movetrain
+pause
+
+hostile_obj_done:
+level.PObjective2 = 1
+thread MissionStatus
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+thread global/universal_script.scr::PObjectiveComplete
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+thread global/universal_script.scr::StatusUpdated
+end
+
+//=========================================================
+// Train starts down tunnel
+//=========================================================
+movetrain:
+$fuckingcar	notrigger
+$cardoorright 	time 	.5
+$cardoorleft	time	.5
+$cardoorright	moveWest	32
+$cardoorleft	moveEast	32
+$cardoorleft	playsound environment/doors/pwrdrcls.wav
+thread hostile_obj_done
+waitFor $cardoorleft
+wait 4
+
+thread CarSpeedUp
+local.waitforthread = parm.previousthread
+waitForThread parm.previousthread
+
+$fuckingcar speed	110
+thread fade_in
+
+$breakme1	remove
+$fakedoor1	notsolid
+$fakedoor1	hide
+$fakeportal1	open
+$fuckingcar	moveto	$carway3
+waitFor $fuckingcar
+$fakedoor1	solid
+$fakedoor1	show
+$fakeportal1	close
+$hideillusion1	notsolid
+$hideillusion1	hide
+$fuckingcar	moveto $carway4
+waitFor	$fuckingcar
+$hideillusion1	solid
+$hideillusion1	show
+thread Trans_Startloop
+local.waitforthread = parm.previousthread
+waitForThread parm.previousthread
+goto movetrainend
+end
+
+CarSpeedUp:
+thread subwaymovesounds
+$fuckingcar speed 10
+local.carspeed = 10
+
+CarSpeedUpLoop:
+$fuckingcar	moveWest	16
+waitFor $fuckingcar
+
+local.carspeed += 10
+
+$fuckingcar speed local.carspeed
+local.carspeed ifless 110 goto CarSpeedUpLoop
+
+$fuckingcar	moveto	$carway2
+waitFor	$fuckingcar
+thread dialog::blade_where_heading
+end
+
+subwaymovesounds:
+$fuckingcar playsound environment/levelsnds/subway/sbwystrt.wav 2 7
+wait 10.47
+$fuckingcar playsound environment/levelsnds/subway/sbwylp1.wav 2 7
+end
+
+//=========================================================
+// Bring up the black illusionary wall behind the moving train
+//=========================================================
+movetrainend:
+wait 4
+
+$carholeroof	playsound impact/comp_explode/cmpmx3.wav 2
+$carholeroof	shatter "(1 1 1)" 40 10 40 .3 0
+$carholeroof	remove
+
+trigger $manumit_incar_spawn
+wait .1
+$manumit_incar	health	2000
+parm.manumit string "$manumit_incar"
+thread dialog::manumit_no_chance_blade // DIALOG
+forcemusic surprise
+wait .1
+$manumit_incar	thread	manumit_incar_state
+wait 2
+trigger $manumit_incar
+thread dialog::jc_close_quarters
+end
+
+manumit_incar_state:
+local.self	definestate	health_med	manu_incar_lowhealth
+local.self	definestate	activate	manu_incar_activated
+local.self	definestate	killed	manu_incar_killed
+pause
+
+manu_incar_activated:
+local.self	respondtoall
+//local.self	state	sightenemy
+local.self	attackplayer
+end
+
+manu_incar_lowhealth:
+//$playerclippy	solid
+local.self	ignore	health_med
+local.self	nodamage
+local.self	walkto	$manu_carnode
+waitFor local.self
+//$monsterclippy	solid
+local.self	notsolid
+wait 1
+local.self	anim	superjump
+wait 1
+thread manucar_remove_thread
+//$manumit_mover  time 1
+//$manumit_mover	moveUp 192
+//waitFor $manumit_mover
+//print "Jumping effect goes here\n"
+
+//local.self	remove
+
+end
+
+manu_incar_killed:
+thread manucar_remove_thread
+end
+
+manucar_remove_thread:
+$manumit_incar remove
+wait 2.1
+thread movetrain2
+forcemusic normal
+end
+
+// Train moves into last area
+movetrain2:
+wait 4
+//$monsterclippy	notsolid
+//$playerclippy	notsolid
+thread fade_out
+local.waitforthread = parm.previousthread
+waitForThread parm.previousthread
+thread Trans_Stoploop
+
+$hideillusion2	notsolid
+$hideillusion2	hide
+thread dialog::jc_monsters_dont_mix
+$fuckingcar	moveto	$carway5
+waitFor $fuckingcar
+$hideillusion2	solid
+$hideillusion2	show
+$breakme2	remove
+$fakedoor2	notsolid
+$fakedoor2	hide
+$fakeportal2	open
+$fuckingcar	moveto	$carway6
+waitFor	$fuckingcar
+trigger $end_manumit_spawn
+wait .1
+$manumit_end	flags -die_gibs
+$manumit_end	thread	manumit_end_state
+wait .3
+trigger $manumit_end
+local.skilllevel getcvar skill
+local.skilllevel ifequal 0 $manumit_end	health	1500
+local.skilllevel ifequal 1 $manumit_end	health	1800
+local.skilllevel ifequal 2 $manumit_end	health	2000
+
+$fakedoor2	solid
+$fakedoor2	show
+$fakeportal2	close
+thread CarSlowDown
+local.waitforthread = parm.previousthread
+waitForThread parm.previousthread
+thread dialog::jc_save_civilians
+wait 2
+$cardoorright 	time 	.5
+$cardoorleft	time	.5
+$cardoorright	moveEast	32
+$cardoorleft	moveWest	32
+$cardoorleft	playsound environment/doors/pwrdrcls.wav
+waitFor $cardoorleft
+end
+
+CarSlowDown:
+thread end_characters
+thread endsubwaycarsound
+local.waitforthread = parm.previousthread
+waitForThread parm.previousthread
+$fuckingcar playsound environment/levelsnds/subway/sbwystp1.wav 2 7
+$fuckingcar speed 110
+
+CarSlowDownLoop:
+$fuckingcar	moveWest	16
+waitFor $fuckingcar
+
+local.carspeed -= 10
+
+$fuckingcar speed local.carspeed
+local.carspeed ifgreater 0 goto CarSlowDownLoop
+end
+
+endsubwaycarsound:
+$fuckingcar playsound misc/null.wav 2 7
+wait .1
+end
+
+closedoorsquick:
+$cardoorright 	time 	.2
+$cardoorleft	time	.2
+$cardoorright	moveWest	32
+$cardoorleft	moveEast	32
+$cardoorleft	playsound environment/doors/pwrdrcls.wav
+waitFor $cardoorleft
+end
+
+end_characters:
+$civ1	thread	civ1_state
+$civ2	thread	civ2_state
+$civ3	thread	civ3_state
+$civ4	thread	civ4_state
+wait .1
+trigger $civ1
+trigger $civ2
+trigger $civ3
+trigger $civ4
+end
+
+manumit_end_state:
+local.self	definestate	activate	manu_end_activated
+local.self	definestate	killed		manu_end_killed
+pause
+
+manu_end_activated:
+forcemusic surprise
+local.self	ignore	activate
+local.self definestate idle manu_end_idle_after_civ4
+// we do this so that he won't see you before we set him up again
+local.self ignore sightenemy
+local.self  attack   $civ4
+end
+
+manu_end_idle_after_civ4:
+local.self definestate idle global/baseai.scr::idle
+local.self definestate sightenemy manu_end_sightenemy
+local.self attackplayer
+end
+
+manu_end_sightenemy:
+local.self ifnear ThrowObject 8192 goto manu_end_shootbarrel
+//print "Can't find barrel!\n"
+local.self copystate sightenemy default_sightenemy
+local.self state sightenemy
+end
+
+manu_end_shootbarrel:
+
+local.barrel string local.other
+local.self runto local.barrel
+waitFor local.self
+local.self behavior PickupAndThrow local.barrel
+waitFor local.self
+goto manu_end_sightenemy
+end
+
+manu_end_killed:
+thread subway_ending
+end
+
+subway_ending:
+level.PObjective1 = 1
+level.PObjective3 = 1
+level.goodpeopledead iflessequal 6 level.SObjective1 = 1
+thread MissionStatus
+thread global/universal_script.scr::PObjectiveComplete
+forcemusic success
+unlockachievement "ACH_SIN_EP1"
+wait 5
+fadeout 1 0 0 0
+wait 1
+thread LevelComplete
+local.WaitingForThread = parm.previousthread
+waitForThread local.WaitingForThread
+map "subway_cinema"
+end
+
+civ1_state:
+//local.self	ignoreall
+local.self	ignoresounds
+local.self	definestate	activate	civ1_activated
+local.self	definestate	killed		civ1_killed
+pause
+
+civ1_activated:
+parm.civfemale string "$civ1"
+thread dialog::civilianf_monster
+local.self	turnto	80
+waitFor local.self
+//local.self	respondtoall
+local.self	runto	$civ_escape
+waitFor local.self
+local.self	remove
+end
+
+civ1_killed:
+level.goodpeopledead += 1
+thread check_good_people
+end
+end
+
+civ2_state:
+//local.self	ignoreall
+local.self	ignoresounds
+local.self	definestate	activate	civ2_activated
+local.self	definestate	killed		civ2_killed
+pause
+
+civ2_activated:
+local.self	turnto	80
+waitFor local.self
+//local.self	respondtoall
+local.self	runto	$civ_escapenode2
+waitFor local.self
+local.self	remove
+end
+
+civ2_killed:
+level.goodpeopledead += 1
+thread check_good_people
+end
+end
+
+civ3_state:
+//local.self	ignoreall
+local.self	ignoresounds
+local.self	definestate	activate	civ3_activated
+local.self	definestate	killed		civ3_killed
+pause
+
+civ3_activated:
+local.self	turnto	80
+waitFor local.self
+//local.self	respondtoall
+local.self	runto	$civ_escapenode3
+waitFor local.self
+local.self	remove
+end
+
+civ3_killed:
+level.goodpeopledead += 1
+thread check_good_people
+end
+end
+
+civ4_state:
+//local.self	ignoreall
+local.self	ignoresounds
+local.self	definestate	activate	civ4_activated
+local.self	definestate	killed		civ4_killed
+pause
+
+civ4_activated:
+parm.civmale string "$civ4"
+thread dialog::civilianm_monster
+local.self	turnto	80
+waitFor local.self
+end
+
+civ4_killed:
+level.goodpeopledead += 1
+thread check_good_people
+end
+end
+
+//=========================================================
+//begin texture translation stuff
+//=========================================================
+Trans_Startloop:
+local.transwallcount = 1
+
+transloop:
+parm.transwall string "@trans"
+parm.transwall appendint local.transwallcount
+
+thread transstart
+
+local.transwallcount += 1
+local.transwallcount iflessequal 11 goto transloop
+end
+
+transstart:
+//parm.transwall transOn
+parm.transwall trans_mag 150
+//parm.transwall trans_angle 180
+end
+
+//=========================================================
+//end texture translation stuff
+//=========================================================
+Trans_Stoploop:
+wait 5
+local.transwallend = 1
+
+Trans_end:
+parm.transwall string "@trans"
+parm.transwall appendint local.transwallend
+
+thread transstop
+
+local.transwallend += 1
+local.transwallend iflessequal 11 goto Trans_end
+end
+
+transstop:
+//parm.transwall transOff
+parm.transwall trans_mag 0
+//parm.transwall trans_angle 0
+end
+
+//=========================================================
+// Lightstyle Fadein/out for tunnel
+//=========================================================
+fade_in:
+$fadesuck lightstyle "Lab"
+wait .1
+$fadesuck lightstyle "Lbc"
+wait .1
+$fadesuck lightstyle "Lcd"
+wait .1
+$fadesuck lightstyle "Lde"
+wait .1
+$fadesuck lightstyle "Lef"
+wait .1
+$fadesuck lightstyle "Lfg"
+wait .1
+$fadesuck lightstyle "Lgh"
+wait .1
+$fadesuck lightstyle "Lhi"
+wait .1
+$fadesuck lightstyle "Lij"
+wait .1
+$fadesuck lightstyle "Ljk"
+wait .1
+$fadesuck lightstyle "Lkl"
+wait .1
+$fadesuck lightstyle "Llm"
+wait .1
+$fadesuck lightstyle "Lm"
+end
+
+fade_out:
+$fadesuck lightstyle "Lml"
+wait .1
+$fadesuck lightstyle "Llk"
+wait .1
+$fadesuck lightstyle "Lkj"
+wait .1
+$fadesuck lightstyle "Lji"
+wait .1
+$fadesuck lightstyle "Lih"
+wait .1
+$fadesuck lightstyle "Lhg"
+wait .1
+$fadesuck lightstyle "Lgf"
+wait .1
+$fadesuck lightstyle "Lfe"
+wait .1
+$fadesuck lightstyle "Led"
+wait .1
+$fadesuck lightstyle "Lcb"
+wait .1
+$fadesuck lightstyle "Lba"
+wait .1
+$fadesuck lightstyle "La"
+end
+//=======End Train Shit====================================
+
+
+//=========================================================
+// Misc objects
+//=========================================================
+MiscObjects:
+
+// TEMP GAME STATE SETTING
+//game.subway_startstate = 3
+
+//thread StateObjects
+thread MissionState
+thread StatusUpdate
+thread Trans_Stoploop
+thread Train_stuff
+thread swing_light
+thread ExtraObjects
+$manumit_mover	moveDown	16
+waitFor $manumit_mover
+end
+
+//=========================================================
+// Extra Objects
+//=========================================================
+ExtraObjects:
+$manumit_mover hide
+$playerclippy notsolid
+$monsterclippy notsolid
+wait 2
+$makenodes	remove
+end
+
+//=========================================================
+// Light swinging in tunnel
+//=========================================================
+swing_light:
+thread break_bottom
+$swing_bottom	bind	$swing_top
+wait .1
+
+swing_loop:
+$swing_top	time	2
+$swing_top	rotateXdownto	2
+waitFor $swing_top
+$swing_top	rotateXupto	4
+waitFor $swing_top	
+goto swing_loop
+
+break_bottom:
+$swing_bottom	ondamage	removebottom
+pause
+
+removebottom:
+$swing_bottom	shatter "(1 1 1)" 40 10 40 .3 0
+$swing_bottom	hide
+$swing_bottom	notsolid
+end
+
+//=========================================================
+// Train Lighting in tunnel
+//=========================================================
+Train_stuff:
+$fake_train1	hide
+$fake_train1	notsolid
+end
+
+//=========================================================
+// Update Mission status dialog
+//=========================================================
+StatusUpdate:
+wait 5
+thread global/universal_script.scr::StatusUpdated
+end
+
+//=========================================================
+// Reset Mission computer to empty
+//=========================================================
+MissionState:
+level.PObjective1 = 0
+level.PObjective2 = 0
+//level.PObjective3 = 0
+level.SObjective1 = 0
+level.SObjective2 = 0
+level.moneybags = 0
+end
+
+//=========================================================
+// Level flow set by start position thread.
+//=========================================================
+StateObjects:
+game.subway_startstate ifequal 1 goto setstate1
+game.subway_startstate ifequal 3 goto setstate3
+end
+
+setstate3:	// Coming in from the main entrance
+$manu_shatter2	remove
+$abo_brokeshit1	remove
+$manumit2	remove
+$thug_alpha4	remove
+end
+
+setstate1:	// Coming in from the alternate exit (Bulldozer entrance)
+$abowall1	remove
+$thug_alpha1	remove
+$thug_alpha2	remove
+$thug_alpha3	remove
+$manumit2	remove
+wait 8
+$thug_bumkilla1	remove
+$thug_blockpath1	remove
+$bum2	remove
+end
+
+secretarea1:
+unlockachievement "ACH_SIN_RATS"
+level.found_secrets += 1
+thread global/universal_script.scr::secret
+end
+
+LevelComplete:
+// We're done with the episode, so clear the savegames out
+clearsavegames
+
+// Clears any items in the player's inventory that need to be removed
+thread global/universal_script.scr::ClearInventory
+
+// Any objectives that haven't been set to Success or Fail should be set
+// here. This usually is for things like "Eliminate All Hostile Forces"
+// All Objectives need to be set to Success or Fail by the end of the
+// map. This should be automatic for the most part but if you
+// Find any that aren't, we need to figure out what to do with them.
+level.SObjective1 ifnotequal 1 level.SObjective1 = 2
+level.SObjective2 ifnotequal 1 level.SObjective2 = 2
+level.PObjective1 ifnotequal 1 level.PObjective1 = 2
+level.PObjective2 ifnotequal 1 level.PObjective2 = 2
+level.PObjective3 ifnotequal 1 level.PObjective3 = 2
+
+thread MissionStatus
+
+// Send over the information that Scott needs to load the proper intermission
+loadintermission "layouts/im_layouts/subway_to_subway2_cinema"
+thread global/universal_script.scr::CopyNewMisConToIntermission
+
+end
