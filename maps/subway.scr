@@ -3,6 +3,10 @@
 // Tom Mustaine - Ritual Entertainment
 //=========================================================
 
+//[coop] chrissstrahl - START COOP MOD - REQUIRED
+aliasscript global/coop_main.scr coopMain
+thread coopMain::main
+
 // Subway Dialog Script
 setdialogscript dialog/dialog_subway.scr
 
@@ -1670,4 +1674,84 @@ thread MissionStatus
 loadintermission "layouts/im_layouts/subway_to_subway2_cinema"
 thread global/universal_script.scr::CopyNewMisConToIntermission
 
+end
+
+
+
+
+
+
+
+//[coop] chrissstrahl - DETECT PLAYER SPAWN - REQUIRED
+//this fires everytime a player is spawned
+//without this the coop mod will not work correctly!
+coopInfoPlayerStartActivated:
+	thread coopMain::playerTargetnames
+end
+
+//[coop] chrissstrahl - spawn a trigger we can actually control, as long as the next level is not completed
+coop_levelSetup:
+	//enlarge the start setup trigger
+	$fuckass2 setsize "-500 -500 -30" "500 500 30"
+	$fuckass1 setsize "-500 -500 -30" "500 500 30"
+
+	
+	removeclass "triggerchangelevel"
+	wait game.FRAMETIME
+	//clearsavegames
+	//map "abandon$start1"
+	//the asterix infront of the mapname is suppose to clearsaved games in the trigger_changelevel
+	//WARNING - the model number may change if the game gets updates!!!
+	//spawn trigger_changelevel model "*242" origin "-2688 512 224" "map" "*abandon$start1" targetname "coopLvlEnd" thread "LevelComplete"
+	
+	
+	IgotToHurryUpIHaveToGetToWorkSoon:	
+	parm.playersMoveXYZ string "0 2450 1008"
+	parm.playersMoveXYZ_x string "<"
+	parm.playersMoveXYZ_y string "<"
+	parm.playersMoveXYZ_z string "<"
+	thread coopMain::playersMoveXYZ
+	wait 1
+	goto IgotToHurryUpIHaveToGetToWorkSoon
+end
+
+//[coop] chrissstrahl - executed each time a player has spawned
+//optional function
+coop_justSpawned:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+		
+//[coop] chrissstrahl - executed each time a player has died
+//optional function
+coop_justDied:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+
+//[coop] chrissstrahl - executed each time a player enters spectator mode
+//optional function
+coop_justBecameSpectator:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+
+//[coop] chrissstrahl - executed each time a player has entered the game (usually oce per level)
+//optional function
+coop_justEntered:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end	
+	
+//[coop] chrissstrahl - executed each time a player has disconnected
+//optional function
+coop_justLeft:
+	local.player string parm.playerEvent
+	//EXAMPLE: You can't do something with the player because the player has disconnected
+	//You can however still check stuff based on player targetname
+	//local.player ifstrequal "$player2" print "Player 2 has lost the will to fight\n"
 end
