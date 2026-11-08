@@ -3,7 +3,6 @@ aliasscript global/coop_main.scr coopMain
 thread coopMain::main
 
 //[coop] chrissstrahl - this is the better starting position for coop
-thread coopMain::inMultiplayer
 level.coopInMultiplayer ifgreaterequal 1 level.intro_start2 = 1
 
 waitforplayercinematic
