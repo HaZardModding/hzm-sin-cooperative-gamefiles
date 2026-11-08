@@ -2,8 +2,16 @@
 // Subway Cinematic
 //---------------------------------------------------------------
 
+	//[coop] chrissstrahl - START COOP MOD - REQUIRED
+	aliasscript global/coop_main.scr coopMain
+	thread coopMain::main
+
 waitforplayercinematic
-cinematic
+
+	//cinematic
+	//[coop] chrissstrahl - notify coop about cinematic
+	thread coopReplace::coop_cinematic
+
 skipthread skiplevel_thread
 setdialogscript dialog/dialog_subwaycinema.scr
 
@@ -20,7 +28,11 @@ cinematic_initialize_thread:
 
 music suspense none
 freezeplayer
-cueplayer
+
+	//cueplayer
+	//[coop] chrissstrahl - unregister camera and cueplayer
+	thread coopReplace::coop_cueplayer
+	
 hud 0
 $blade3 hide
 fadeout .1 0 0 0
@@ -42,6 +54,10 @@ end
 
 //---
 skiplevel_thread:
+
+	//[coop] chrissstrahl - lets handle that in a own func
+	level.coopInMultiplayer ifgreaterequal 1 goto coop_skiplevel_thread
+
 releaseplayer
 thread LevelComplete
 map chem1
@@ -53,7 +69,12 @@ cinematic_thread:
 local.joke_type randomint 2
 fadein 3 0 0 0
 $cam1 lookat $hco2
-cuecamera $cam1
+
+	//cuecamera $cam1
+	//[coop] chrissstrahl - register and cue camera
+	parm.camera string $cam1
+	thread coopReplace::coop_cuecamera
+
 wait 1
 //goto bla
 
@@ -93,7 +114,12 @@ bla:
 music failure none
 $cam3 lookat $jc
 $cam3 jumpcut
-cuecamera $cam3
+
+	//cuecamera $cam3
+	//[coop] chrissstrahl - register and cue camera
+	parm.camera string $cam3
+	thread coopReplace::coop_cuecamera
+
 parm.WaitTime = 5
 parm.TimeDate string "m_2_hours_later"
 parm.Location string "m_hardcorps_headquarters"
@@ -171,7 +197,12 @@ waitForThread local.wait
 
 //$cam4 lookat $blade2
 $cam4 jumpcut
-cuecamera $cam4
+
+	//cuecamera $cam4
+	//[coop] chrissstrahl - register and cue camera
+	parm.camera string $cam4
+	thread coopReplace::coop_cuecamera
+
 thread anim2_thread
 thread chair_thread
 parm.blade string $blade2
@@ -182,7 +213,12 @@ waitForThread local.wait
 
 $cam5 lookat $jc
 $cam5 jumpcut
-cuecamera $cam5
+
+	//cuecamera $cam5
+	//[coop] chrissstrahl - register and cue camera
+	parm.camera string $cam5
+	thread coopReplace::coop_cuecamera
+	
 thread anim4_thread
 thread door_thread
 
@@ -198,9 +234,18 @@ $blade3 show
 
 fadeout 3 0 0 0
 $cam6 jumpcut
-cuecamera $cam6
+
+	//cuecamera $cam6
+	//[coop] chrissstrahl - register and cue camera
+	parm.camera string $cam6
+	thread coopReplace::coop_cuecamera
+
 thread cam1_thread
 wait 2
+
+	//[coop] chrissstrahl - lets handle that in a own func
+	level.coopInMultiplayer ifgreaterequal 1 goto coop_skiplevel_thread
+	
 thread LevelComplete
 map chem1
 end
@@ -323,7 +368,12 @@ anim666_thread:
 
 $cam2 lookat $blade
 $cam2 jumpcut
-cuecamera $cam2
+
+	//cuecamera $cam2
+	//[coop] chrissstrahl - register and cue camera
+	parm.camera string $cam2
+	thread coopReplace::coop_cuecamera
+
 wait 1.5
 $blade walkto $blade_node666
 waitFor $blade
@@ -461,4 +511,66 @@ $pigeon1 followpath $pigeon1_start
 wait .3
 $pigeon2 followpath $pigeon2_start
 waitFor $pigeon2
+end
+
+
+
+//[coop] chrissstrahl - handle coop stuff in a own thread
+coop_skiplevel_thread:
+	releaseplayer
+	thread LevelComplete
+	//map chem1
+	map bank
+end
+
+//[coop] chrissstrahl - DETECT PLAYER SPAWN - REQUIRED
+//this fires everytime a player is spawned
+//without this the coop mod will not work correctly!
+coopInfoPlayerStartActivated:
+	thread coopMain::playerTargetnames
+end
+
+//[coop] chrissstrahl - spawn a trigger we can actually control, as long as the next level is not completed
+coop_levelSetup:
+end
+
+//[coop] chrissstrahl - executed each time a player has spawned
+//optional function
+coop_justSpawned:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+		
+//[coop] chrissstrahl - executed each time a player has died
+//optional function
+coop_justDied:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+
+//[coop] chrissstrahl - executed each time a player enters spectator mode
+//optional function
+coop_justBecameSpectator:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+
+//[coop] chrissstrahl - executed each time a player has entered the game (usually oce per level)
+//optional function
+coop_justEntered:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end	
+	
+//[coop] chrissstrahl - executed each time a player has disconnected
+//optional function
+coop_justLeft:
+	local.player string parm.playerEvent
+	//EXAMPLE: You can't do something with the player because the player has disconnected
+	//You can however still check stuff based on player targetname
+	//local.player ifstrequal "$player2" print "Player 2 has lost the will to fight\n"
 end
