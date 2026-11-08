@@ -336,3 +336,219 @@ csite_office:
 	level.coopPlayer4SpawnLocation string "-680 1071 200"
 	print "Spawnlocation updated: csite_office\n"
 end
+
+
+//player took the short way on csite
+subway2_cinema:
+	level.infoPlayerStartOrigin1 string "-3240 960 544" //bsp: "-1224 1464 736" //$start1
+	level.infoPlayerStartPushDirection1 string "270"
+	
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 270 0"
+	level.coopPlayer2SpawnAngles string "0 270 0"
+	level.coopPlayer3SpawnAngles string "0 270 0"
+	level.coopPlayer4SpawnAngles string "0 270 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "-3039 1839 770"
+	level.coopPlayer2SpawnLocation string "-2999 1839 770"
+	level.coopPlayer3SpawnLocation string "-3039 1799 770"
+	level.coopPlayer4SpawnLocation string "-2999 1799 770"
+end
+
+//player took the short way on csite
+subway:
+	//remove this after testing
+	local.hostName getcvar "name"
+	local.hostName ifequal level.devName goto subway_alt
+
+
+	//used to spawn a trigger detecting players spawning (entering the server)
+	//move so they are no longer on the level where players can accidently run into them
+	$start1 origin "-1165 2257 1111" //move info player start spawnlocation out of the way
+	$start3 origin "-1283 2257 1111" //move info player start spawnlocation out of the way
+	level.infoPlayerStartOrigin1 string "-1165 2257 1111" //bsp: "-1224 1464 736" //$start1
+	level.infoPlayerStartPushDirection1 string "270"
+	level.infoPlayerStartOrigin2 string "-1283 2257 1111" //bsp: "-3616 2384 1008" //$start3
+	level.infoPlayerStartPushDirection2 string "270"
+	
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 270 0"
+	level.coopPlayer2SpawnAngles string "0 270 0"
+	level.coopPlayer3SpawnAngles string "0 270 0"
+	level.coopPlayer4SpawnAngles string "0 180 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "-1336 1756 943"
+	level.coopPlayer2SpawnLocation string "-1211 1756 943"
+	level.coopPlayer3SpawnLocation string "-1139 1756 943"
+	level.coopPlayer4SpawnLocation string "-1131 1571 850"
+end
+
+//player took the long way with vehicles on csite
+subway_alt:
+	//used to spawn a trigger detecting players spawning (entering the server)
+	//move so they are no longer on the level where players can accidently run into them
+	$start1 origin "-1165 2257 1111" //move info player start spawnlocation out of the way
+	$start3 origin "-1283 2257 1111" //move info player start spawnlocation out of the way
+	$start3  angels "0 1 0"
+	level.infoPlayerStartOrigin1 string "-1165 2257 1111" //bsp: "-1224 1464 736" //$start1
+	level.infoPlayerStartPushDirection1 string "270"
+	level.infoPlayerStartOrigin2 string "-1283 2257 1111" //bsp: "-3616 2384 1008" //$start3
+	level.infoPlayerStartPushDirection2 string "270"
+	
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 270 0"
+	level.coopPlayer2SpawnAngles string "0 270 0"
+	level.coopPlayer3SpawnAngles string "0 270 0"
+	level.coopPlayer4SpawnAngles string "0 180 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "-3679 2272 1120"  //test ubahn first 3644 1988 0 //test ubahn moving 3685 -1723 0 //correct: -3679 2272 1120
+	level.coopPlayer2SpawnLocation string "-3679 2272 1120"
+	level.coopPlayer3SpawnLocation string "-3679 2272 1120"
+	level.coopPlayer4SpawnLocation string "-3679 2272 1120"
+end
+
+subway_mosterfightAtPower:
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 87 0"
+	level.coopPlayer2SpawnAngles string "0 192 0"
+	level.coopPlayer3SpawnAngles string "0 358 0"
+	level.coopPlayer4SpawnAngles string "0 40 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "1058 -649 460"
+	level.coopPlayer2SpawnLocation string "1232 -246 460"
+	level.coopPlayer3SpawnLocation string "816 -275 460"
+	level.coopPlayer4SpawnLocation string "880 -548 460"
+end
+
+subway_subwayTrain1:
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 96 0"
+	level.coopPlayer2SpawnAngles string "0 83 0"
+	level.coopPlayer3SpawnAngles string "0 40 0"
+	level.coopPlayer4SpawnAngles string "0 335 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "3104 1441 16"
+	level.coopPlayer2SpawnLocation string "2992 1457 16"
+	level.coopPlayer3SpawnLocation string "2842 1508 16"
+	level.coopPlayer4SpawnLocation string "2829 1915 16"
+end
+
+subway_subwayTrain2:
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 156 0"
+	level.coopPlayer2SpawnAngles string "0 166 0"
+	level.coopPlayer3SpawnAngles string "0 188 0"
+	level.coopPlayer4SpawnAngles string "0 315 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "2759 -917 320"
+	level.coopPlayer2SpawnLocation string "2799 -836 320"
+	level.coopPlayer3SpawnLocation string "2796 -729 320"
+	level.coopPlayer4SpawnLocation string "2357 -720 320"
+end
+
+subway_subwayTrain2_start:
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 3 0"
+	level.coopPlayer2SpawnAngles string "0 345 0"
+	level.coopPlayer3SpawnAngles string "0 190 0"
+	level.coopPlayer4SpawnAngles string "0 170 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "3222 -1535 20"
+	level.coopPlayer2SpawnLocation string "3708 -1461 20"
+	level.coopPlayer3SpawnLocation string "3210 -1434 20"
+	level.coopPlayer4SpawnLocation string "3742 -1535 20"
+end
+
+//this function updates the spawnlocations of
+//players inside the moving subway train
+subway_subwayTrain2_travel:
+	level.subway_subwayTrain2_travel = 1
+	level.subway_subwayTrain2_setupDone ifnotequal 1 goto subway_subwayTrain2_travel_setup
+	
+	subway_subwayTrain2_travel_loop:
+	//the train has halted, stop updating this
+	level.subway_subwayTrain2_travel ifequal 0 end
+	
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 180 0"
+	level.coopPlayer2SpawnAngles string "0 180 0"
+	level.coopPlayer3SpawnAngles string "0 180 0"
+	level.coopPlayer4SpawnAngles string "0 180 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	local.tramOrigin getorigin $fuckingcar
+	level.coopPlayer1SpawnLocation vector local.tramOrigin
+	level.coopPlayer1SpawnLocation vector_add "-200 0 -44"
+	level.coopPlayer2SpawnLocation vector local.tramOrigin
+	level.coopPlayer2SpawnLocation vector_add "-100 0 -44"
+	level.coopPlayer3SpawnLocation vector local.tramOrigin
+	level.coopPlayer3SpawnLocation vector_add "100 0 -44"
+	level.coopPlayer1SpawnLocation vector local.tramOrigin
+	level.coopPlayer1SpawnLocation vector_add "200 0 -44"
+	wait game.FRAMETIME
+	
+	goto subway_subwayTrain2_travel_loop
+	
+	subway_subwayTrain2_travel_setup:
+		level.subway_subwayTrain2_setupDone = 1
+	goto subway_subwayTrain2_travel_loop
+end
+
+subway_subwayTrain2_fight:
+	//stop updating the spawnlocations optimized for moving train
+	level.subway_subwayTrain2_travel = 0
+
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 153 0"
+	level.coopPlayer2SpawnAngles string "0 192 0"
+	level.coopPlayer3SpawnAngles string "0 341 0"
+	level.coopPlayer4SpawnAngles string "0 7 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "495 -1551 20"
+	level.coopPlayer2SpawnLocation string "519 -1424 20"
+	level.coopPlayer3SpawnLocation string "-87 -1424 20"
+	level.coopPlayer4SpawnLocation string "-87 -1551 20"
+end
+
+subway_subwayTrain2_stopped:
+	//stop updating the spawnlocations optimized for moving train
+	level.subway_subwayTrain2_travel = 0
+	
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 1 0"
+	level.coopPlayer2SpawnAngles string "0 1 0"
+	level.coopPlayer3SpawnAngles string "0 1 0"
+	level.coopPlayer4SpawnAngles string "0 1 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "-3818 -1760 128"
+	level.coopPlayer2SpawnLocation string "-3818 -1800 128"
+	level.coopPlayer3SpawnLocation string "-3818 -1840 128"
+	level.coopPlayer4SpawnLocation string "-3818 -1880 128"
+end
+
+//player took the short way on csite
+subway_cinema:
+	level.infoPlayerStartOrigin1 string "-3416 -1432 -32"
+	level.infoPlayerStartPushDirection1 string "1"
+	
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 1 0"
+	level.coopPlayer2SpawnAngles string "0 1 0"
+	level.coopPlayer3SpawnAngles string "0 1 0"
+	level.coopPlayer4SpawnAngles string "0 1 0"
+	
+	//spawnspots - (Remember -66 z when viewpos was used)
+	level.coopPlayer1SpawnLocation string "-367 -81 -800"
+	level.coopPlayer2SpawnLocation string "-327 -81 -800"
+	level.coopPlayer3SpawnLocation string "-287 -81 -800"
+	level.coopPlayer4SpawnLocation string "-247 -81 -800"
+end

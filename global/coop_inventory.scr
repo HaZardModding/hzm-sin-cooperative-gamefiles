@@ -122,9 +122,16 @@ csite:
 	local.player use DualMagnum
 end
 
+
+subway2_cinema:
+	local.player string parm.player
+end
+
+
 subway:
 	local.player string parm.player
 	local.player give GlowStick 10
+	local.player give Coin 2
 	
 	local.player give Shotgun
 	local.player give AssaultRifle
@@ -137,4 +144,9 @@ subway:
 	local.player give FlakPants 30
 	local.player give DualMagnum 2
 	local.player use DualMagnum
+end
+
+
+subway_cinema:
+	local.player string parm.player
 end
