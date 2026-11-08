@@ -1,0 +1,392 @@
+//---------------------------------------------------------------
+// Subway Cinematic
+//---------------------------------------------------------------
+	//[coop] chrissstrahl - START COOP MOD - REQUIRED
+	aliasscript global/coop_main.scr coopMain
+	thread coopMain::main
+
+waitforplayercinematic
+
+	//cinematic
+	//[coop] chrissstrahl - notify coop about cinematic
+	thread coopReplace::coop_cinematic
+	
+skipthread skiplevel_thread
+setdialogscript dialog/dialog_subwaycinema.scr
+
+waitforplayer
+thread cinematic_initialize_thread
+local.waitforthread = parm.previousthread
+waitForThread local.waitforthread
+
+thread cinematic_thread
+end
+
+
+
+//---
+cinematic_initialize_thread:
+
+music normal
+//freezeplayer
+
+	//[coop] chrissstrahl - keep this for singleplayer
+	level.coopInMultiplayer ifless 1 *1 hide	
+
+	//cueplayer
+	//[coop] chrissstrahl - unregister camera and cueplayer
+	thread coopReplace::coop_cueplayer
+
+hud 0
+$manumit hide
+$manumit notsolid
+fadeout .1 0 0 0
+wait .1
+$flicker lightstyle "i"
+$mancini thread ignore_thread
+$lookatme hide
+$lookatme time .1
+$lookatme rotateYupto 315
+waitFor $lookatme
+end
+
+
+//---
+skiplevel_thread:
+
+releaseplayer
+game.csite_exit ifequal 1 thread LevelComplete
+game.csite_exit ifequal 1 map subway$start1
+game.csite_exit ifequal 0 thread LevelComplete1
+game.csite_exit ifequal 0 map subway$start3
+end
+
+
+//---
+cinematic_thread:
+
+fadein 3 0 0 0
+//$cam1 lookat $door
+$cam1 jumpcut
+
+	//cuecamera $cam1
+	//[coop] chrissstrahl - register and cue camera
+	parm.camera string $cam1
+	thread coopReplace::coop_cuecamera
+
+wait 1
+thread door_thread
+thread cinematic2_thread
+thread cam1_thread
+thread dialog::mancini_moan
+$mancini anim "subway_stagger"
+waitFor $mancini
+$mancini anim "subway_mutation"
+$manumit anim "transform"
+
+end
+
+local.alpha1 = 0
+local.alpha2 = 1
+local.scale1 = 0.55
+local.scale2 = 1
+$manumit show
+loop:
+local.alpha1 += .05
+local.alpha2 -= .05
+local.scale1 += .05
+local.scale2 += .05
+local.scale1 ifgreaterequal .9 		local.scale1 = .85
+local.scale2 ifgreaterequal 1.45 	local.scale2 = 1.4
+$manumit alpha local.alpha1
+$mancini alpha local.alpha2
+$manumit scale local.scale1
+$mancini scale local.scale2
+wait .4
+local.alpha2 ifequal .05 goto loop_end
+goto loop
+
+loop_end:
+$mancini hide
+end
+
+
+//---
+cinematic2_thread:
+
+wait 9.7
+$flicker lightstyle "iihhiiggiiffiieeiiddiicciibb"
+
+wait 2
+// [XA] fixed music trigger: use 'forcemusic' for action
+forcemusic action
+thread dialog::mancini_transformation
+wait .8
+$flicker lightstyle "iiaahhaaggaaffaaeeaaddaaccaabbaaaa"
+trigger $bla
+wait 3.4
+$flicker lightstyle "a"
+
+wait .5
+$manumit show
+$mancini hide
+$manumit scale 0.65
+$mancini scale 1
+$flicker lightstyle "b"
+wait .2
+$flicker lightstyle "a"
+wait .2
+$manumit hide
+$mancini show
+$flicker lightstyle "c"
+wait .2
+$flicker lightstyle "a"
+wait .2
+$manumit show
+$mancini hide
+$manumit scale 0.7
+$mancini scale 1.1
+$flicker lightstyle "d"
+wait .2
+$flicker lightstyle "a"
+wait .2
+$manumit hide
+$mancini show
+$flicker lightstyle "e"
+wait .2
+$flicker lightstyle "a"
+wait .2
+$manumit show
+$mancini hide
+$manumit scale 0.75
+$mancini scale 1.15
+$flicker lightstyle "f"
+wait .2
+$flicker lightstyle "a"
+wait .2
+$manumit hide
+$mancini show
+$flicker lightstyle "g"
+wait .2
+$flicker lightstyle "a"
+wait .2
+$manumit show
+$mancini hide
+$manumit scale 0.8
+$mancini scale 1.2
+$flicker lightstyle "h"
+wait .2
+$flicker lightstyle "a"
+wait .2
+$manumit hide
+$mancini show
+$flicker lightstyle "i"
+wait .2
+$flicker lightstyle "a"
+wait .2
+$manumit show
+$mancini hide
+$manumit scale 0.85
+$mancini scale 1.25
+$flicker lightstyle "j"
+wait .2
+$flicker lightstyle "a"
+wait .2
+$manumit hide
+$mancini show
+$flicker lightstyle "k"
+wait .2
+$flicker lightstyle "a"
+wait .2
+$manumit show
+$mancini hide
+$manumit scale 0.9
+$flicker lightstyle "k"
+wait .2
+$flicker lightstyle "a"
+wait .2
+$manumit hide
+$mancini show
+$flicker lightstyle "k"
+wait .2
+$flicker lightstyle "a"
+wait .2
+$manumit show
+$mancini hide
+$manumit scale 0.95
+$flicker lightstyle "k"
+wait .2
+$flicker lightstyle "a"
+wait .2
+$manumit hide
+$mancini show
+$flicker lightstyle "k"
+wait .2
+$flicker lightstyle "a"
+wait .2
+$manumit show
+$mancini hide
+$manumit scale 1
+$flicker lightstyle "k"
+wait .2
+$flicker lightstyle "a"
+wait .2
+$manumit hide
+$mancini show
+$flicker lightstyle "k"
+wait .2
+$flicker lightstyle "a"
+wait .2
+$manumit show
+$mancini hide
+$manumit scale 1
+$mancini scale 1.35
+$flicker lightstyle "k"
+wait .2
+$flicker lightstyle "a"
+wait .2
+$manumit hide
+$mancini show
+$flicker lightstyle "k"
+wait .2
+$flicker lightstyle "a"
+$manumit show
+$mancini hide
+$manumit anim "trans2idle"
+wait .2
+$flicker lightstyle "k"
+$manumit anim "trans2idle"
+waitFor $manumit
+$manumit anim "idle1"
+wait 2
+$manumit playsound monsters/manumit/growl3.wav
+$manumit anim "cine_pose"
+waitFor $manumit
+fadeout 3 0 0 0
+wait 1
+// [XA] fade out music over 2 seconds
+music aux2
+wait 2
+
+game.csite_exit ifequal 1 thread LevelComplete
+game.csite_exit ifequal 1 map subway$start1
+game.csite_exit ifequal 0 thread LevelComplete1
+game.csite_exit ifequal 0 map subway$start3
+end
+
+
+//---
+LevelComplete:
+thread global/universal_script.scr::ClearInventory
+// Send over the information needed to load the proper intermission
+loadintermission "layouts/im_layouts/subway_cinema_to_subway_a"
+thread global/universal_script.scr::CopyNewMisConToIntermission
+end
+
+
+//---
+LevelComplete1:
+
+thread global/universal_script.scr::ClearInventory
+// Send over the information needed to load the proper intermission
+loadintermission "layouts/im_layouts/subway_cinema_to_subway_b"
+thread global/universal_script.scr::CopyNewMisConToIntermission
+end
+
+// Threads for character stuff with multiple waitFor stuff etc. that can't be done in the main
+// thread cause of waitFor and waitForThread mixups.
+
+//---
+ignore_thread:
+
+local.self ignoreall
+pause
+goto ignore_thread
+end
+
+
+//---
+cam1_thread:
+
+wait 10
+$cam2 follow $cam2_start $lookatme 0
+$cam2 jumpcut
+
+	//cuecamera $cam2
+	//[coop] chrissstrahl - register and cue camera
+	parm.camera string $cam2
+	thread coopReplace::coop_cuecamera
+
+end
+
+
+//---
+door_thread:
+
+$door time .5
+$door playsound environment/doors/wood/wddrpn3.wav 3
+$door rotateYup 100
+waitFor $door
+$door rotateYdown 5
+waitFor $door
+$door rotateYup 5
+waitFor $door
+$door rotateYdown 2
+waitFor $door
+$door rotateYup 2
+waitFor $door
+end
+
+
+
+//[coop] chrissstrahl - DETECT PLAYER SPAWN - REQUIRED
+//this fires everytime a player is spawned
+//without this the coop mod will not work correctly!
+coopInfoPlayerStartActivated:
+	thread coopMain::playerTargetnames
+end
+
+//[coop] chrissstrahl - spawn a trigger we can actually control, as long as the next level is not completed
+coop_levelSetup:
+end
+
+//[coop] chrissstrahl - executed each time a player has spawned
+//optional function
+coop_justSpawned:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+		
+//[coop] chrissstrahl - executed each time a player has died
+//optional function
+coop_justDied:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+
+//[coop] chrissstrahl - executed each time a player enters spectator mode
+//optional function
+coop_justBecameSpectator:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+
+//[coop] chrissstrahl - executed each time a player has entered the game (usually oce per level)
+//optional function
+coop_justEntered:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end	
+	
+//[coop] chrissstrahl - executed each time a player has disconnected
+//optional function
+coop_justLeft:
+	local.player string parm.playerEvent
+	//EXAMPLE: You can't do something with the player because the player has disconnected
+	//You can however still check stuff based on player targetname
+	//local.player ifstrequal "$player2" print "Player 2 has lost the will to fight\n"
+end
