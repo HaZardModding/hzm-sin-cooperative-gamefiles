@@ -64,16 +64,15 @@ end
 skiplevel_thread:
 releaseplayer
 
+	
+
 	//noncinematic
 	//[coop] chrissstrahl - end cinematic and notify script
 	thread coopReplace::coop_noncinematic
-
-	//[coop] chrissstrahl - Load a level we do support instead
 	fadeout 3 0 0 0
-	thread coopMain::inMultiplayer
-	local.multiplayer = parm.inMultiplayer
-	local.multiplayer ifequal 1 map "abandon$start1"
-	local.multiplayer ifequal 1 end
+	
+	//[coop] chrissstrahl - Load a level we do support instead
+	level.coopInMultiplayer ifgreater 0 goto coop_endLevel
 
 map csite
 end
@@ -199,6 +198,10 @@ waitForThread local.wait
 fadeout 3 0 0 0
 wait 3
 thread LevelComplete
+
+	//[coop] chrissstrahl - Load a level we do support instead
+	level.coopInMultiplayer ifgreater 0 goto coop_endLevel
+	
 map csite
 end
 
@@ -323,6 +326,12 @@ pause
 goto ignore_thread
 end
 
+
+
+//[coop] chrissstrahl
+coop_endLevel:
+	map "subway2_cinematic" //csite //lets skip csite for now until we got it working
+end
 
 
 //[coop] chrissstrahl - DETECT PLAYER SPAWN - REQUIRED
