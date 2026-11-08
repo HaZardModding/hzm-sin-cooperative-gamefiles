@@ -470,7 +470,6 @@ end
 //players inside the moving subway train
 subway_subwayTrain2_travel:
 	level.subway_subwayTrain2_travel = 1
-	level.subway_subwayTrain2_setupDone ifnotequal 1 goto subway_subwayTrain2_travel_setup
 	
 	subway_subwayTrain2_travel_loop:
 	//the train has halted, stop updating this
@@ -490,14 +489,10 @@ subway_subwayTrain2_travel:
 	level.coopPlayer2SpawnLocation vector_add "-100 0 -44"
 	level.coopPlayer3SpawnLocation vector local.tramOrigin
 	level.coopPlayer3SpawnLocation vector_add "100 0 -44"
-	level.coopPlayer1SpawnLocation vector local.tramOrigin
-	level.coopPlayer1SpawnLocation vector_add "200 0 -44"
+	level.coopPlayer4SpawnLocation vector local.tramOrigin
+	level.coopPlayer4SpawnLocation vector_add "200 0 -44"
 	wait game.FRAMETIME
 	
-	goto subway_subwayTrain2_travel_loop
-	
-	subway_subwayTrain2_travel_setup:
-		level.subway_subwayTrain2_setupDone = 1
 	goto subway_subwayTrain2_travel_loop
 end
 
