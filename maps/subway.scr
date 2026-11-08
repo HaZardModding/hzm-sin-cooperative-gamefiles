@@ -483,12 +483,32 @@ thread Bum11_Ask_For_Quarter
 end
 
 Bum11_Take_Quarter:
-local.quartercount getitemcount *1 coin
+	
+	//[coop] chrissstrahl - ask closest player
+	parm.playerClosestObject string $bum11
+	parm.playerClosestNoIgnoreZ = 1
+	thread coopMain::playerClosest
+	local.player string parm.playerClosest
+	
+	parm.playerGetItemCount string local.player
+	parm.playerGetItemCountName string "coin"
+	thread coopMain::playerGetItemCount
+	local.quartercount = parm.playerGetItemCountValue
+
+	//local.quartercount getitemcount *1 coin
+	
+	
 local.quartercount ifequal 0 thread Bum11_Ask_For_Quarter
 local.quartercount ifequal 0 waitForThread parm.previousthread
 local.quartercount ifequal 0 end
-*1 take coin
-*1 playsound impact/bodyfall/sml2.wav 1 1 1 1
+
+	//*1 take coin
+	//*1 playsound impact/bodyfall/sml2.wav 1 1 1 1
+	
+	//[coop] chrissstrahl - handle closest player
+	local.player take coin
+	local.player playsound impact/bodyfall/sml2.wav 1 1 1 1
+
 level.bum11_took_quarter = 1
 thread Bum11_Ask_For_Dollar
 end
@@ -555,7 +575,12 @@ local.other take local.key
 thread dialog::jc_lucky_day
 local.waitforthread = parm.previousthread
 waitForThread parm.previousthread
-*1 give coin 2
+
+	//[coop] chrissstrahl - handle last used phone
+	local.other give coin 2
+	
+	//*1 give coin 2
+	
 //trigger $coin1_spawn
 //trigger $coin2_spawn
 end
@@ -608,6 +633,17 @@ end
 // Ambush 2
 //=========================================================
 start_ambush2:
+
+	//[coop] chrissstrahl - move spawnpos inside area
+	//then move all players that are outside the combat area to spawnpos
+	thread coopPlayerSpawn::subway_mosterfightAtPower
+	waitForThread parm.previousthread
+	parm.playersMoveXYZ string "750 -70 0"
+	parm.playersMoveXYZ_x string "<"
+	parm.playersMoveXYZ_y string "<"
+	thread coopMain::playersMoveXYZ
+	waitForThread parm.previousthread
+
 trigger $roof_down_explode
 forcemusic aux7
 $roof_shatter1	playsound impact/comp_explode/cmpmx3.wav 2
@@ -1032,6 +1068,27 @@ end
 // Move the train to the start position and wait for trigger
 //=========================================================
 start_car_moving1:
+
+	//[coop] chrissstrahl - move spawnpos inside area
+	thread coopPlayerSpawn::subway_subwayTrain2_start
+	waitForThread parm.previousthread
+	//then move all players that are outside the train (bounding box)
+	parm.playersMoveXYZ string "3777 -1384 14"
+	parm.playersMoveXYZ_x string ">"
+	parm.playersMoveXYZ_y string ">"
+	parm.playersMoveXYZ_z string "<"
+	parm.playersMoveXYZ_match = 1
+	thread coopMain::playersMoveXYZ
+	waitForThread parm.previousthread
+	parm.playersMoveXYZ string "3166 -1591 76"
+	parm.playersMoveXYZ_x string "<"
+	parm.playersMoveXYZ_y string "<"
+	parm.playersMoveXYZ_z string ">"
+	parm.playersMoveXYZ_match = 1
+	thread coopMain::playersMoveXYZ
+	waitForThread parm.previousthread
+	
+
 trigger $fuckingcar
 end
 
@@ -1059,6 +1116,11 @@ end
 // Train starts down tunnel
 //=========================================================
 movetrain:
+	
+	//[coop] chrissstrahl - spawn a origin we can use to know where the train is at all times
+	thread coopPlayerSpawn::subway_subwayTrain2_travel
+	wait 0.1
+
 $fuckingcar	notrigger
 $cardoorright 	time 	.5
 $cardoorleft	time	.5
@@ -1128,6 +1190,9 @@ end
 movetrainend:
 wait 4
 
+	//[coop] chrissstrahl - move spawnpos inside area
+	thread coopPlayerSpawn::subway_subwayTrain2_fight
+
 $carholeroof	playsound impact/comp_explode/cmpmx3.wav 2
 $carholeroof	shatter "(1 1 1)" 40 10 40 .3 0
 $carholeroof	remove
@@ -1192,6 +1257,11 @@ end
 // Train moves into last area
 movetrain2:
 wait 4
+
+	//[coop] chrissstrahl - spawn a origin we can use to know where the train is at all times
+	thread coopPlayerSpawn::subway_subwayTrain2_travel
+	wait 0.1
+
 //$monsterclippy	notsolid
 //$playerclippy	notsolid
 thread fade_out
@@ -1237,6 +1307,10 @@ $cardoorright	moveEast	32
 $cardoorleft	moveWest	32
 $cardoorleft	playsound environment/doors/pwrdrcls.wav
 waitFor $cardoorleft
+
+	//[coop] chrissstrahl - spawn a origin we can use to know where the train is at all times
+	thread coopPlayerSpawn::subway_subwayTrain2_stopped
+	wait 0.1
 end
 
 CarSlowDown:
@@ -1263,6 +1337,11 @@ wait .1
 end
 
 closedoorsquick:
+
+	//[coop] chrissstrahl - lets not do this in coop
+	thread coopMain::inMultiplayer
+	parm.inMultiplayer ifequal 1 end
+
 $cardoorright 	time 	.2
 $cardoorleft	time	.2
 $cardoorright	moveWest	32
@@ -1679,8 +1758,15 @@ end
 
 
 
+coop_subwayTrain1:
+	//[coop] chrissstrahl - move spawnlocations to the first train spawn
+	thread coopPlayerSpawn::subway_subwayTrain1
+end
 
-
+coop_subwayTrain2:
+	//[coop] chrissstrahl - move spawnlocations near to the actual moving train spawn
+	thread coopPlayerSpawn::subway_subwayTrain2
+end
 
 //[coop] chrissstrahl - DETECT PLAYER SPAWN - REQUIRED
 //this fires everytime a player is spawned
@@ -1695,24 +1781,11 @@ coop_levelSetup:
 	$fuckass2 setsize "-500 -500 -30" "500 500 30"
 	$fuckass1 setsize "-500 -500 -30" "500 500 30"
 
-	
-	removeclass "triggerchangelevel"
-	wait game.FRAMETIME
-	//clearsavegames
-	//map "abandon$start1"
-	//the asterix infront of the mapname is suppose to clearsaved games in the trigger_changelevel
-	//WARNING - the model number may change if the game gets updates!!!
-	//spawn trigger_changelevel model "*242" origin "-2688 512 224" "map" "*abandon$start1" targetname "coopLvlEnd" thread "LevelComplete"
-	
-	
-	IgotToHurryUpIHaveToGetToWorkSoon:	
-	parm.playersMoveXYZ string "0 2450 1008"
-	parm.playersMoveXYZ_x string "<"
-	parm.playersMoveXYZ_y string "<"
-	parm.playersMoveXYZ_z string "<"
-	thread coopMain::playersMoveXYZ
-	wait 1
-	goto IgotToHurryUpIHaveToGetToWorkSoon
+	//spawn location updates
+	spawn trigger_once origin "3447 1885 20" thread "coop_subwayTrain1" targetname "coop_subwayTrain1"
+	$coop_subwayTrain1 setsize "-650 -140 0" "450 140 30"
+	spawn trigger_once origin "3447 1885 20" thread "coop_subwayTrain2" targetname "coop_subwayTrain2"
+	$coop_subwayTrain2 setsize "-250 -250 0" "250 250 30"
 end
 
 //[coop] chrissstrahl - executed each time a player has spawned
