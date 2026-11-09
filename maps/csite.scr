@@ -3160,6 +3160,11 @@ $foreman_camera1 fixedposition
 	//[coop] chrissstrahl - register and cue camera
 	parm.camera string $foreman_camera1
 	thread coopReplace::coop_cuecamera
+	//make sure the player is visible
+	parm.playerClosestOrigin string "-999 1913 72"
+	thread coopMain::playerClosest
+	local.player string parm.playerClosest
+	local.player show
 
 fadein 4 0 0 0
 wait 1.5
@@ -3305,14 +3310,6 @@ level.atv_next_breaking_sound = 0
 atv_motion_monitor_wait:
 
 wait 0.1
-
-//[coop] chrissstrahl - crude check and atempt to move vehicle, pretty sure this won't work
-local.coopCheck getorigin $atv_base
-local.coopCheckz vector_z local.coopCheck
-local.coopCheckz iflessequal -500 local.primary_previous_origin string "( -879 997 17 )"
-local.coopCheckz iflessequal -500 $atv_base origin "( -879 997 17 )"
-
-
 level.player_in_vehicle ifequal 0 goto atv_motion_monitor_wait
 
 local.primary_previous_origin getorigin $atv_base
@@ -3972,52 +3969,20 @@ rammable_pair_check:
 // when one ATV contact point reaches the line between the two piece origins.
 // Disable both piece handlers while this instance checks the nearby ATV.
 local.piece1 notrigger
-local.piece2 notrigger
-
-	//[coop] chrissstrahl - grab closest ATV and make decisons based on that
-	local.oriPice getorigin local.piece1
-	parm.location string local.oriPice
-	thread coop_getClosestATV
-	local.coopVeh1 string parm.coop_getClosestATV
-	local.distPice1 = parm.coop_getClosestATVDistance
-	//check the other part
-	local.oriPice getorigin local.piece2
-	parm.location string local.oriPice
-	thread coop_getClosestATV
-	local.coopVeh2 string parm.coop_getClosestATV
-	local.distPice2 = parm.coop_getClosestATVDistance
-	//get closest
-	local.distPice1 iflessequal local.distPice2 local.coopVehicle string local.coopVeh1
-	local.distPice2 iflessequal local.distPice1 local.coopVehicle string local.coopVeh2
-	//get driver
-	thread coop_getATVDriver:
-	local.atv string parm.coop_getATVDriverATV
-	
-	//[coop] chrissstrahl - make coop compatible
-	//level.player_in_vehicle ifequal 0 goto rammable_pair_loop
-	local.numberOne = 1
-	local.numberOne ifequal 0 goto rammable_pair_loop
-
+local.piece2 notrigger	
+level.player_in_vehicle ifequal 0 goto rammable_pair_loop
 goto rammable_pair_probe_check
 
 
 rammable_pair_probe_wait:
 
 wait game.FRAMETIME
-	//[coop] chrissstrahl - make coop compatible
-	//level.player_in_vehicle ifequal 0 goto rammable_pair_loop
-	local.numberOne ifequal 0 goto rammable_pair_loop
+level.player_in_vehicle ifequal 0 goto rammable_pair_loop
 
 
 rammable_pair_probe_check:
 
-	//[coop] chrissstrahl - make coop compatible
-	//local.active_atv string level.active_atv
-	local.active_atv string local.coopVehicle
-	//level.atv_direction - this needs fixing
-	//level.atv_speed - this needs fixing
-	//level.atv_probe_up
-		
+local.active_atv string level.active_atv
 local.current_atv_origin getorigin local.active_atv
 local.current_atv_direction vector level.atv_direction
 local.current_probe_side vector_cross local.current_atv_direction "(0 0 1)"
@@ -5617,60 +5582,77 @@ coop_levelSetup:
 	$coop_sinkhole_deathpit_kill setsize "-500 -500 -200" "500 500 1"
 	
 	//remove this trigger, we will spawn a own coop trigger
-	$sinkhole_deathpit remove	
+	$sinkhole_deathpit remove
+	
+	//add a trigger that allowes using to get back - when player uses that door close to the pit
+	spawn trigger_use "model" "*30" "origin" "-576 -766 64" "spawnflags" "0" "thread" "coop_teleportBackAccrosPit"
 	
 	removeclass "triggerchangelevel"
 	wait game.FRAMETIME
-	//clearsavegames
-	//map "abandon$start1"
+	clearsavegames
 	//the asterix infront of the mapname is suppose to clearsaved games in the trigger_changelevel
 	//WARNING - the model number may change if the game gets updates!!!
-	//spawn trigger_changelevel model "*242" origin "-2688 512 224" "map" "*abandon$start1" targetname "coopLvlEnd" thread "LevelComplete"
+	spawn trigger_changelevel model "*17" origin "3424 1320 -32" "map" "*subway2_cinema" targetname "coopLvlEnd"
+	spawn trigger_changelevel model "*309" origin "-2984 -2560 -80" "map" "*subway2_cinema" targetname "coopLvlEnd"
 
 	//move vehicles back to a place they can be reached again
 	thread coop_multiplayer_vehicle_reset
 	
-	parm.coop_vehicle string "$coop_atv1"
-	thread global/coop_vehicle.scr::coop_vehicle
-	
-	loliflop:
-	
-	//ATV is basically colliding with it if it gets as close as 110 - if we want precise checks we need to check via bbox
-	//parm.location string "4151 -1349 46" //ENTRY gate parging garage
-	//parm.location string "3881 -1147 46" //EXIT gate parging garage
-	//thread coop_getClosestATV
-	
-	parm.coop_vehicleGetDriverVehicle string "$atv_base"
-	thread global/coop_vehicle.scr::coop_vehicleGetDriver
-	print parm.coop_vehicleGetDriver
-	newline
-	wait 1
-	goto loliflop
+	//setup vehicles - experimental multivehicle managment
+	//parm.coop_vehicle string "$atv_base"
+	//thread global/coop_vehicle.scr::coop_vehicle
+
+	//allow to cross the pit without vehicle - spawned on top of the excavator
+	spawn trigger_push "origin" "-1319 -447 130" "angle" "270" "speed" "1350" targetname "coopPushOverPit1"
+	spawn trigger_push "origin" "-1874 -512 130" "angle" "270" "speed" "1350" targetname "coopPushOverPit2"
+	$coopPushOverPit1 setsize "-20 -20 -10" "20 20 60"
+	$coopPushOverPit2 setsize "-20 -20 -10" "20 20 60"
 end
 
+coop_teleportBackAccrosPit:
+	parm.playerClosestOrigin vector "( -576 -766 0 )"
+	parm.playerClosestNoIgnoreZ = 1
+	thread coopMain::playerClosest
+	local.player string parm.playerClosest
+	parm.playersClosestDistance ifgreater 100 end
+	
+	local.player origin "-1746 -76 350"
+end
+
+//this might look like a shitty solution, but this took quite some testing
+//and nothing else I tried worked
 coop_multiplayer_vehicle_reset:
-//related to atv_motion_monitor
-end
-    local.maxZdepthAllowed = -500
-    //local.vehicle string "$atv_base_backup"
+    local.maxZdepthAllowed = -700
     local.vehicle string "$atv_base"
-
-coop_multiplayer_vehicle_reset_loop:
-    local.vehicleOrigin getorigin local.vehicle
-
-    local.printOut string "Vehicle Z: "
-    local.printOut append local.vehicleOrigin
-    local.printOut append "\n"
-    print local.printOut
-
-    wait 1
-	local.vehicleZ vector_z local.vehicleOrigin
-	local.vehicleZ iflessequal -500 goto coop_multiplayer_vehicle_reset_now
-    goto coop_multiplayer_vehicle_reset_loop
+	local.lastOrigin vector "(-9999 99999 -99999)"
 	
+	coop_multiplayer_vehicle_reset_loop:
+		wait 1
+		
+		local.vehicleOrigin getorigin local.vehicle		
+		local.vehicleZ vector_z local.vehicleOrigin
+		local.vehicleZ iflessequal local.maxZdepthAllowed goto coop_multiplayer_vehicle_reset_needed
+		goto coop_multiplayer_vehicle_reset_loop
+		
+	coop_multiplayer_vehicle_reset_needed:
+		local.vecCalc vector local.lastOrigin
+		local.vecCalc vector_subtract local.vehicleOrigin
+		local.vecLngt vector_length local.vecCalc
+		local.lastOrigin vector local.vehicleOrigin
+		//vehicle moving to violently, wait and retry
+		local.vecLngt ifgreaterequal 30 goto coop_multiplayer_vehicle_reset_loop
+
 	coop_multiplayer_vehicle_reset_now:
-	//local.vehicle
-	print "RESET vehicele\n"
+		parm.coop_vehicleRecovery vector local.vehicleOrigin
+		parm.coop_vehicleRecoveryTime = 10
+		parm.coop_vehicleRecoveryPoint1 vector "(-1742 -705 0)"
+		parm.coop_vehicleRecoveryPoint2 vector "(-1742 -705 1000)"
+		parm.coop_vehicleRecoveryPoint3 vector "(-1750 878 175)" //if point4 is reactivated this should use z:-1750 878 400
+		//parm.coop_vehicleRecoveryPoint4 vector "(-221 700 175)"
+		thread global/coop_vehicle.scr::coop_vehicleRecovery
+		waitforthread parm.previousthread
+		
+		local.lastOrigin vector "(-9999 99999 -99999)"
 	goto coop_multiplayer_vehicle_reset_loop
 end
 
@@ -5733,6 +5715,11 @@ end
 //level.atv_speed
 //level.atv_direction
 //
+//ATV is basically colliding with it if it gets as close as 110 - if we want precise checks we need to check via bbox
+//parm.location string "4151 -1349 46" //ENTRY gate parging garage
+//parm.location string "3881 -1147 46" //EXIT gate parging garage
+//thread coop_getClosestATV
+//
 //
 //{ "model" "*20" "origin" "-735 329 117" "target" "atv_coop1" "classname" "vehicle_hitmodel" }
 //{ "model" "coop_atv.def" "targetname" "atv_coop1" "thread" "global/func_vehicle_atv.scr::vehicle_atv" "target" "atv" "origin" "-732 328 82" "classname" "func_vehicle" }
@@ -5740,3 +5727,49 @@ end
 //{ "model" "coop_atv.def" "targetname" "atv_coop2" "thread" "global/func_vehicle_atv.scr::vehicle_atv" "target" "atv" "origin" "-532 332 82" "classname" "func_vehicle" }
 //{ "model" "*20" "origin" "-1748 1052 117" "target" "atv_coop3" "classname" "vehicle_hitmodel" }
 //{ "model" "atv.def" "targetname" "atv_coop3" "thread" "global/func_vehicle_atv.scr::vehicle_atv" "target" "atv" "origin" "-1745 1051 82" "classname" "func_vehicle" }
+
+
+//this code is here for reference
+CODENOTE_coop_rammable_pair_check
+	//[coop] chrissstrahl - grab closest ATV and make decisons based on that
+	local.oriPice getorigin local.piece1
+	parm.location string local.oriPice
+	thread coop_getClosestATV
+	local.coopVeh1 string parm.coop_getClosestATV
+	local.distPice1 = parm.coop_getClosestATVDistance
+	//check the other part
+	local.oriPice getorigin local.piece2
+	parm.location string local.oriPice
+	thread coop_getClosestATV
+	local.coopVeh2 string parm.coop_getClosestATV
+	local.distPice2 = parm.coop_getClosestATVDistance
+	//get closest
+	local.distPice1 iflessequal local.distPice2 local.coopVehicle string local.coopVeh1
+	local.distPice2 iflessequal local.distPice1 local.coopVehicle string local.coopVeh2
+	//get driver
+	thread coop_getATVDriver:
+	local.atv string parm.coop_getATVDriverATV
+	
+	//[coop] chrissstrahl - make coop compatible
+	//level.player_in_vehicle ifequal 0 goto rammable_pair_loop
+	local.numberOne = 1
+	local.numberOne ifequal 0 goto rammable_pair_loop
+	
+	
+	
+	
+	//[coop] chrissstrahl - make coop compatible
+	//level.player_in_vehicle ifequal 0 goto rammable_pair_loop
+	local.numberOne ifequal 0 goto rammable_pair_loop
+end
+
+//this code is here for reference
+CODENOTE_rammable_pair_probe_check:
+
+	//[coop] chrissstrahl - make coop compatible
+	//local.active_atv string level.active_atv
+	local.active_atv string local.coopVehicle
+	//level.atv_direction - this needs fixing
+	//level.atv_speed - this needs fixing
+	//level.atv_probe_up
+end
