@@ -226,7 +226,7 @@ csite:
 	level.coopPlayer4SpawnAngles string "0 180 0"
 	
 	//spawnspots - (Remember -66 z when viewpos was used)
-	level.coopPlayer1SpawnLocation string "-809 997 100" //(correct one)3335 3131 0 //(vehicle test)-809 997 100 //(office elevater bttn) 3493 2378 342
+	level.coopPlayer1SpawnLocation string "3335 3131 0" //(correct one)3335 3131 0 //(vehicle test)-809 997 100 //(office elevater bttn) 3493 2378 342
 	level.coopPlayer2SpawnLocation string "3295 3131 0"
 	level.coopPlayer3SpawnLocation string "3391 2943 0"
 	level.coopPlayer4SpawnLocation string "3391 2832 0"
@@ -359,9 +359,9 @@ end
 //player took the short way on csite
 subway:
 	//remove this after testing
-	local.hostName getcvar "name"
-	local.hostName ifequal level.devName goto subway_alt
-
+	//local.hostName getcvar "name"
+	//local.hostName ifequal level.devName goto subway_alt
+	game.csite_exit ifequal 0 goto subway_alt
 
 	//used to spawn a trigger detecting players spawning (entering the server)
 	//move so they are no longer on the level where players can accidently run into them
