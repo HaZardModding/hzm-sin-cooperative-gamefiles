@@ -803,16 +803,23 @@ objectExist:
 end
 
 isPlayerObject:
-	parm.isPlayerObjectTrue = 0
+	local.object string parm.isPlayerObject
     local.index = 0
 	
 	isPlayerObject_loop:
     local.index += 1
-    local.index ifgreater level.coopMaxPlayers end
+    local.index ifgreater level.coopMaxPlayers goto isPlayerObject_false
     local.player string "$player"
     local.player append local.index
-	parm.isPlayerObject ifstrequal local.player goto isPlayerObject_true
+	local.entNum string "*"
+	local.entNum append local.index
+	local.object ifstrequal local.player goto isPlayerObject_true
+	local.object ifstrequal local.entNum goto isPlayerObject_true
     goto isPlayerObject_loop
+	
+	isPlayerObject_false:
+	parm.isPlayerObjectTrue = 0
+	end
 	
 	isPlayerObject_true:
 	parm.isPlayerObjectTrue = 1
@@ -1533,6 +1540,8 @@ addNoRespawnZone:
 	parm.addNoRespawnZoneRadius string ""
 	parm.addNoRespawnZoneOrigin string ""
 	parm.addNoRespawnZoneBoundingbox string ""
+	parm.addNoRespawnZone string "$"
+	parm.addNoRespawnZone append local.setTrgtname
 	end
 	
 	addNoRespawnZone_missingParameters:
