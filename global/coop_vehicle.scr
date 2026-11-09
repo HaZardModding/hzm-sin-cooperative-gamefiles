@@ -1,8 +1,8 @@
 //Contains coop vehicle related functions
 //Chrissstrahl - 2026.11.05
-
-
 coop_vehicle:
+	level.coopVehicleIndex += 1
+	
 	local.vehicleLastDriver string ""
 	local.vehicleSpeed = 0
 	local.vehicleDriver string ""
@@ -61,29 +61,23 @@ coop_vehicle:
 	
 	//wait a frame
 	coop_vehicle_loopWait:
-	
-	local.vehicleLastDriver ifstrnotequal local.vehicleDriver print "Drive changed was: "
-	local.vehicleLastDriver ifstrnotequal local.vehicleDriver print local.vehicleLastDriver
-	local.vehicleLastDriver ifstrnotequal local.vehicleDriver print " is now: "
-	local.vehicleLastDriver ifstrnotequal local.vehicleDriver print local.vehicleDriver
-	local.vehicleLastDriver ifstrnotequal local.vehicleDriver print " Speed: "
-	local.vehicleLastDriver ifstrnotequal local.vehicleDriver print local.vehicleSpeed
-	local.vehicleLastDriver ifstrnotequal local.vehicleDriver print "\n"
+	local.vehicleLastDriver ifstrnotequal local.vehicleDriver goto coop_vehicle_driverChanged 
+	coop_vehicle_loopWait_1:
 	
 	//grab last pos
 	local.playerLastDist = local.playerDist
 	//grab last driver
 	local.vehicleLastDriver string local.vehicleDriver
 	
-	local.printout string "Vehicle Speed: "
-	local.printOut append local.vehicle
-	local.printOut append " at "
-	local.printOut append local.vehicleSpeed
-	local.printOut append " - Driver: "
-	local.printOut append local.vehicleDriver
-	local.printOut append " - Dist: "
-	local.printOut append local.playerDist
-	local.printOut append "\n"
+	// local.printOut string "Vehicle Speed: "
+	// local.printOut append local.vehicle
+	// local.printOut append " at "
+	// local.printOut append local.vehicleSpeed
+	// local.printOut append " - Driver: "
+	// local.printOut append local.vehicleDriver
+	// local.printOut append " - Dist: "
+	// local.printOut append local.playerDist
+	// local.printOut append "\n"
 	//print local.printOut
 	
 //print local.vehicleSpeed
@@ -118,6 +112,17 @@ coop_vehicle:
 	print local.printOut
 	goto coop_vehicle_end
 	
+	coop_vehicle_driverChanged:
+	local.printOut string "Drive changed was: '"
+	local.printOut append local.vehicleLastDriver
+	local.printOut append "' is now: '"
+	local.printOut append local.vehicleDriver
+	local.printOut append "' Speed: "
+	local.printOut append local.vehicleSpeed
+	local.printOut append "\n"
+	print local.printOut
+	goto coop_vehicle_loopWait_1
+	
 	coop_vehicle_end:
 	parm.coop_vehiclePos string local.vehiclePos
 	parm.coop_vehicleLastPos string local.vehicleLastPos
@@ -147,3 +152,332 @@ coop_vehicleGetDriver:
 	// local.printOut append "\n"
 	// print local.printOut
 end
+
+coop_vehicle1Set:
+	level.coopVehicle1_entity string parm.coop_vehicleSet_entity
+	level.coopVehicle1_pos vector parm.coop_vehicleSet_pos
+	level.coopVehicle1_lastPos vector parm.coop_vehicleSet_lastPos
+	level.coopVehicle1_speed = parm.coop_vehicleSet_speed
+	level.coopVehicle1_dir vector parm.coop_vehicleSet_dir
+	level.coopVehicle1_driver string parm.coop_vehicleSet_driver
+	level.coopVehicle1_speedPrevious1 = parm.coop_vehicleSet_speedPrev1
+	level.coopVehicle1_speedPrevious2 = parm.coop_vehicleSet_speedPrev2
+	level.coopVehicle1_dirPrevious1 vector parm.coop_vehicleSet_dirPrev1
+	level.coopVehicle1_dirPrevious2 vector parm.coop_vehicleSet_dirPrev2
+end
+
+coop_vehicle1Get:
+	parm.coop_vehicleSet_entity string level.coopVehicle1_entity
+	parm.coop_vehicleSet_pos vector level.coopVehicle1_pos
+	parm.coop_vehicleSet_lastPos vector level.coopVehicle1_lastPos
+	parm.coop_vehicleSet_speed = level.coopVehicle1_speed
+	parm.coop_vehicleSet_dir vector level.coopVehicle1_dir
+	parm.coop_vehicleSet_driver string level.coopVehicle1_driver
+	parm.coop_vehicleSet_speedPrev1 = level.coopVehicle1_speedPrevious1
+	parm.coop_vehicleSet_speedPrev2 = level.coopVehicle1_speedPrevious2 
+	parm.coop_vehicleSet_dirPrev1 vector level.coopVehicle1_dirPrevious1
+	parm.coop_vehicleSet_dirPrev2 vector level.coopVehicle1_dirPrevious2
+end
+
+
+coop_vehicleGetClosest:
+	local.index = 0
+	local.indexClosest = 0
+	local.distClosest = 99999
+	local.entClosest string ""
+	//grab input
+	local.sourceOri vector parm.coop_vehicleGetClosest_origin
+	local.calcVecLength vector_length local.sourceOri
+	local.calcVecLength ifequal 0 goto coop_vehicleGetClosest_error
+	local.resultNumeric = parm.coop_vehicleGetClosest_numericResult
+	
+	coop_vehicleGetClosest_loop:
+	local.index += 1
+	local.index ifgreater 4 goto coop_vehicleGetClosest_end
+	
+	local.index ifequal 1 local.vehicleOri vector level.coopVehicle1_pos
+	local.index ifequal 2 local.vehicleOri vector level.coopVehicle2_pos
+	local.index ifequal 3 local.vehicleOri vector level.coopVehicle3_pos
+	local.index ifequal 4 local.vehicleOri vector level.coopVehicle4_pos
+	
+	//make sure the vehicle is actually managed
+	local.calcVecLength vector_length local.vehicleOri
+	local.calcVecLength ifequal 0 goto coop_vehicleGetClosest_loop
+	
+	local.calcVec vector local.sourceOri
+	local.calcVec vector_subtract local.vehicleOri
+	local.calcVecLength vector_length local.calcVec
+	
+	local.calcVecLength ifgreater local.distClosest goto coop_vehicleGetClosest_loop
+	//is closer
+	local.indexClosest = local.index
+	local.distClosest = local.calcVecLength
+	
+	local.index ifequal 1 local.entClosest vector level.coopVehicle1_entity
+	local.index ifequal 2 local.entClosest vector level.coopVehicle2_entity
+	local.index ifequal 3 local.entClosest vector level.coopVehicle3_entity
+	local.index ifequal 4 local.entClosest vector level.coopVehicle4_entity
+	goto coop_vehicleGetClosest_loop
+	
+	coop_vehicleGetClosest_error:
+		print "Coop ERROR ::coop_vehicleGetClosest - parm.coop_vehicleGetClosest_origin was 0 0 0\n"
+	end
+	
+	coop_vehicleGetClosest_end:
+		parm.coop_vehicleGetClosest_numericResult ifnotequal 1 goto coop_vehicleGetClosest_endEntity
+		parm.coop_vehicleGetClosest_result = local.indexClosest
+	end
+	
+	coop_vehicleGetClosest_endEntity:
+		parm.coop_vehicleGetClosest_result string local.entClosest
+end
+
+coop_vehicleGetClosest_end:
+    local.resultNumeric ifnotequal 1 goto coop_vehicleGetClosest_endEntity
+    parm.coop_vehicleGetClosest_result = local.indexClosest
+    end
+
+coop_vehicleGetClosest_endEntity:
+    parm.coop_vehicleGetClosest_result = local.entClosest
+end
+
+
+coop_vehicleRecoverySetup:
+	//mark thread and grab the norespawnzone number for this
+	level.coopVehicleRecoverySetupDone = 1
+	
+	//local.setFloorsize = 150
+	//local.setHeight = 100
+	local.basePos vector "(-99999 -99999 99999)"
+	local.newPos vector local.basePos
+	local.x vector_x local.newPos
+	local.y vector_y local.newPos
+	local.z vector_z local.newPos
+	local.floorPos string local.x
+	local.floorPos append " "
+	local.floorPos append local.y
+	local.floorPos append " "
+	local.floorPos append local.z
+	//floor
+	spawn func_scriptmodel model "magnum.def" origin local.floorPos targetname "coopVehicleRecovery1"
+	$coopVehicleRecovery1 setsize "-150 -150 -50" "150 150 0"
+	
+	local.newPos vector local.basePos
+	local.newPos vector_add "(0 0 150)"
+	local.x vector_x local.newPos
+	local.y vector_y local.newPos
+	local.z vector_z local.newPos
+	local.floorPos string local.x
+	local.floorPos append " "
+	local.floorPos append local.y
+	local.floorPos append " "
+	local.floorPos append local.z
+	//ceiling
+	spawn func_scriptmodel model "magnum.def" origin local.floorPos targetname "coopVehicleRecovery6"
+	$coopVehicleRecovery6 setsize "-150 -150 -1" "150 150 50"
+	
+	local.newPos vector local.basePos
+	local.newPos vector_add "(0 -150 0)"
+	local.x vector_x local.newPos
+	local.y vector_y local.newPos
+	local.z vector_z local.newPos
+	local.floorPos string local.x
+	local.floorPos append " "
+	local.floorPos append local.y
+	local.floorPos append " "
+	local.floorPos append local.z
+	//left
+	spawn func_scriptmodel model "magnum.def" origin local.floorPos targetname "coopVehicleRecovery2"
+	$coopVehicleRecovery2 setsize "-150 -50 -10" "150 1 150"
+
+	local.newPos vector local.basePos
+	local.newPos vector_add "(0 150 0)"
+	local.x vector_x local.newPos
+	local.y vector_y local.newPos
+	local.z vector_z local.newPos
+	local.floorPos string local.x
+	local.floorPos append " "
+	local.floorPos append local.y
+	local.floorPos append " "
+	local.floorPos append local.z
+	//right
+	spawn func_scriptmodel model "magnum.def" origin local.floorPos targetname "coopVehicleRecovery3"
+	$coopVehicleRecovery3 setsize "-150 -1 -10" "150 50 150"
+
+	local.newPos vector local.basePos
+	local.newPos vector_add "(150 0 0)"
+	local.x vector_x local.newPos
+	local.y vector_y local.newPos
+	local.z vector_z local.newPos
+	local.floorPos string local.x
+	local.floorPos append " "
+	local.floorPos append local.y
+	local.floorPos append " "
+	local.floorPos append local.z
+	//back
+	spawn func_scriptmodel model "magnum.def" origin local.floorPos targetname "coopVehicleRecovery4"
+	$coopVehicleRecovery4 setsize "-1 -150 -10" "50 150 150"
+	
+	local.newPos vector local.basePos
+	local.newPos vector_add "(-150 0 0)"
+	local.x vector_x local.newPos
+	local.y vector_y local.newPos
+	local.z vector_z local.newPos
+	local.floorPos string local.x
+	local.floorPos append " "
+	local.floorPos append local.y
+	local.floorPos append " "
+	local.floorPos append local.z
+	//front
+	spawn func_scriptmodel model "magnum.def" origin local.floorPos targetname "coopVehicleRecovery5"
+	$coopVehicleRecovery5 setsize "-50 -150 -10" "1 150 150"
+	
+	local.index = 1
+	$coopVehicleRecovery1 notsolid
+	$coopVehicleRecovery1 hide
+	loop_bind:
+	local.index += 1
+	local.ent string "$coopVehicleRecovery"
+	local.ent append local.index
+	local.ent hide $coopVehicleRecovery1
+	local.ent bind $coopVehicleRecovery1
+	local.ent notsolid
+	local.index ifless 6 goto loop_bind
+	
+	spawn func_scriptorigin origin "-99999 -99999 99999" targetname "coopVehicleReturnPoint"
+end
+
+//Recovers a vehicle with scripted models that act as physical barriers
+//
+//can't revover from 0 0 0 and can not bring to 0 0 0
+//
+//parm.coop_vehicleRecovery - position at which the vehicle is
+//parm.coop_vehicleRecoveryTime - time each step of the recovery points takes
+//parm.coop_vehicleRecoveryPoint1 - first recovery point to go to
+//parm.coop_vehicleRecoveryPoint2 - second recovery point to go to - leave empty if not needed
+//parm.coop_vehicleRecoveryPoint3 - third recovery point to go to - leave empty if not needed
+//parm.coop_vehicleRecoveryPoint4 - fourth recovery point to go to - leave empty if not needed
+coop_vehicleRecovery:
+	local.ori vector parm.coop_vehicleRecovery
+	local.point1 vector parm.coop_vehicleRecoveryPoint1
+	local.point2 vector parm.coop_vehicleRecoveryPoint2
+	local.point3 vector parm.coop_vehicleRecoveryPoint3
+	local.point4 vector parm.coop_vehicleRecoveryPoint4
+	local.timeToRecoverEach = parm.coop_vehicleRecoveryTime
+	
+	level.coopVehicleRecoverySetupDone ifequal 0 thread coop_vehicleRecoverySetup
+	print "Coop Vehicle Recovery started.\n"
+	
+	//check if the important values are set
+	local.vecLngt vector_length local.ori
+	local.vecLngt ifequal 0 goto coop_vehicleRecovery_error_recoveryOri
+	local.vecLngt vector_length local.point1
+	local.vecLngt ifequal 0 goto coop_vehicleRecovery_error_point1
+	local.timeToRecoverEach ifequal 0 local.timeToRecoverEach = 10
+	
+	//go to vehilce pos
+	$coopVehicleReturnPoint origin local.ori
+	$coopVehicleRecovery1 moveto $coopVehicleReturnPoint
+	$coopVehicleRecovery1 time 0.1
+	waitfor $coopVehicleRecovery1
+	
+	//make boxes solid
+	local.index = 0
+	coop_vehicleRecovery_solidLoop:
+	loop_notsolid:
+	local.index += 1
+	local.ent string "$coopVehicleRecovery"
+	local.ent append local.index
+	local.ent solid
+	parm.coop_vehicleRecovery_onTouch string local.ent 
+	thread coop_vehicleRecovery_onTouch
+	local.index ifless 6 goto coop_vehicleRecovery_solidLoop
+	
+	//move to first point
+	$coopVehicleReturnPoint origin local.point1
+	$coopVehicleRecovery1 moveto $coopVehicleReturnPoint
+	$coopVehicleRecovery1 time local.timeToRecoverEach
+	waitfor $coopVehicleRecovery1
+	
+	//move to second point
+	local.vecLngt vector_length local.point2
+	local.vecLngt ifequal 0 goto coop_vehicleRecovery_done
+	print "point 2 \n"
+	$coopVehicleReturnPoint origin local.point2
+	$coopVehicleRecovery1 moveto $coopVehicleReturnPoint
+	$coopVehicleRecovery1 time local.timeToRecoverEach
+	waitfor $coopVehicleRecovery1
+
+	//move to third point
+	local.vecLngt vector_length local.point3
+	local.vecLngt ifequal 0 goto coop_vehicleRecovery_done
+	print "point 3 \n"
+	$coopVehicleReturnPoint origin local.point3
+	$coopVehicleRecovery1 moveto $coopVehicleReturnPoint
+	$coopVehicleRecovery1 time local.timeToRecoverEach
+	waitfor $coopVehicleRecovery1
+	
+	//move to forth point
+	local.vecLngt vector_length local.point4
+	local.vecLngt ifequal 0 goto coop_vehicleRecovery_done
+	print "point 4 \n"
+	$coopVehicleReturnPoint origin local.point4
+	$coopVehicleRecovery1 moveto $coopVehicleReturnPoint
+	$coopVehicleRecovery1 time local.timeToRecoverEach
+	waitfor $coopVehicleRecovery1
+	
+	//recovery done, drop vehicle
+	coop_vehicleRecovery_done:
+	local.index = 0
+	coop_vehicleRecovery_notSolidLoop:
+	local.index += 1
+	local.ent string "$coopVehicleRecovery"
+	local.ent append local.index
+	local.ent notsolid
+	local.index ifless 6 goto coop_vehicleRecovery_notSolidLoop
+	print "Coop Vehicle Recovery done!\n"
+	end
+	
+	coop_vehicleRecovery_error_recoveryOri:
+		print "Coop ERROR Vehicle Recovery - parm.coop_vehicleRecovery was 0 0 0\n"
+	end
+	coop_vehicleRecovery_error_point1:
+		print "Coop ERROR Vehicle Recovery - parm.coop_vehicleRecoveryPoint1 was 0 0 0\n"
+	end
+end
+
+coop_vehicleRecovery_onTouch:
+	parm.coop_vehicleRecovery_onTouch ontouch coop_vehicleRecovery_touched
+	pause
+end
+
+coop_vehicleRecovery_touched:
+	local.self notouch 
+
+	local.other ifstrequal "*1" local.player string "$player1"
+	local.other ifstrequal "*2" local.player string "$player2"
+	local.other ifstrequal "*3" local.player string "$player3"
+	local.other ifstrequal "*4" local.player string "$player4"
+	
+	//a actual player
+	parm.isPlayerObject string local.other
+	thread coopMain::isPlayerObject
+	parm.isPlayerObjectTrue ifequal 1 local.other string ""
+	parm.isPlayerObjectTrue ifequal 1 parm.player string local.player
+	parm.isPlayerObjectTrue ifequal 1 thread coopMain::playerMoveToSpawn
+	//probably some npc
+	local.other ifstrnotequal "" local.other kill
+	
+	wait game.FRAMETIME
+	parm.coop_vehicleRecovery_onTouch string local.self
+	thread coop_vehicleRecovery_onTouch
+end
+
+coop_vehicleRecovery_touched*1:
+	
+end
+
+
+
+
+
