@@ -27,8 +27,14 @@ The core cooperative functionality and supporting scripts are already establishe
 Additional features will be introduced as development progresses.
 This release provides a solid and tested foundation for future development.
 
-At the current stage, two single-player levels (bank,abandon) have been completed.
 The focus will be on the SiN main game campaign.
+At the current stage, the following single-player levels have been completed:
+- bank
+- abandon
+- csite
+- subway2_cinema
+- subway
+- subway_cinema
 
 The main focus of future development will be adapting the original single-player level scripts for cooperative gameplay, making additional levels playable in co-op.
 The pace of development and eventual completion of the project will also depend on contributions from the community.
