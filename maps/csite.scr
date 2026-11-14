@@ -2900,6 +2900,7 @@ local.Node append "_node"
 local.self ignoresounds
 local.self ignore sightenemy
 local.self definestate activate Basement_Thugs_Active
+local.self definestate pain Basement_Thugs_Attack_Player
 pause
 
 Basement_Thugs_Active:
@@ -2909,7 +2910,9 @@ local.ThugNum ifequal 4 local.self walkto local.Node
 local.ThugNum ifequal 5 local.self walkto local.Node
 local.ThugNum ifequal 6 local.self runto local.Node
 local.ThugNum ifequal 7 local.self runto local.Node
-waitFor local.self
+//basement_thug4 sometimes has trouble getting to his node
+local.ThugNum ifequal 4 wait 3
+local.ThugNum ifnotequal 4 waitFor local.self
 local.ThugNum ifequal 3 local.self turnto 0
 local.ThugNum ifequal 4 local.self turnto 270
 local.ThugNum ifequal 5 local.self turnto 270
@@ -2923,7 +2926,14 @@ local.self respondtoall
 	thread coopReplace::coop_attack
 	
 pause
+end
 
+Basement_Thugs_Attack_Player:
+local.self respondtoall
+
+	//[coop] chrissstrahl - attack closest player
+	parm.coop_attack string local.self 
+	thread coopReplace::coop_attack
 end
 
 //---------------------------------------------------------------------------

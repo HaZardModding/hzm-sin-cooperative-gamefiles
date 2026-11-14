@@ -289,7 +289,7 @@ $cavein2_rubble1 moveDown 256
 $cavein2_rubble2 rotateZup 30
 waitFor $cavein2_rubble2
 
-//$cavein2_rubble1 playsound environment/rockfall/impact2.wav 4
+//$cavein2_rubble1 playsound environment/rockfall/impact2.wav 1.5
 
 end // cavein2_thread
 
@@ -304,7 +304,7 @@ pause
 bomb_brick_use:
 $bomb_brick nouse
 
-$bomb_brick playsound environment/levelsnds/whouse/manhole/mnhlcvr1.wav 2
+$bomb_brick playsound environment/levelsnds/whouse/manhole/mnhlcvr1.wav 1
 
 $bomb_brick time 1
 $bomb_brick moveSouth 24
@@ -316,7 +316,7 @@ $bomb_brick moveDown 32
 $bomb_brick rotateZup 105
 waitFor $bomb_brick
 
-$bomb_brick playsound impact/explosion/track65.wav 4
+$bomb_brick playsound impact/explosion/track65.wav 2
 
 $bomb_brick notsolid
 
@@ -540,12 +540,12 @@ $basementdoor nouse
 
 level.BasementDoorLocked ifequal 0 goto basementdoor_open
 
-$basementdoor playsound impact/carboard/c-hit.wav 2
+$basementdoor playsound impact/carboard/c-hit.wav 1
 $basementdoor time 0.3
 $basementdoor rotateXup 1
 waitFor $basementdoor
 
-$basementdoor playsound impact/carboard/c-hit.wav 2
+$basementdoor playsound impact/carboard/c-hit.wav 1
 $basementdoor time 0.3
 $basementdoor rotateXdown 1
 waitFor $basementdoor
@@ -621,7 +621,7 @@ $bridgefall2 notouch
 
 music suprise normal
 
-$bridgefall1 playsound impact/wood/woodmix5.wav 4
+$bridgefall1 playsound impact/wood/woodmix5.wav 1.5
 
 $bridgefall1 time 0.2
 $bridgefall2 time 0.2
@@ -643,7 +643,7 @@ $bridgefall1 rotateYup 15
 $bridgefall2 rotateYdown 30
 waitFor $bridgefall2
 
-$bridgefall2 playsound impact/explosion/track65.wav 4
+$bridgefall2 playsound impact/explosion/track65.wav 1.5
 
 end // bridgefall_thread
 
@@ -660,16 +660,16 @@ $copter1_rotors lightoffset 120
 $copter1 bind $copter1_parent
 $copter1_rotors bind $copter1_parent
 
+$copter1 playsound vehicle/helicopt/flyloop.wav 0.25
+wait 1
+
+$copter1 playsound vehicle/helicopt/flyloop.wav 0.5
+wait 1
+
+$copter1 playsound vehicle/helicopt/flyloop.wav 0.75
+wait 1
+
 $copter1 playsound vehicle/helicopt/flyloop.wav 1
-wait 1
-
-$copter1 playsound vehicle/helicopt/flyloop.wav 2
-wait 1
-
-$copter1 playsound vehicle/helicopt/flyloop.wav 3
-wait 1
-
-$copter1 playsound vehicle/helicopt/flyloop.wav 4.0
 
 $copter1_rotors rotateY 540
 $copter1_parent followpath $copter1_path1
@@ -769,13 +769,13 @@ pause
 woodfall_sequence:
 $woodfall notrigger
 
-$woodfall playsound environment/woodcreak/smcreak1.wav 4
+$woodfall playsound environment/woodcreak/smcreak1.wav 1.5
 $woodfall setdamage 50
 $woodfall time 1
 $woodfall rotateXup 90
 waitFor $woodfall
 
-$woodfall playsound impact/crates/crate.wav 4
+$woodfall playsound impact/crates/crate.wav 1.5
 $woodfall time .1
 $table1 time .3
 $table2 time .3
@@ -1261,7 +1261,7 @@ $steps1_clip notouch
 
 wait .2
 
-$steps1 playsound impact/wood/woodmix5.wav 4
+$steps1 playsound impact/wood/woodmix5.wav 1.5
 
 $steps1 time 0.7
 $steps1_clip time 0.7
@@ -1272,8 +1272,8 @@ $steps1_clip moveDown 204
 $steps1_clip moveWest 32
 waitFor $steps1_clip
 
-//$steps1 playsound impact/crates/crate.wav 4
-$stpes1 playsound impact/water/splash1.wav 4
+//$steps1 playsound impact/crates/crate.wav 1.5
+$stpes1 playsound impact/water/splash1.wav 1.5
 
 $steps1 notsolid
 
@@ -1284,7 +1284,7 @@ end // breaksteps1_thread
 /////////////////////////////////////////////////////////////////////////////
 skysound1_thread:
 
-$skysound1 playsound vehicle/helicopt/flyloop.wav 4.0
+$skysound1 playsound vehicle/helicopt/flyloop.wav 1
 
 trigger $building3_thug01
 
@@ -1293,16 +1293,16 @@ $skysound1 moveto $skysound1_way1
 waitFor $skysound1
 wait 2
 
-$skysound1 playsound vehicle/helicopt/flyloop.wav 3
+$skysound1 playsound vehicle/helicopt/flyloop.wav 0.75
 wait 2
 
-$skysound1 playsound vehicle/helicopt/flyloop.wav 2
+$skysound1 playsound vehicle/helicopt/flyloop.wav 0.5
 wait 2
 
-$skysound1 playsound vehicle/helicopt/flyloop.wav 1
+$skysound1 playsound vehicle/helicopt/flyloop.wav 0.25
 wait 2
 
-$skysound1 playsound vehicle/helicopt/flyloop.wav .5
+$skysound1 playsound vehicle/helicopt/flyloop.wav 0.125
 
 end // skysound1_thread
 
@@ -1345,7 +1345,7 @@ floorbreak1_sequence:
 $floorbreak1 notouch
 $floorbreak1b notouch
 
-$floorbreak1 playsound impact/wood/woodmix5.wav 4
+$floorbreak1 playsound impact/wood/woodmix5.wav 1.5
 
 $floorbreak1 time .4
 $floorbreak1b time .4
@@ -1358,7 +1358,7 @@ $floorbreak1b moveSouth 16
 $floorbreak1b rotateYdown 30
 waitFor $floorbreak1b
 
-$floorbreak1 playsound impact/explosion/track65.wav 4
+$floorbreak1 playsound impact/explosion/track65.wav 1.5
 
 end // floorbreak1_thread
 
@@ -1375,14 +1375,14 @@ $floorbreak2 notouch
 
 music surprise normal
 
-$floorbreak2 playsound impact/wood/woodmix5.wav 4
+$floorbreak2 playsound impact/wood/woodmix5.wav 1.5
 
 $floorbreak2 time 1.0
 $floorbreak2 moveDown 600
 $floorbreak2 rotateYup 30
 waitFor $floorbreak2
 
-$floorbreak2 playsound impact/water/fllntwtr.wav 4
+$floorbreak2 playsound impact/water/fllntwtr.wav 1.5
 
 end // floorbreak2_thread
 
@@ -1397,7 +1397,7 @@ pause
 floorbreak3_sequence:
 $floorbreak3 notouch
 
-$floorbreak3 playsound impact/wood/woodmix5.wav 4
+$floorbreak3 playsound impact/wood/woodmix5.wav 1.5
 
 $floorbreak3 time .5
 $floorbreak3 moveDown 192
@@ -1405,7 +1405,7 @@ $floorbreak3 moveNorth 36
 $floorbreak3 rotateZdown 180
 waitFor $floorbreak3
 
-$floorbreak3 playsound impact/explosion/track65.wav 4
+$floorbreak3 playsound impact/explosion/track65.wav 1.5
 
 $floorbreak3 time .2
 $floorbreak3 moveNorth 12
@@ -1423,7 +1423,7 @@ $floorbreak3 moveDown 200
 $floorbreak3 rotateZdown 360
 waitFor $floorbreak3
 
-$floorbreak3 playsound impact/water/fllntwtr.wav 4
+$floorbreak3 playsound impact/water/fllntwtr.wav 1.5
 
 end // floorbreak3_thread
 
@@ -1548,7 +1548,7 @@ $woodhold rotateXup 15
 $woodhold moveEast 6
 waitFor $woodhold
 
-$woodhold playsound impact/explosion/track65.wav 4
+$woodhold playsound impact/explosion/track65.wav 1.5
 $woodhold time .8
 $woodhold rotateXup 15
 $woodhold moveDown 300
@@ -1562,7 +1562,7 @@ $woodhold moveEast 34
 $woodhold moveDown 8
 waitFor $woodhold
 
-$woodhold playsound impact/explosion/track65.wav 4
+$woodhold playsound impact/explosion/track65.wav 1.5
 
 end // woldhold_thread
 
@@ -1612,14 +1612,14 @@ $woodswing moveWest 16
 $woodswing rotateYup 15
 waitFor $woodswing
 
-$woodswing playsound impact/explosion/track65.wav 4
+$woodswing playsound impact/explosion/track65.wav 1.5
 
 $woodswing time .3
 $woodswing rotateXup 15
 $woodswing moveDown 40
 waitFor $woodswing
 
-$woodswing playsound impact/explosion/track65.wav 4
+$woodswing playsound impact/explosion/track65.wav 1.5
 $woodswing time .3
 $woodswing rotateYup 15
 $woodswing rotateZup 45
@@ -1634,7 +1634,7 @@ $woodswing moveDown 18
 $woodswing moveWest 8
 waitFor $woodswing
 
-$woodswing playsound impact/explosion/track65.wav 4
+$woodswing playsound impact/explosion/track65.wav 1.5
 
 
 end // woodswing_thread

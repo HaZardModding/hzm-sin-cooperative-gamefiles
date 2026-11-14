@@ -869,7 +869,7 @@ $manu1blocker	remove
 trigger $bum1
 parm.bum string "$bum1"
 thread dialog::bum_monster
-$breakgrate1	playsound impact/comp_explode/cmpmx3.wav 2
+$breakgrate1	playsound impact/comp_explode/cmpmx3.wav 1.5
 $breakgrate1	shatter "(1 1 1)" 40 10 40 .3 0
 $breakgrate1	remove
 forcemusic surprise
@@ -1006,7 +1006,7 @@ $generator rotateZdown 20
 $generator moveDown    304
 waitFor $generator
 
-$generator playsound "environment/levelsnds/subway/gensmash.wav" 2
+$generator playsound "environment/levelsnds/subway/gensmash.wav" 1.5
 $generator_floor2   show
 $generator_floor2   solid
 
@@ -1179,9 +1179,9 @@ thread dialog::blade_where_heading
 end
 
 subwaymovesounds:
-$fuckingcar playsound environment/levelsnds/subway/sbwystrt.wav 2 7
+$fuckingcar playsound environment/levelsnds/subway/sbwystrt.wav 1 7
 wait 10.47
-$fuckingcar playsound environment/levelsnds/subway/sbwylp1.wav 2 7
+$fuckingcar playsound environment/levelsnds/subway/sbwylp1.wav 1 7
 end
 
 //=========================================================
@@ -1193,7 +1193,7 @@ wait 4
 	//[coop] chrissstrahl - move spawnpos inside area
 	thread coopPlayerSpawn::subway_subwayTrain2_fight
 
-$carholeroof	playsound impact/comp_explode/cmpmx3.wav 2
+$carholeroof	playsound impact/comp_explode/cmpmx3.wav 1.5
 $carholeroof	shatter "(1 1 1)" 40 10 40 .3 0
 $carholeroof	remove
 
@@ -1318,7 +1318,7 @@ thread end_characters
 thread endsubwaycarsound
 local.waitforthread = parm.previousthread
 waitForThread parm.previousthread
-$fuckingcar playsound environment/levelsnds/subway/sbwystp1.wav 2 7
+$fuckingcar playsound environment/levelsnds/subway/sbwystp1.wav 1 7
 $fuckingcar speed 110
 
 CarSlowDownLoop:
@@ -1332,7 +1332,7 @@ local.carspeed ifgreater 0 goto CarSlowDownLoop
 end
 
 endsubwaycarsound:
-$fuckingcar playsound misc/null.wav 2 7
+$fuckingcar playsound misc/null.wav 1 7
 wait .1
 end
 
