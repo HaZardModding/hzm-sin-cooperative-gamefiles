@@ -5585,7 +5585,7 @@ coop_levelSetup:
 	
 	//elevator deathpit
 	spawn trigger_multiple origin "-1578 1631 50" thread "coop_elevator_deathpit" targetname "coop_elevator_deathpit"
-	$coop_elevator_deathpit setsize "-110 -110 -100" "110 110 20"
+	$coop_elevator_deathpit setsize "-110 -110 -100" "110 90 20"
 	
 	//construction deathpit
 	spawn trigger_hurt origin "-1731 -760 -1000" targetname "coop_sinkhole_deathpit_kill" "damage" "9999"
