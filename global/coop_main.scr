@@ -435,6 +435,75 @@ playerHasItem:
 	parm.playerHasItemTrue = 1
 end
 
+playerGetCountActive:
+//COUNTS and returns the number of players - active in game - also counts players that are dead
+	parm.playerGetCount_spectator = 0
+	parm.playerGetCount_dead = 1
+	parm.playerGetCount_all = 0
+	thread playerGetCount
+	parm.playerGetCountActive = parm.playerGetCount
+end
+
+playerGetCountAlive:
+//COUNTS and returns the number of players - active in game
+	parm.playerGetCount_spectator = 0
+	parm.playerGetCount_dead = 0
+	parm.playerGetCount_all = 0
+	thread playerGetCount
+	parm.playerGetCountAlive = parm.playerGetCount
+end
+
+playerGetCount:
+//COUNTS and returns the number of players
+	local.countAll = parm.playerGetCount_all
+	local.countSpec = parm.playerGetCount_spectator
+	local.countDead = parm.playerGetCount_dead
+	
+	//overwrite
+	local.countAll ifgreater 0 local.countSpec = 1
+	local.countAll ifgreater 0 local.countDead = 1
+	
+	local.numberOfPlayers = 0
+    local.index = 0
+
+	playerGetCount_loop:
+    local.index += 1
+    local.index ifgreater level.coopMaxPlayers goto playerGetCount_end
+    local.player string "$player"
+    local.player append local.index
+	
+	//do player checks
+	local.isAlive isentalive local.player
+	local.isAlive ifequal 1 goto playerGetCount_countAlive
+	local.countDead ifequal 1 goto playerGetCount_countDead
+	goto playerGetCount_loop
+	
+	playerGetCount_countUp:
+		local.numberOfPlayers += 1
+	goto playerGetCount_loop
+	
+	playerGetCount_countDead:
+		print "count dead\n"
+		//check coord
+		local.playerOrigin getorigin local.player
+		local.vecLength vector_length local.playerOrigin
+		local.vecLength ifgreaterequal 1 goto playerGetCount_countUp	
+	goto playerGetCount_loop
+	
+	playerGetCount_countAlive:
+		print "count alive\n"
+		//spectators allowed
+		local.countSpec ifequal 1 goto playerGetCount_countUp
+		//spectators not allowed - do extra check
+		parm.player string local.player
+		thread playerIsSpectator
+		parm.playerIsSpectatorTrue ifequal 0 goto playerGetCount_countUp
+	goto playerGetCount_loop
+	
+	playerGetCount_end:	
+		parm.playerGetCount = local.numberOfPlayers
+end
+
 playerGetItemCount:
 	parm.playerGetItemCountValue = 0
     parm.playerGetItemCount ifstrequal "$player1" local.itemcount getitemcount *1 parm.playerGetItemCountName
@@ -776,11 +845,11 @@ end
 //returns: parm.playerExistTrue
 playerExist:
 	parm.playerExistTrue = 0
+	local.playerAlive isentalive parm.playerExist
+	local.playerAlive ifgreaterequal 1 goto playerExist_true
 	local.playerOrigin getorigin parm.playerExist
 	local.vecLength vector_length local.playerOrigin
 	local.vecLength ifgreaterequal 1 goto playerExist_true
-	local.playerAlive isentalive parm.playerExist
-	local.playerAlive ifgreaterequal 1 goto playerExist_true
 	parm.playerExistTrue = 0
 	end
 	
