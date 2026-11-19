@@ -365,11 +365,11 @@ subway:
 
 	//used to spawn a trigger detecting players spawning (entering the server)
 	//move so they are no longer on the level where players can accidently run into them
-	$start1 origin "-1165 2257 1111" //move info player start spawnlocation out of the way
-	$start3 origin "-1283 2257 1111" //move info player start spawnlocation out of the way
-	level.infoPlayerStartOrigin1 string "-1165 2257 1111" //bsp: "-1224 1464 736" //$start1
+	$start1 origin "-1165 2257 1000" //move info player start spawnlocation out of the way
+	$start3 origin "-1283 2257 1000" //move info player start spawnlocation out of the way
+	level.infoPlayerStartOrigin1 string "-1165 2257 1000" //bsp: "-1224 1464 736" //$start1
 	level.infoPlayerStartPushDirection1 string "270"
-	level.infoPlayerStartOrigin2 string "-1283 2257 1111" //bsp: "-3616 2384 1008" //$start3
+	level.infoPlayerStartOrigin2 string "-1283 2257 1000" //bsp: "-3616 2384 1008" //$start3
 	level.infoPlayerStartPushDirection2 string "270"
 	
 	//spawnangle
@@ -389,12 +389,12 @@ end
 subway_alt:
 	//used to spawn a trigger detecting players spawning (entering the server)
 	//move so they are no longer on the level where players can accidently run into them
-	$start1 origin "-1165 2257 1111" //move info player start spawnlocation out of the way
-	$start3 origin "-1283 2257 1111" //move info player start spawnlocation out of the way
+	$start1 origin "-1165 2257 1000" //move info player start spawnlocation out of the way
+	$start3 origin "-1283 2257 1000" //move info player start spawnlocation out of the way
 	$start3  angels "0 1 0"
-	level.infoPlayerStartOrigin1 string "-1165 2257 1111" //bsp: "-1224 1464 736" //$start1
+	level.infoPlayerStartOrigin1 string "-1165 2257 1000" //bsp: "-1224 1464 736" //$start1
 	level.infoPlayerStartPushDirection1 string "270"
-	level.infoPlayerStartOrigin2 string "-1283 2257 1111" //bsp: "-3616 2384 1008" //$start3
+	level.infoPlayerStartOrigin2 string "-1283 2257 1000" //bsp: "-3616 2384 1008" //$start3
 	level.infoPlayerStartPushDirection2 string "270"
 	
 	//spawnangle
