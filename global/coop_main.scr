@@ -1015,8 +1015,9 @@ playersWithFistsOnly:
 	local.playerAlive isentalive local.player
 	local.playerAlive ifequal 0 goto playersWithFistsOnly_loop
 	
-	parm.check getweapon local.player
-	parm.check ifstrnotequal "Fists" goto playersWithFistsOnly_false
+	local.currentWeapon getweapon local.player
+	local.currentWeapon ifstrequal "" goto playersWithFistsOnly_loop
+	local.currentWeapon ifstrnotequal "Fists" goto playersWithFistsOnly_false
 	goto playersWithFistsOnly_loop
 	
 	playersWithFistsOnly_false:
