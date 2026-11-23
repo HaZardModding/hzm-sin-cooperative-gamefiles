@@ -34,6 +34,33 @@ chrissstrahl:
 	// level.coopPlayer4SpawnLocation string "-560 1554 3072"
 end
 
+coop_keefer:
+//OG deathmatch spawnlocations - removed for coop
+//"origin" "-392 2720 448" "angle" "315"
+//"origin" "-912 1632 1160" "angle" "0"
+//"origin" "-120 16 968" "angle" "135"
+//"origin" "-792 2448 112" "angle" "315"
+//"origin" "-120 1808 40" "angle" "180"
+//"origin" "-536 -392 0" "angle" "90"
+//"origin" "-48 -512 200" "angle" "135"
+//"origin" "-856 -536 760" "angle" "45"
+//"origin" "-840 768 120" "angle" "0"
+	$start1 origin "0 0 -9999"
+	level.infoPlayerStartOrigin1 string "0 0 -9999"
+	
+	//spawnangle
+	level.coopPlayer1SpawnAngles string "0 75 0"
+	level.coopPlayer2SpawnAngles string "0 128 0"
+	level.coopPlayer3SpawnAngles string "0 75 0"
+	level.coopPlayer4SpawnAngles string "0 75 0"
+	
+	//spawnspots
+	level.coopPlayer1SpawnLocation string "-577 -397 0" //correct: "-577 -397 0"
+	level.coopPlayer2SpawnLocation string "-403 -240 60"
+	level.coopPlayer3SpawnLocation string "-775 -107 100"
+	level.coopPlayer4SpawnLocation string "-387 -328 100"
+end
+
 bank:
 	//used to spawn a trigger detecting players spawning (entering the server)
 	//move so they are no longer on the level where players can accidently run into them
@@ -44,8 +71,8 @@ bank:
 	
 	//level.infoPlayerStartOrigin1 string "-3360 1920 144"
 	//level.infoPlayerStartOrigin2 string "192 -832 272"
-	level.infoPlayerStartPushDirection1 string "270"
-	level.infoPlayerStartPushDirection2 string "0"
+	//level.infoPlayerStartPushDirection1 string "270"
+	//level.infoPlayerStartPushDirection2 string "0"
 	
 	//spawnangle
 	level.coopPlayer1SpawnAngles string "0 75 0"

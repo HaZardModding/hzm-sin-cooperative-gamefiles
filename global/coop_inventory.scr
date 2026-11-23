@@ -61,6 +61,32 @@ chrissstrahl_part2:
 	local.player give Flamethrower
 end
 
+//keefer
+coop_keefer:
+	local.player string parm.player
+	level.pickedUpQuantum ifequal 1 local.player give QuantumDestabilizer
+	level.pickedUpRocket ifequal 1 local.player give RocketLauncher
+	level.pickedUpSniperRifle ifequal 1 local.player give SniperRifle
+	level.pickedUpShotgun ifequal 1 local.player give Shotgun
+	level.pickedUpPulseRifle ifequal 1 local.player give PulseRifle
+	level.pickedUpChainGun ifequal 1 local.player give ChainGun
+	
+	level.pickedUpScubaGear ifequal 1 local.player give ScubaGear 1
+	level.pickedUpAdrenaline ifequal 1 local.player give Adrenaline 1
+	
+	level.pickedUpSpiderMines ifequal 1 local.player give SpiderMines 6
+	level.pickedUpFlakPants ifequal 1 local.player give FlakPants 50
+	level.pickedUpFlakJacket ifequal 1 local.player give FlakJacket 50
+	level.pickedUpRiotHelmet ifequal 1 local.player give RiotHelmet 50
+	
+	local.player give Rockets 5
+	local.player give BulletPulse 10
+	local.player give BulletSniper 10
+	local.player give Bullet10mm 30
+	local.player give ShotgunClip 20
+	local.player give IlludiumModules 5
+end
+
 //bank
 bank:
 	local.player string parm.player
