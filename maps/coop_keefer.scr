@@ -1,0 +1,403 @@
+//OG script by Ritual Entertainment - Level by Levellord create in January 1999
+//Background:
+//Created as a Promo-Level for the US-based Magazine PC Gamer
+//Named after John Keefer the editor of the Magazine
+
+//Edited by Chrissstrahl for Coop use 2016.11.19
+//Chrissstrahl - This cvar is disabled because I don't know what impact that would have on the rest of the levels
+//airclamp 0 //disabled airspeed limit, which is basically enabeling stafejump when this is disabled
+
+cachemodel "thug_rckt.def"
+cachemodel "thug_ass.def"
+
+//=================
+start:
+//=================
+	//[coop] chrissstrahl - START COOP MOD - REQUIRED
+	aliasscript global/coop_main.scr coopMain
+	thread coopMain::main
+	//set to 1 will make players always spawn at the predefined spawnlocations
+	level.coopDisableSpawnWarper = 1
+	//level specific item script - respawn time of items
+	level.itemRespawnTime = 10
+	
+	
+	
+	thread keefers_lift_thread
+	waitforplayer
+end
+
+//=================
+keefers_lift_thread:
+//=================
+	$keefers_lift time 0.1
+	$keefers_lift moveDown 1400
+	waitFor $keefers_lift
+	wait 0.1
+
+	$keefers_lift time 2.0
+	keefers_lift_loop:
+		$keefers_lift ontrigger keefers_lift_up
+		pause
+	keefers_lift_up:
+		$keefers_lift notrigger
+		$keefers_lift phssound environment/elevator/lvtrgd.wav 1.0
+		$keefers_lift moveUp 1400
+		waitFor $keefers_lift
+		$keefers_lift phssound environment/machine/pneumach/pneustop.wav 1.0
+
+		wait 3.0
+		$keefers_lift phssound environment/elevator/lvtrgd.wav 1.0
+		$keefers_lift moveDown 1400
+		waitFor $keefers_lift
+		$keefers_lift phssound environment/machine/pneumach/pneustop.wav 1.0
+		wait 0.1
+goto keefers_lift_loop
+
+//[coop] chrissstrahl - give weapon to all players
+coop_giveQuantum:
+	parm.coop_giveInventorySuppressMessage = level.pickedUpQuantum
+	parm.coop_giveInventoryTargetname string "$cwq"
+	thread coop_giveInventory
+	level.pickedUpQuantum = 1
+end
+coop_giveRocket1:
+	$cwr2 remove
+	$cwr3 remove
+	parm.coop_giveInventorySuppressMessage = level.pickedUpRocket
+	parm.coop_giveInventoryTargetname string "$cwr1"
+	thread coop_giveInventory
+	level.pickedUpRocket = 1
+end
+coop_giveRocket2:
+	$cwr1 remove
+	$cwr3 remove
+	parm.coop_giveInventorySuppressMessage = level.pickedUpRocket
+	parm.coop_giveInventoryTargetname string "$cwr2"
+	thread coop_giveInventory
+	level.pickedUpRocket = 1
+end
+coop_giveRocket3:
+	$cwr1 remove
+	$cwr2 remove
+	parm.coop_giveInventorySuppressMessage = level.pickedUpRocket
+	parm.coop_giveInventoryTargetname string "$cwr3"
+	thread coop_giveInventory
+	level.pickedUpRocket = 1
+end
+coop_giveSniper:
+	parm.coop_giveInventorySuppressMessage = level.pickedUpSniperRifle
+	parm.coop_giveInventoryTargetname string "$cws"
+	thread coop_giveInventory
+	level.pickedUpSniperRifle = 1
+end
+coop_giveShotgun:
+	parm.coop_giveInventorySuppressMessage = level.pickedUpShotgun
+	parm.coop_giveInventoryTargetname string "$cwsg"
+	thread coop_giveInventory
+	level.pickedUpShotgun = 1
+end
+coop_givePulseRifle:
+	parm.coop_giveInventorySuppressMessage = level.pickedUpPulseRifle
+	parm.coop_giveInventoryTargetname string "$cwp"
+	thread coop_giveInventory
+	level.pickedUpPulseRifle = 1
+end
+coop_giveFlakPants:
+	parm.coop_giveInventorySuppressMessage = level.pickedUpFlakPants
+	parm.coop_giveInventoryTargetname string "$cifp"
+	thread coop_giveInventory
+	level.pickedUpFlakPants = 1
+end
+coop_giveFlakJacket:
+	parm.coop_giveInventorySuppressMessage = level.pickedUpFlakJacket
+	parm.coop_giveInventoryTargetname string "$cifj"
+	thread coop_giveInventory
+	level.pickedUpFlakJacket = 1
+end
+coop_giveRiotHelmet:
+	parm.coop_giveInventorySuppressMessage = level.pickedUpRiotHelmet
+	parm.coop_giveInventoryTargetname string "$cifh"
+	thread coop_giveInventory
+	level.pickedUpRiotHelmet = 1
+end
+coop_giveAssaultRifle:
+	parm.coop_giveInventorySuppressMessage = level.pickedUpAssaultRifle
+	parm.coop_giveInventoryTargetname string "$cwa"
+	thread coop_giveInventory
+	level.pickedUpAssaultRifle = 1
+end
+coop_giveChainGun:
+	parm.coop_giveInventorySuppressMessage = level.pickedUpChainGun
+	parm.coop_giveInventoryTargetname string "$cwc"
+	thread coop_giveInventory
+	level.pickedUpChainGun = 1
+end
+coop_giveSpiderMine1:
+	$cwsm2 remove
+	parm.coop_giveInventorySuppressMessage = level.pickedUpSpiderMines
+	parm.coop_giveInventoryTargetname string "$cwsm1"
+	thread coop_giveInventory
+	level.pickedUpSpiderMines = 1
+end
+coop_giveSpiderMine2:
+	$cwsm1 remove
+	parm.coop_giveInventorySuppressMessage = level.pickedUpSpiderMines
+	parm.coop_giveInventoryTargetname string "$cwsm2"
+	thread coop_giveInventory
+	level.pickedUpSpiderMines = 1
+end
+coop_giveScubaGear:
+	parm.coop_giveInventorySuppressMessage = level.pickedUpScubaGear
+	parm.coop_giveInventoryTargetname string "$cisd"
+	thread coop_giveInventory
+	level.pickedUpScubaGear = 1
+end
+coop_giveInventory:
+	local.objTargetname string parm.coop_giveInventoryTargetname
+	local.giveAmmount = parm.coop_giveInventoryAmmount
+	local.doNotPrint = parm.coop_giveInventorySuppressMessage
+
+	parm.playerClosestObject string local.objTargetname
+	thread coopMain::playerClosest
+	local.player string parm.playerClosest
+
+	parm.coop_giveAmount = local.giveAmmount
+	parm.coop_giveExclude string local.player
+	local.itemToGive gettarget local.objTargetname
+	parm.coop_give string local.itemToGive
+	thread coopReplace::coop_give
+	
+	
+	local.doNotPrint ifequal 1 end
+	local.printOut string "Added to Inventory: "
+	local.printOut append local.itemToGive
+	local.printOut append "\n"
+	//print local.printOut
+	parm.coop_notify string local.printOut
+	thread coop_notify
+	
+	wait 0.15
+	parm.objectExist string local.objTargetname
+	thread coopMain::objectExist
+	parm.objectExistTrue ifequal 1 local.objTargetname remove
+end
+
+coop_notify:
+	local.prnt string "jcx yv -40 fc 1 1 1 0.7 string \""
+	local.prnt append parm.coop_notify
+	local.prnt append "\""
+	screenprint 3 local.prnt
+end
+
+coop_itemDoRespawn:
+	local.itemName string parm.coop_itemDoRespawn_name
+	local.itemTargetname string "$"
+	local.itemTargetname append local.itemName
+	
+	local.itemOrigin getorigin local.itemTargetname
+	local.itemModel gettarget local.itemTargetname
+	
+	local.itemOrigin_x vector_x local.itemOrigin
+	local.itemOrigin_y vector_y local.itemOrigin
+	local.itemOrigin_z vector_z local.itemOrigin
+	local.itemOriginSpawn string local.itemOrigin_x
+	local.itemOriginSpawn append " "
+	local.itemOriginSpawn append local.itemOrigin_y
+	local.itemOriginSpawn append " "
+	local.itemOriginSpawn append local.itemOrigin_z
+	
+	//make sure the item is really gone
+	local.minWaitTime = 0.15
+	wait local.minWaitTime
+	parm.objectExist string local.itemTargetname
+	thread coopMain::objectExist
+	parm.objectExistTrue ifequal 1 goto coop_itemDoRespawn_stillExist
+	
+	local.actualWaitTime = level.itemRespawnTime
+	local.actualWaitTime -= local.minWaitTime
+	
+	wait local.actualWaitTime
+	spawn local.itemModel "targetname2" local.itemName "origin" local.itemOriginSpawn "thread" local.itemName "target" local.itemModel
+	end
+	
+	coop_itemDoRespawn_stillExist:
+		// local.printOut string "Item still exists, not Respawning: "
+		// local.printOut append local.itemTargetname
+		// local.printOut append "\n"
+		// print local.printOut
+end
+
+coopItem1:
+	parm.coop_itemDoRespawn_name string "coopItem1"
+	thread coop_itemDoRespawn
+end
+
+coopItem2:
+	parm.coop_itemDoRespawn_name string "coopItem2"
+	thread coop_itemDoRespawn
+end
+
+coopItem3:
+	parm.coop_itemDoRespawn_name string "coopItem3"
+	thread coop_itemDoRespawn
+end
+
+coopItem4:
+	parm.coop_itemDoRespawn_name string "coopItem4"
+	thread coop_itemDoRespawn
+end
+
+coopItem5:
+	parm.coop_itemDoRespawn_name string "coopItem5"
+	thread coop_itemDoRespawn
+end
+
+coopItem6:
+	parm.coop_itemDoRespawn_name string "coopItem6"
+	thread coop_itemDoRespawn
+end
+
+coopItem7:
+	parm.coop_itemDoRespawn_name string "coopItem7"
+	thread coop_itemDoRespawn
+end
+
+coopItem8:
+	parm.coop_itemDoRespawn_name string "coopItem8"
+	thread coop_itemDoRespawn
+end
+
+coopItem9:
+	parm.coop_itemDoRespawn_name string "coopItem9"
+	thread coop_itemDoRespawn
+end
+
+coopItem10:
+	parm.coop_itemDoRespawn_name string "coopItem10"
+	thread coop_itemDoRespawn
+end
+
+coopItem11:
+	parm.coop_itemDoRespawn_name string "coopItem11"
+	thread coop_itemDoRespawn
+end
+
+coopItem12:
+	parm.coop_itemDoRespawn_name string "coopItem12"
+	thread coop_itemDoRespawn
+end
+
+coopItem13:
+	parm.coop_itemDoRespawn_name string "coopItem13"
+	thread coop_itemDoRespawn
+end
+
+coopItem14:
+	parm.coop_itemDoRespawn_name string "coopItem14"
+	thread coop_itemDoRespawn
+end
+
+coopItem15:
+	parm.coop_itemDoRespawn_name string "coopItem15"
+	thread coop_itemDoRespawn
+end
+
+coopItem16:
+	parm.coop_itemDoRespawn_name string "coopItem16"
+	thread coop_itemDoRespawn
+end
+
+coopItem17:
+	parm.coop_itemDoRespawn_name string "coopItem17"
+	thread coop_itemDoRespawn
+end
+
+coopItem18:
+	parm.coop_itemDoRespawn_name string "coopItem18"
+	thread coop_itemDoRespawn
+end
+
+coopItem19:
+	parm.coop_itemDoRespawn_name string "coopItem19"
+	thread coop_itemDoRespawn
+end
+
+coopItem20:
+	parm.coop_itemDoRespawn_name string "coopItem20"
+	thread coop_itemDoRespawn
+end
+
+coopItem21:
+	parm.coop_itemDoRespawn_name string "coopItem21"
+	thread coop_itemDoRespawn
+end
+
+coopItem22:
+	parm.coop_itemDoRespawn_name string "coopItem22"
+	thread coop_itemDoRespawn
+end
+coopItem23:
+	parm.coop_itemDoRespawn_name string "coopItem23"
+	thread coop_itemDoRespawn
+end
+
+//[coop] chrissstrahl - DETECT PLAYER SPAWN - REQUIRED
+//this fires everytime a player is spawned
+//without this the coop mod will not work correctly!
+coopInfoPlayerStartActivated:
+	thread coopMain::playerTargetnames
+end
+
+//[coop] chrissstrahl
+coop_levelSetup:
+	waitforplayer
+	wait 1
+end
+
+//[coop] chrissstrahl - executed each time a player has spawned
+//optional function
+coop_justSpawned:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+		
+//[coop] chrissstrahl - executed each time a player has died
+//optional function
+coop_justDied:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+
+//[coop] chrissstrahl - executed each time a player enters spectator mode
+//optional function
+coop_justBecameSpectator:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end
+
+//[coop] chrissstrahl - executed each time a player has entered the game (usually oce per level)
+//optional function
+coop_justEntered:
+	local.player string parm.playerEvent
+	//EXAMPLE: Do something with the player
+	//local.player give Magnum
+end	
+	
+//[coop] chrissstrahl - executed each time a player has disconnected
+//optional function
+coop_justLeft:
+	local.player string parm.playerEvent
+	//EXAMPLE: You can't do something with the player because the player has disconnected
+	//You can however still check stuff based on player targetname
+	//local.player ifstrequal "$player2" print "Player 2 has lost the will to fight\n"
+end
+
+
+
+
+
+

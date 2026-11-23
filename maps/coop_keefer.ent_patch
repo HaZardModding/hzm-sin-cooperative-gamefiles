@@ -1,0 +1,430 @@
+//spawntargetname
+
+{
+"classname" "weapon_quantumd"
+"origin" "-616.98 -529.68 11.81"
+"angles" "0 30 0"
+"anim" "idle2"
+"model" "quantum.def"
+"scale" "1.00"
+"targetname2" "cwq"
+"target" "QuantumDestabilizer"
+"thread" "coop_giveQuantum"
+}
+
+{
+"classname" "weapon_rocketlauncher"
+"scale" "1.00"
+"model" "rlaunch.def"
+"anim" "idle1"
+"angles" "0 90 0"
+"origin" "-498.07 -23.83 1062.65"
+"targetname2" "cwr1"
+"target" "RocketLauncher"
+"thread" "coop_giveRocket1"
+}
+{
+"classname" "weapon_rocketlauncher"
+"origin" "-847.03 1629.50 1166.65"
+"angles" "0 30 0"
+"anim" "idle1"
+"model" "rlaunch.def"
+"scale" "1.00"
+"targetname2" "cwr2"
+"target" "RocketLauncher"
+"thread" "coop_giveRocket2"
+}
+{
+"classname" "weapon_rocketlauncher"
+"origin" "-647.33 901.85 454.32"
+"angles" "0 30 0"
+"anim" "idle1"
+"model" "rlaunch.def"
+"scale" "1.10"
+"targetname2" "cwr3"
+"target" "RocketLauncher"
+"thread" "coop_giveRocket3"
+}
+
+{
+"classname" "weapon_sniperrifle"
+"origin" "-49.05 1598.90 1065.01"
+"angles" "0 50 90"
+"anim" "idle1"
+"model" "sniperrifle.def"
+"scale" "1.00"
+"targetname2" "cws"
+"target" "Sniper"
+"thread" "coop_giveSniper"
+}
+
+{
+"classname" "weapon_shotgun"
+"origin" "-485.75 2721.29 449.67"
+"angles" "0 50 90"
+"anim" "idle1"
+"model" "shotgun.def"
+"scale" "1.00"
+"targetname2" "cwsg"
+"target" "Shotgun"
+"thread" "coop_giveShotgun"
+}
+
+{
+"classname" "weapon_pulserifle"
+"origin" "-188.21 20.44 972.71"
+"angles" "0 20 90"
+"anim" "idle1"
+"model" "pulse2.def"
+"scale" "1.00"
+"targetname2" "cwp"
+"target" "PulseRifle"
+"thread" "coop_givePulseRifle"
+}
+
+{
+"classname" "Armor_FlakPants"
+"scale" "1.00"
+"model" "flakpants.def"
+"anim" "idle"
+"angles" "0 210 0"
+"origin" "-767.58 785.22 96.00"
+"targetname2" "cifp"
+"target" "FlakPants"
+"thread" "coop_giveFlakPants"
+}
+
+{
+"classname" "Armor_FlakJacket"
+"origin" "-608.75 -248.84 554.70"
+"angles" "0 20 15"
+"anim" "idle"
+"model" "flakjack.def"
+"scale" "1.00"
+"targetname2" "cifj"
+"target" "FlakJacket"
+"thread" "coop_giveFlakJacket"
+}
+
+{
+"classname" "Armor_RiotHelmet"
+"scale" "1.00"
+"model" "riothelm.def"
+"anim" "idle"
+"angles" "0 210 0"
+"origin" "-26.83 900.70 544.00"
+"targetname2" "cifh"
+"target" "FlakJacket"
+"thread" "coop_giveRiotHelmet"
+}
+
+{
+"classname" "weapon_assaultrifle"
+"origin" "-135.25 2513.57 50.36"
+"angles" "0 120 90"
+"anim" "idle1"
+"model" "asrifle.def"
+"scale" "1.00"
+"targetname2" "cwa"
+"target" "AssaultRifle"
+"thread" "coop_giveAssaultRifle"
+}
+
+{
+"classname" "weapon_highvelocitygun"
+"origin" "-96.57 870.51 557.23"
+"angles" "0 320 0"
+"anim" "idle1"
+"model" "hvgun.def"
+"scale" "1.00"
+"targetname2" "cwc"
+"target" "ChainGun"
+"thread" "coop_giveChainGun"
+}
+
+{
+"classname" "Ammo_SpiderMine"
+"origin" "-887.64 2328.81 168.00"
+"anim" "idle"
+"model" "mine.def"
+"scale" "1.0"
+"targetname2" "cwsm1"
+"target" "SpiderMine"
+"thread" "coop_giveSpiderMine1"
+}
+{
+"classname" "Ammo_SpiderMine"
+"scale" "1.0"
+"model" "mine.def"
+"anim" "idle"
+"origin" "-111.64 2640.81 1328.00"
+"targetname2" "cwsm2"
+"target" "SpiderMine"
+"thread" "coop_giveSpiderMine2"
+}
+
+{
+"classname" "Powerup_ScubaGear"
+"scale" "1.00"
+"model" "scubagear.def"
+"anim" "idle"
+"angles" "0 80 0"
+"origin" "-32.17 72.41 -104.00"
+"targetname2" "cisd"
+"target" "ScubaGear"
+"thread" "coop_giveScubaGear"
+}
+
+
+{
+"classname" "Ammo_50mm"
+"scale" "1.00"
+"model" "50mm.def"
+"anim" "idle"
+"angles" "0 110 0"
+"origin" "-49.78 1178.26 544.00"
+"target" "50mm.def"
+"targetname2" "coopItem1"
+"thread" "coopItem1"
+}
+{
+"classname" "Ammo_10mm"
+"scale" "1.00"
+"model" "10mm.def"
+"anim" "idle"
+"angles" "0 210 0"
+"origin" "-262.77 1595.28 448.00"
+"target" "10mm.def"
+"targetname2" "coopItem2"
+"thread" "coopItem2"
+}
+{
+"classname" "Ammo_Rockets"
+"scale" "1.00"
+"model" "rockets.def"
+"anim" "idle"
+"angles" "0 210 0"
+"origin" "-665.38 2439.41 1400.00"
+"target" "rockets.def"
+"targetname2" "coopItem3"
+"thread" "coopItem3"
+}
+{
+"classname" "Health_020"
+"scale" "1.00"
+"model" "health.def"
+"anim" "idle"
+"angles" "90 210 0"
+"origin" "-8.78 879.05 546.46"
+"target" "health.def"
+"targetname2" "coopItem4"
+"thread" "coopItem4"
+}
+{
+"classname" "Ammo_50mm"
+"scale" "1.00"
+"model" "50mm.def"
+"anim" "idle"
+"angles" "0 330 0"
+"origin" "-411.64 910.78 96.00"
+"target" "50mm.def"
+"targetname2" "coopItem5"
+"thread" "coopItem5"
+}
+{
+"classname" "Ammo_Rockets"
+"scale" "1.00"
+"model" "rockets.def"
+"anim" "idle"
+"angles" "0 50 0"
+"origin" "-30.04 194.13 416.00"
+"target" "rockets.def"
+"targetname2" "coopItem6"
+"thread" "coopItem6"
+}
+{
+"classname" "Ammo_Pulse"
+"scale" "1.00"
+"model" "pulse_ammo.def"
+"anim" "idle"
+"angles" "90 150 0"
+"origin" "-117.73 1758.49 42.26"
+"target" "pulse_ammo.def"
+"targetname2" "coopItem7"
+"thread" "coopItem7"
+}
+{
+"classname" "Health_020"
+"scale" "1.00"
+"model" "health.def"
+"anim" "idle"
+"angles" "90 150 0"
+"origin" "-16.78 2114.46 450.46"
+"target" "health.def"
+"targetname2" "coopItem8"
+"thread" "coopItem8"
+}
+{
+"classname" "Health_020"
+"scale" "1.00"
+"model" "health.def"
+"anim" "idle"
+"angles" "90 50 0"
+"origin" "-37.82 2081.83 450.46"
+"target" "health.def"
+"targetname2" "coopItem9"
+"thread" "coopItem9"
+}
+{
+"classname" "Ammo_SniperRifle"
+"scale" "1.00"
+"model" "sniper_ammo.def"
+"anim" "idle"
+"angles" "90 50 0"
+"origin" "-34.11 1669.15 449.88"
+"target" "sniper_ammo.def"
+"targetname2" "coopItem10"
+"thread" "coopItem10"
+}
+{
+"classname" "Ammo_SniperRifle"
+"scale" "1.00"
+"model" "sniper_ammo.def"
+"anim" "idle"
+"angles" "90 50 0"
+"origin" "-938.11 1613.15 449.88"
+"target" "sniper_ammo.def"
+"targetname2" "coopItem11"
+"thread" "coopItem11"
+}
+{
+"classname" "Ammo_Magnum"
+"scale" "1.00"
+"model" "357.def"
+"anim" "idle"
+"angles" "90 50 0"
+"origin" "-836.70 -484.69 754.00"
+"target" "357.def"
+"targetname2" "coopItem12"
+"thread" "coopItem12"
+}
+{
+"classname" "Ammo_Shotgun"
+"scale" "1.00"
+"model" "shotgunclip.def"
+"anim" "idle"
+"angles" "0 50 0"
+"origin" "-808.00 -487.99 752.00"
+"target" "shotgunclip.def"
+"targetname2" "coopItem13"
+"thread" "coopItem13"
+}
+{
+"classname" "Ammo_Shotgun"
+"scale" "1.0"
+"model" "shotgunclip.def"
+"anim" "idle"
+"origin" "-826.30 -498.33 752.00"
+"target" "shotgunclip.def"
+"targetname2" "coopItem14"
+"thread" "coopItem14"
+}
+{
+"classname" "Ammo_10mm"
+"scale" "1.00"
+"model" "10mm.def"
+"anim" "idle"
+"angles" "0 50 0"
+"origin" "-60.83 10.48 968.00"
+"target" "10mm.def"
+"targetname2" "coopItem15"
+"thread" "coopItem15"
+}
+{
+"classname" "Health_020"
+"scale" "1.00"
+"model" "health.def"
+"anim" "idle"
+"angles" "90 120 0"
+"origin" "-456.95 2113.42  2.46"
+"target" "health.def"
+"targetname2" "coopItem16"
+"thread" "coopItem16"
+}
+{
+"classname" "Ammo_50mm"
+"scale" "1.00"
+"model" "50mm.def"
+"anim" "idle"
+"angles" "0 20 0"
+"origin" "-237.74 2598.22 48.00"
+"target" "50mm.def"
+"targetname2" "coopItem17"
+"thread" "coopItem17"
+}
+{
+"classname" "Health_020"
+"scale" "1.00"
+"model" "health.def"
+"anim" "idle"
+"angles" "90 20 0"
+"origin" "-663.03 2562.67 114.46"
+"target" "health.def"
+"targetname2" "coopItem18"
+"thread" "coopItem18"
+}
+{
+"classname" "Health_020"
+"scale" "1.00"
+"model" "health.def"
+"anim" "idle"
+"angles" "90 320 0"
+"origin" "-646.17 2602.36 114.46"
+"target" "health.def"
+"targetname2" "coopItem19"
+"thread" "coopItem19"
+}
+{
+"classname" "Health_020"
+"scale" "1.00"
+"model" "health.def"
+"anim" "idle"
+"angles" "90 230 0"
+"origin" "-269.64 -618.89 882.46"
+"target" "health.def"
+"targetname2" "coopItem20"
+"thread" "coopItem20"
+}
+{
+"classname" "Ammo_Rockets"
+"scale" "1.00"
+"model" "rockets.def"
+"anim" "idle"
+"angles" "0 30 0"
+"origin" "-246.23 -638.79 880.00"
+"target" "rockets.def"
+"targetname2" "coopItem21"
+"thread" "coopItem21"
+}
+{
+"classname" "Health_050"
+"scale" "1.0"
+"model" "health_large.def"
+"anim" "idle"
+"origin" "-449.09 1103.36 1328.00"
+"target" "health_large.def"
+"targetname2" "coopItem22"
+"thread" "coopItem22"
+}
+
+{
+"classname" "Powerup_Adrenaline"
+"scale" "1.00"
+"model" "adren.def"
+"anim" "idle"
+"angles" "90 20 0"
+"origin" "-47.47 809.44 1001.32"
+"target" "adren.def"
+"targetname2" "coopItem23"
+"thread" "coopItem23"
+}
