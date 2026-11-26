@@ -34,6 +34,9 @@ keefers_lift_thread:
 	$keefers_lift moveDown 1400
 	waitFor $keefers_lift
 	wait 0.1
+	
+	//chrissstrahl - spawn a soundentity to play the sound reliably - fix lift sound not working right
+	spawn "trigger_speaker" "origin" "-448 1984 68" "targetname" "keefers_lift_wisperer"
 
 	$keefers_lift time 2.0
 	keefers_lift_loop:
@@ -41,17 +44,29 @@ keefers_lift_thread:
 		pause
 	keefers_lift_up:
 		$keefers_lift notrigger
-		$keefers_lift phssound environment/elevator/lvtrgd.wav 1.0
+		
+		//chrissstrahl - fix lift sound not working right
+		$keefers_lift_wisperer phssound environment/elevator/lvtrgd.wav 1.0
+		
 		$keefers_lift moveUp 1400
 		waitFor $keefers_lift
-		$keefers_lift phssound environment/machine/pneumach/pneustop.wav 1.0
-
+		
+		//chrissstrahl - fix lift sound not working right
+		$keefers_lift_wisperer phssound environment/machine/pneumach/pneustop.wav 1.0
+		
 		wait 3.0
-		$keefers_lift phssound environment/elevator/lvtrgd.wav 1.0
+		
+		//chrissstrahl - fix lift sound not working right
+		$keefers_lift_wisperer phssound environment/elevator/lvtrgd.wav 1.0
+		
 		$keefers_lift moveDown 1400
 		waitFor $keefers_lift
-		$keefers_lift phssound environment/machine/pneumach/pneustop.wav 1.0
-		wait 0.1
+		
+		//chrissstrahl - fix lift sound not working right
+		$keefers_lift_wisperer phssound environment/machine/pneumach/pneustop.wav 1.0
+		
+		//wait when lift is down before going up again
+		wait 4.0
 goto keefers_lift_loop
 
 //[coop] chrissstrahl - give weapon to all players
