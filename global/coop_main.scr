@@ -699,7 +699,7 @@ playerTargetnames:
 	
 	//The first player will always spawn at info_player_start and needs to be moved
 	//even if there are other spawn locations, unless they are inside bsp
-	spawn trigger_multiple origin level.infoPlayerStartOrigin1 targetname "coopInfoPlayerStartTrigger1" thread "coopInfoPlayerStartActivated"
+	spawn trigger_multiple origin level.infoPlayerStartOrigin1 targetname "coopInfoPlayerStartTrigger1" thread "coopMain::playerTargetnames"
 	$coopInfoPlayerStartTrigger1 setsize "0 0 0" "1 1 1" //was "1 1 20"
 	$coopInfoPlayerStartTrigger1 origin local.triggerPos33
 	
@@ -711,7 +711,7 @@ playerTargetnames:
 	
 	//for alternative spawn spot if it exists
 	level.infoPlayerStartOrigin2 ifstrequal "" end
-	spawn trigger_multiple origin level.infoPlayerStartOrigin2 targetname "coopInfoPlayerStartTrigger2" thread "coopInfoPlayerStartActivated"
+	spawn trigger_multiple origin level.infoPlayerStartOrigin2 targetname "coopInfoPlayerStartTrigger2" thread "coopMain::playerTargetnames"
 	$coopInfoPlayerStartTrigger2 setsize "0 0 0" "1 1 1" //was "1 1 20"
 	//spawn trigger_push origin level.infoPlayerStartOrigin2 speed "500" spawnflags "24" targetname "coopInfoPlayerStartPush2" angle level.infoPlayerStartPushDirection2
 	//$coopInfoPlayerStartPush2 setsize "-10 -10 0" "10 10 10" //was "10 10 76"

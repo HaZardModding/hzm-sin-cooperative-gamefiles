@@ -339,13 +339,6 @@ end
 
 
 
-//[coop] chrissstrahl - DETECT PLAYER SPAWN - REQUIRED
-//this fires everytime a player is spawned
-//without this the coop mod will not work correctly!
-coopInfoPlayerStartActivated:
-	thread coopMain::playerTargetnames
-end
-
 //[coop] chrissstrahl - spawn a trigger we can actually control, as long as the next level is not completed
 coop_levelSetup:
 end
